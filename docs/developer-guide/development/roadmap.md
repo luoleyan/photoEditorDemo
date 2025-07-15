@@ -1,5 +1,7 @@
 # 图像编辑器系统性改进实施路线图
 
+> **📍 文档迁移提示**: 本文档已从根目录 `IMPLEMENTATION_ROADMAP.md` 迁移到 `docs/developer-guide/development/roadmap.md`。
+
 ## 📋 项目概述
 
 基于当前项目中已有的5个图像编辑库演示案例（Konva.js、Fabric.js、TUI Image Editor、Cropper.js、Jimp），我们将实施一个系统性的改进方案，创建一个统一、高效、功能丰富的图像编辑解决方案。

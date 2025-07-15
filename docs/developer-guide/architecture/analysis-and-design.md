@@ -1,5 +1,7 @@
 # 图像编辑库系统性分析与改进设计
 
+> **📍 文档迁移提示**: 本文档已从根目录 `IMAGE_EDITOR_ANALYSIS_AND_DESIGN.md` 迁移到 `docs/developer-guide/architecture/analysis-and-design.md`。
+
 ## 1. 功能对比分析
 
 ### 1.1 TUI Image Editor (v3.15.3)

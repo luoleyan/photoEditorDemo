@@ -1,5 +1,7 @@
 # 项目完成总结
 
+> **📍 文档迁移提示**: 本文档已从根目录 `PROJECT_SUMMARY.md` 迁移到 `docs/user-guide/project-summary.md`。
+
 ## 🎉 项目概述
 
 已成功在当前工作目录（`e:\projects\LuoLeYanProject\test\test1`）中创建了一个完整的JavaScript图片编辑功能演示应用。该应用集成了5个流行的图片编辑库，提供了全面的功能演示和对比。
@@ -71,8 +73,8 @@ src/
 
 ### 3. 详细的文档说明
 - ✅ README.md - 项目说明和技术文档
-- ✅ USAGE.md - 详细的使用指南
-- ✅ PROJECT_SUMMARY.md - 项目完成总结
+- ✅ 使用指南 - 详细的使用指南（已迁移到docs/user-guide/）
+- ✅ 项目总结 - 项目完成总结（已迁移到docs/user-guide/）
 
 ## 📊 技术实现亮点
 

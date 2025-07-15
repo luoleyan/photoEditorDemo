@@ -1,5 +1,7 @@
 # TUI Image Editor 错误修复总结
 
+> **📍 文档迁移提示**: 本文档已从根目录 `ERROR_FIX_SUMMARY.md` 迁移到 `docs/troubleshooting/bug-fixes/error-fix-summary.md`。
+
 ## 🐛 遇到的错误
 
 ```

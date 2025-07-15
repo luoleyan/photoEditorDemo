@@ -1,5 +1,7 @@
 # Fabric.js 演示页面改进总结
 
+> **📍 文档迁移提示**: 本文档已从根目录 `FABRIC_IMPROVEMENTS_SUMMARY.md` 迁移到 `docs/troubleshooting/bug-fixes/fabric-improvements-summary.md`。
+
 ## 🎯 完成的三项改进
 
 ### 1. ✅ 添加预览窗口

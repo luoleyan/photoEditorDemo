@@ -1,5 +1,7 @@
 # 统一图像编辑器原型实现方案
 
+> **📍 文档迁移提示**: 本文档已从根目录 `UNIFIED_IMAGE_EDITOR_PROTOTYPE.md` 迁移到 `docs/developer-guide/architecture/unified-editor-prototype.md`。
+
 ## 1. 项目结构设计
 
 基于现有项目，我们将创建一个统一的图像编辑器，整合所有库的优势：

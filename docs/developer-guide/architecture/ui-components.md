@@ -1,5 +1,7 @@
 # 图像编辑器统一UI组件库设计
 
+> **📍 文档迁移提示**: 本文档已从根目录 `IMAGE_EDITOR_UI_COMPONENTS.md` 迁移到 `docs/developer-guide/architecture/ui-components.md`。
+
 ## 1. 设计目标
 
 创建一个统一的UI组件库，实现以下目标：
