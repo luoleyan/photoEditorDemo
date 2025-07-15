@@ -161,7 +161,9 @@
 </template>
 
 <script>
-import Jimp from 'jimp'
+// 导入浏览器版本的 Jimp
+require('jimp/browser/lib/jimp.js')
+const Jimp = window.Jimp
 
 export default {
   name: 'JimpEditorView',

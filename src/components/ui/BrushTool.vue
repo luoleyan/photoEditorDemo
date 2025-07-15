@@ -196,7 +196,55 @@ export default {
       default: true
     },
 
-    data() {
+    showAdvancedSettings: {
+      type: Boolean,
+      default: false
+    },
+
+    // 画笔预览
+    showBrushPreview: {
+      type: Boolean,
+      default: false
+    },
+
+    // 光标预览
+    showCursorPreview: {
+      type: Boolean,
+      default: true
+    },
+
+    // 画布尺寸
+    width: {
+      type: Number,
+      default: 0
+    },
+
+    height: {
+      type: Number,
+      default: 0
+    },
+
+    // 空状态文本
+    emptyText: {
+      type: String,
+      default: '开始绘制'
+    },
+
+    // 变体
+    variant: {
+      type: String,
+      default: 'default',
+      validator: value => ['default', 'minimal', 'compact'].includes(value)
+    },
+
+    // 禁用状态
+    disabled: {
+      type: Boolean,
+      default: false
+    }
+  },
+
+  data() {
       return {
         // 画笔设置
         selectedBrushType: 'pencil',
@@ -264,7 +312,7 @@ export default {
       };
     },
 
-    computed: {
+  computed: {
       brushClasses() {
         return {
           [`variant-${this.variant}`]: true,
@@ -1115,7 +1163,6 @@ export default {
       }
     }
   }
-}
 </script>
 
 <style scoped>

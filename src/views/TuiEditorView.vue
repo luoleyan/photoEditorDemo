@@ -113,6 +113,8 @@
 <script>
 import ImageEditor from 'tui-image-editor'
 import 'tui-image-editor/dist/tui-image-editor.css'
+import tuiEditorErrorHandler from '@/utils/TuiEditorErrorHandler.js'
+import tuiEditorMonkeyPatch from '@/utils/TuiEditorMonkeyPatch.js'
 
 export default {
   name: 'TuiEditorView',
@@ -129,9 +131,15 @@ export default {
   },
   mounted() {
     this.initEditor()
+    this.setupGlobalErrorHandler()
   },
   beforeDestroy() {
+    this.removeGlobalErrorHandler()
+    this.removePatchMonitoring()
+
     if (this.imageEditor) {
+      // 移除monkey patches
+      tuiEditorMonkeyPatch.removePatches(this.imageEditor)
       this.imageEditor.destroy()
     }
   },
@@ -176,6 +184,12 @@ export default {
         // 尝试优化Canvas性能
         this.optimizeCanvasPerformance()
 
+        // 应用Monkey Patch以防止null引用错误
+        this.applyMonkeyPatches()
+
+        console.log('TUI Image Editor 初始化完成')
+        this.isEditorReady = true
+
         // 延迟加载默认图片
         setTimeout(() => {
           this.loadDefaultImage()
@@ -207,6 +221,18 @@ export default {
           this.checkEditorState()
         })
 
+        // 添加错误监听器来捕获内部错误
+        this.imageEditor.on('error', (error) => {
+          console.error('TUI Image Editor 内部错误:', error)
+          this.handleEditorError(error)
+        })
+
+        // 监听鼠标移动事件，在出现问题时提供额外保护
+        this.imageEditor.on('mousemove', () => {
+          // 检查编辑器内部状态是否健康
+          this.validateEditorState()
+        })
+
       } catch (error) {
         console.warn('设置编辑器事件监听失败:', error)
       }
@@ -221,6 +247,231 @@ export default {
         this.isCropping = drawingMode === 'CROPPER'
       } catch (error) {
         console.warn('检查编辑器状态失败:', error)
+      }
+    },
+
+    validateEditorState() {
+      if (!this.imageEditor) return true
+
+      try {
+        // 检查编辑器基本状态
+        const canvasSize = this.imageEditor.getCanvasSize()
+
+        // 检查编辑器内部关键对象是否存在
+        const fabricCanvas = this.imageEditor._graphics?.getCanvas?.()
+
+        // 如果关键对象缺失或状态异常，尝试恢复
+        if (!canvasSize || !fabricCanvas || (canvasSize.width === 0 && canvasSize.height === 0)) {
+          console.warn('检测到编辑器内部状态异常，尝试恢复...')
+          this.recoverEditorState()
+          return false
+        }
+
+        return true
+      } catch (error) {
+        console.warn('验证编辑器状态时出错:', error)
+        this.recoverEditorState()
+        return false
+      }
+    },
+
+    validateCropperState() {
+      if (!this.imageEditor) return false
+
+      try {
+        // 检查基本状态
+        if (!this.validateEditorState()) {
+          return false
+        }
+
+        // 检查Fabric.js canvas的关键对象
+        const fabricCanvas = this.imageEditor._graphics?.getCanvas?.()
+        if (!fabricCanvas) {
+          console.warn('Fabric canvas不存在')
+          return false
+        }
+
+        // 检查Fabric canvas的关键属性和方法
+        if (!fabricCanvas.getObjects || !fabricCanvas.getActiveObject || !fabricCanvas.on || !fabricCanvas.off) {
+          console.warn('Fabric canvas缺少关键方法')
+          return false
+        }
+
+        // 检查cropper相关的内部对象
+        const cropper = this.imageEditor._cropper
+        if (cropper) {
+          // 如果cropper存在，检查其关键属性
+          if (!cropper._canvas || !cropper._cropzone) {
+            console.warn('Cropper内部对象状态异常')
+            return false
+          }
+        }
+
+        // 检查鼠标事件处理器是否正常
+        try {
+          const hasMouseHandlers = fabricCanvas._hasMouseEventListeners !== false
+          if (!hasMouseHandlers) {
+            console.warn('Fabric canvas鼠标事件处理器异常')
+            return false
+          }
+        } catch (e) {
+          // 如果无法检查鼠标处理器，继续执行
+        }
+
+        return true
+      } catch (error) {
+        console.warn('验证裁剪器状态失败:', error)
+        return false
+      }
+    },
+
+    handleEditorError(error) {
+      console.error('处理编辑器错误:', error)
+
+      // 使用专门的错误处理器
+      const handled = tuiEditorErrorHandler.handleError(error, this.imageEditor, {
+        resetState: this.resetEditingState,
+        enableMouseEvents: this.enableMouseEvents,
+        validateEditorState: this.validateEditorState,
+        clearHangingReferences: this.clearHangingReferences
+      })
+
+      if (!handled) {
+        // 如果错误处理器无法处理，使用备用方案
+        console.log('使用备用错误处理方案')
+        this.recoverEditorState()
+      }
+    },
+
+    recoverEditorState() {
+      try {
+        // 重置所有状态标志
+        this.isCropping = false
+        this.isMouseDown = false
+
+        // 尝试停止所有绘制模式
+        if (this.imageEditor) {
+          try {
+            this.imageEditor.stopDrawingMode()
+          } catch (error) {
+            console.warn('停止绘制模式失败:', error)
+          }
+
+          // 重新启用鼠标事件
+          this.enableMouseEvents()
+        }
+
+        // 清理悬挂引用
+        this.clearHangingReferences()
+
+        console.log('编辑器状态恢复完成')
+      } catch (error) {
+        console.error('恢复编辑器状态失败:', error)
+      }
+    },
+
+    clearHangingReferences() {
+      try {
+        // 清理可能的悬挂引用和事件监听器
+        if (this.imageEditor && this.imageEditor._graphics) {
+          const canvas = this.imageEditor._graphics.getCanvas()
+          if (canvas) {
+            // 清理fabric.js的事件监听器
+            canvas.off('mouse:move')
+            canvas.off('mouse:down')
+            canvas.off('mouse:up')
+          }
+        }
+
+        // 强制垃圾回收（如果可用）
+        if (window.gc) {
+          window.gc()
+        }
+
+        console.log('悬挂引用清理完成')
+      } catch (error) {
+        console.warn('清理悬挂引用失败:', error)
+      }
+    },
+
+    async repairCropperState() {
+      console.log('开始修复裁剪器状态...')
+
+      try {
+        // 1. 强制停止所有绘制模式
+        await this.safeStopDrawingMode()
+
+        // 2. 清理悬挂引用
+        this.clearHangingReferences()
+
+        // 3. 重新初始化Fabric canvas的关键属性
+        if (this.imageEditor && this.imageEditor._graphics) {
+          const canvas = this.imageEditor._graphics.getCanvas()
+          if (canvas) {
+            // 确保canvas有正确的事件处理器
+            if (!canvas._hasMouseEventListeners) {
+              canvas._hasMouseEventListeners = true
+            }
+
+            // 重新设置canvas的基本属性
+            canvas.selection = true
+            canvas.interactive = true
+
+            // 确保canvas渲染正常
+            canvas.requestRenderAll()
+          }
+        }
+
+        // 4. 等待状态稳定
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        console.log('裁剪器状态修复完成')
+      } catch (error) {
+        console.error('修复裁剪器状态失败:', error)
+      }
+    },
+
+    async preinitializeCropper() {
+      console.log('预初始化裁剪器...')
+
+      try {
+        if (this.imageEditor && this.imageEditor._graphics) {
+          const canvas = this.imageEditor._graphics.getCanvas()
+          if (canvas) {
+            // 预设置canvas状态以防止null引用
+            canvas.defaultCursor = 'default'
+            canvas.hoverCursor = 'move'
+            canvas.moveCursor = 'move'
+
+            // 确保canvas对象池正常
+            if (!canvas._objects) {
+              canvas._objects = []
+            }
+
+            // 预创建一个临时对象来初始化内部状态
+            if (window.fabric && window.fabric.Rect) {
+              const tempRect = new window.fabric.Rect({
+                left: -1000,
+                top: -1000,
+                width: 1,
+                height: 1,
+                visible: false,
+                selectable: false,
+                evented: false
+              })
+
+              canvas.add(tempRect)
+              canvas.remove(tempRect)
+            }
+
+            // 强制渲染一次
+            canvas.requestRenderAll()
+          }
+        }
+
+        console.log('裁剪器预初始化完成')
+      } catch (error) {
+        console.warn('预初始化裁剪器失败:', error)
       }
     },
 
@@ -247,6 +498,42 @@ export default {
           console.warn('Canvas性能优化失败:', error)
         }
       })
+    },
+
+    applyMonkeyPatches() {
+      try {
+        console.log('开始应用TUI Image Editor Monkey Patches...')
+
+        // 应用补丁
+        tuiEditorMonkeyPatch.applyPatches(this.imageEditor)
+
+        // 设置定期检查补丁状态
+        this.setupPatchMonitoring()
+
+        console.log('Monkey Patches应用完成')
+      } catch (error) {
+        console.error('应用Monkey Patches失败:', error)
+      }
+    },
+
+    setupPatchMonitoring() {
+      // 每5秒检查一次补丁状态
+      this.patchMonitorInterval = setInterval(() => {
+        try {
+          if (this.imageEditor && this.isEditorReady) {
+            tuiEditorMonkeyPatch.checkAndReapplyPatches(this.imageEditor)
+          }
+        } catch (error) {
+          console.warn('补丁监控检查失败:', error)
+        }
+      }, 5000)
+    },
+
+    removePatchMonitoring() {
+      if (this.patchMonitorInterval) {
+        clearInterval(this.patchMonitorInterval)
+        this.patchMonitorInterval = null
+      }
     },
 
     loadDefaultImage() {
@@ -298,25 +585,33 @@ export default {
     },
     
     applyBrightness() {
-      // 简化的安全检查
-      if (!this.canApplyFilterSync()) {
-        return
-      }
+      // 使用安全包装器
+      const safeApply = tuiEditorErrorHandler.createSafeOperation(
+        this.safeApplyFilterSync,
+        this.imageEditor,
+        this
+      )
 
-      this.safeApplyFilterSync('brightness', {
-        brightness: parseFloat(this.brightness)
-      })
+      if (this.canApplyFilterSync()) {
+        safeApply('brightness', {
+          brightness: parseFloat(this.brightness)
+        })
+      }
     },
 
     applyContrast() {
-      // 简化的安全检查
-      if (!this.canApplyFilterSync()) {
-        return
-      }
+      // 使用安全包装器
+      const safeApply = tuiEditorErrorHandler.createSafeOperation(
+        this.safeApplyFilterSync,
+        this.imageEditor,
+        this
+      )
 
-      this.safeApplyFilterSync('contrast', {
-        contrast: parseFloat(this.contrast)
-      })
+      if (this.canApplyFilterSync()) {
+        safeApply('contrast', {
+          contrast: parseFloat(this.contrast)
+        })
+      }
     },
 
     canApplyFilterSync() {
@@ -329,6 +624,12 @@ export default {
       // 检查鼠标状态
       if (this.isMouseDown) {
         console.warn('鼠标操作进行中，跳过滤镜应用')
+        return false
+      }
+
+      // 验证编辑器内部状态
+      if (!this.validateEditorState()) {
+        console.warn('编辑器内部状态异常，跳过滤镜应用')
         return false
       }
 
@@ -350,13 +651,28 @@ export default {
         // 应用滤镜
         setTimeout(() => {
           try {
-            if (this.imageEditor && this.isImageLoaded) {
+            if (this.imageEditor && this.isImageLoaded && this.validateEditorState()) {
+              // 在应用滤镜前再次验证状态
+              const currentMode = this.imageEditor.getDrawingMode()
+              if (currentMode && currentMode !== 'NORMAL') {
+                console.warn(`当前模式为${currentMode}，先切换到正常模式`)
+                this.imageEditor.stopDrawingMode()
+                this.isCropping = false
+              }
+
               this.imageEditor.applyFilter(filterType, options)
               console.log(`${filterType}滤镜应用成功`)
+            } else {
+              console.warn('编辑器状态不适合应用滤镜')
             }
           } catch (error) {
             console.error(`应用${filterType}滤镜失败:`, error)
             this.handleFilterError(error)
+
+            // 如果是null引用错误，尝试恢复
+            if (error.message && error.message.includes('null')) {
+              this.recoverEditorState()
+            }
           } finally {
             // 重新启用鼠标事件
             setTimeout(() => {
@@ -374,9 +690,30 @@ export default {
 
     disableMouseEvents() {
       try {
+        // 方法1: 禁用DOM层面的鼠标事件
         const canvas = this.$refs.tuiImageEditor?.querySelector('canvas')
         if (canvas) {
           canvas.style.pointerEvents = 'none'
+        }
+
+        // 方法2: 禁用Fabric.js层面的鼠标事件
+        if (this.imageEditor && this.imageEditor._graphics) {
+          const fabricCanvas = this.imageEditor._graphics.getCanvas()
+          if (fabricCanvas) {
+            // 保存当前状态
+            this._savedCanvasState = {
+              selection: fabricCanvas.selection,
+              interactive: fabricCanvas.interactive,
+              evented: fabricCanvas.evented
+            }
+
+            fabricCanvas.selection = false
+            fabricCanvas.interactive = false
+            fabricCanvas.evented = false
+
+            // 临时禁用鼠标事件处理器以防止null引用
+            this._tempDisableMouseHandlers(fabricCanvas)
+          }
         }
       } catch (error) {
         console.warn('禁用鼠标事件失败:', error)
@@ -385,12 +722,95 @@ export default {
 
     enableMouseEvents() {
       try {
+        // 方法1: 启用DOM层面的鼠标事件
         const canvas = this.$refs.tuiImageEditor?.querySelector('canvas')
         if (canvas) {
           canvas.style.pointerEvents = 'auto'
         }
+
+        // 方法2: 启用Fabric.js层面的鼠标事件
+        if (this.imageEditor && this.imageEditor._graphics) {
+          const fabricCanvas = this.imageEditor._graphics.getCanvas()
+          if (fabricCanvas) {
+            // 恢复保存的状态
+            if (this._savedCanvasState) {
+              fabricCanvas.selection = this._savedCanvasState.selection
+              fabricCanvas.interactive = this._savedCanvasState.interactive
+              fabricCanvas.evented = this._savedCanvasState.evented
+            } else {
+              fabricCanvas.selection = true
+              fabricCanvas.interactive = true
+              fabricCanvas.evented = true
+            }
+
+            // 重新启用鼠标事件处理器
+            this._tempEnableMouseHandlers(fabricCanvas)
+          }
+        }
       } catch (error) {
         console.warn('启用鼠标事件失败:', error)
+      }
+    },
+
+    _tempDisableMouseHandlers(canvas) {
+      try {
+        // 临时保存并用安全函数替换鼠标事件处理器
+        this._savedMouseHandlers = {
+          onMouseMove: canvas.__onMouseMove,
+          onMouseDown: canvas.__onMouseDown,
+          onMouseUp: canvas.__onMouseUp
+        }
+
+        // 用安全的空函数替换，防止null引用错误
+        canvas.__onMouseMove = function(e) {
+          // 安全的空实现，防止null引用
+          try {
+            if (e && e.e) {
+              e.e.preventDefault && e.e.preventDefault()
+            }
+          } catch (err) {
+            // 忽略错误
+          }
+        }
+        canvas.__onMouseDown = function(e) {
+          try {
+            if (e && e.e) {
+              e.e.preventDefault && e.e.preventDefault()
+            }
+          } catch (err) {
+            // 忽略错误
+          }
+        }
+        canvas.__onMouseUp = function(e) {
+          try {
+            if (e && e.e) {
+              e.e.preventDefault && e.e.preventDefault()
+            }
+          } catch (err) {
+            // 忽略错误
+          }
+        }
+      } catch (error) {
+        console.warn('临时禁用鼠标处理器失败:', error)
+      }
+    },
+
+    _tempEnableMouseHandlers(canvas) {
+      try {
+        // 恢复原始的鼠标事件处理器
+        if (this._savedMouseHandlers) {
+          if (this._savedMouseHandlers.onMouseMove) {
+            canvas.__onMouseMove = this._savedMouseHandlers.onMouseMove
+          }
+          if (this._savedMouseHandlers.onMouseDown) {
+            canvas.__onMouseDown = this._savedMouseHandlers.onMouseDown
+          }
+          if (this._savedMouseHandlers.onMouseUp) {
+            canvas.__onMouseUp = this._savedMouseHandlers.onMouseUp
+          }
+        }
+      } catch (error) {
+        console.warn('恢复鼠标处理器失败:', error)
       }
     },
 
@@ -444,6 +864,18 @@ export default {
         return
       }
 
+      // 强化的裁剪器状态验证
+      if (!this.validateCropperState()) {
+        console.warn('裁剪器状态验证失败，尝试修复后重试')
+        await this.repairCropperState()
+
+        // 修复后再次验证
+        if (!this.validateCropperState()) {
+          console.error('无法修复裁剪器状态，取消启动裁剪模式')
+          return
+        }
+      }
+
       try {
         // 禁用鼠标事件防止冲突
         this.disableMouseEvents()
@@ -452,22 +884,39 @@ export default {
         await this.safeStopDrawingMode()
 
         // 等待状态稳定
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 150))
+
+        // 预初始化裁剪器内部状态
+        await this.preinitializeCropper()
+
+        // 重新应用monkey patches确保在裁剪模式下生效
+        tuiEditorMonkeyPatch.checkAndReapplyPatches(this.imageEditor)
+
+        // 最终验证状态
+        if (!this.validateCropperState()) {
+          throw new Error('裁剪器状态在准备过程中变为异常')
+        }
 
         // 启动裁剪模式
         this.imageEditor.startDrawingMode('CROPPER')
         this.isCropping = true
         console.log('裁剪模式已启动')
 
-        // 重新启用鼠标事件
+        // 启动后再次确保补丁生效
+        setTimeout(() => {
+          tuiEditorMonkeyPatch.checkAndReapplyPatches(this.imageEditor)
+        }, 100)
+
+        // 延迟启用鼠标事件，确保裁剪器完全初始化
         setTimeout(() => {
           this.enableMouseEvents()
-        }, 200)
+        }, 300)
 
       } catch (error) {
         console.error('启动裁剪模式失败:', error)
         this.isCropping = false
         this.enableMouseEvents()
+        this.recoverEditorState()
       }
     },
 
@@ -478,29 +927,105 @@ export default {
       }
 
       try {
+        console.log('开始应用裁剪...')
+
         // 禁用鼠标事件
         this.disableMouseEvents()
 
-        const cropRect = this.imageEditor.getCropzoneRect()
-        if (cropRect && cropRect.width > 0 && cropRect.height > 0) {
-          // 应用裁剪
-          await new Promise((resolve, reject) => {
-            try {
-              this.imageEditor.crop(cropRect)
-              setTimeout(resolve, 100) // 给裁剪操作一些时间
-            } catch (error) {
-              reject(error)
+        // 确保monkey patches在裁剪应用前生效
+        tuiEditorMonkeyPatch.checkAndReapplyPatches(this.imageEditor)
+
+        // 验证编辑器状态
+        if (!this.validateCropperState()) {
+          throw new Error('裁剪器状态验证失败')
+        }
+
+        // 安全地获取裁剪区域
+        let cropRect
+        try {
+          cropRect = this.imageEditor.getCropzoneRect()
+        } catch (getRectError) {
+          console.error('获取裁剪区域失败:', getRectError)
+          throw new Error('无法获取裁剪区域')
+        }
+
+        // 验证裁剪区域
+        if (!cropRect || typeof cropRect !== 'object') {
+          throw new Error('裁剪区域无效')
+        }
+
+        if (typeof cropRect.width !== 'number' || typeof cropRect.height !== 'number' ||
+            typeof cropRect.left !== 'number' || typeof cropRect.top !== 'number') {
+          throw new Error('裁剪区域参数无效')
+        }
+
+        if (cropRect.width <= 0 || cropRect.height <= 0) {
+          throw new Error('裁剪区域尺寸无效')
+        }
+
+        console.log('裁剪区域验证通过:', cropRect)
+
+        // 预检查Graphics对象
+        if (!this.imageEditor._graphics || !this.imageEditor._graphics.getCroppedImageData) {
+          throw new Error('Graphics对象不可用')
+        }
+
+        // 预检查Canvas对象
+        const fabricCanvas = this.imageEditor._graphics.getCanvas()
+        if (!fabricCanvas) {
+          throw new Error('Fabric Canvas不可用')
+        }
+
+        // 检查Canvas中的对象
+        const objects = fabricCanvas.getObjects()
+        if (objects && Array.isArray(objects)) {
+          // 确保所有对象都有有效的_set属性
+          objects.forEach(obj => {
+            if (obj && obj.set && !obj._set) {
+              obj._set = obj.set
+              console.log('修复对象_set属性')
             }
           })
-
-          this.isCropping = false
-          console.log('裁剪已应用')
-        } else {
-          console.warn('无效的裁剪区域')
         }
+
+        // 应用裁剪
+        await new Promise((resolve, reject) => {
+          try {
+            console.log('调用imageEditor.crop方法...')
+
+            // 使用setTimeout确保所有状态都已稳定
+            setTimeout(() => {
+              try {
+                this.imageEditor.crop(cropRect)
+                console.log('裁剪操作完成')
+                setTimeout(resolve, 200) // 给裁剪操作更多时间
+              } catch (cropError) {
+                console.error('裁剪操作失败:', cropError)
+                reject(cropError)
+              }
+            }, 50)
+
+          } catch (error) {
+            reject(error)
+          }
+        })
+
+        this.isCropping = false
+        console.log('裁剪已成功应用')
+
       } catch (error) {
         console.error('应用裁剪失败:', error)
-        await this.safeCancelCrop()
+
+        // 尝试恢复状态
+        try {
+          await this.safeCancelCrop()
+        } catch (cancelError) {
+          console.error('取消裁剪也失败:', cancelError)
+        }
+
+        // 显示用户友好的错误信息
+        alert('裁剪操作失败，请重试。错误信息：' + error.message)
+
       } finally {
         this.enableMouseEvents()
       }
@@ -600,6 +1125,46 @@ export default {
     resetControls() {
       this.brightness = 0
       this.contrast = 0
+    },
+
+    setupGlobalErrorHandler() {
+      // 设置全局错误处理器来捕获TUI Image Editor的错误
+      this.originalErrorHandler = window.onerror
+      window.onerror = (message, source, lineno, colno, error) => {
+        // 使用专门的错误处理器检查和处理错误
+        if (tuiEditorErrorHandler.isTuiEditorError(message || error)) {
+          console.error('捕获到TUI Image Editor错误:', { message, source, lineno, colno, error })
+
+          // 使用错误处理器处理错误
+          const handled = tuiEditorErrorHandler.handleError(message || error, this.imageEditor, {
+            resetState: this.resetEditingState,
+            enableMouseEvents: this.enableMouseEvents,
+            validateEditorState: this.validateEditorState,
+            clearHangingReferences: this.clearHangingReferences
+          })
+
+          // 如果成功处理，阻止错误继续传播
+          if (handled) {
+            return true
+          }
+        }
+
+        // 对于其他错误，调用原始处理器
+        if (this.originalErrorHandler) {
+          return this.originalErrorHandler(message, source, lineno, colno, error)
+        }
+
+        return false
+      }
+    },
+
+    removeGlobalErrorHandler() {
+      // 恢复原始错误处理器
+      if (this.originalErrorHandler) {
+        window.onerror = this.originalErrorHandler
+      } else {
+        window.onerror = null
+      }
     }
   }
 }
