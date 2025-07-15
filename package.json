@@ -1,0 +1,53 @@
+{
+  "name": "photoEditorDemo",
+  "version": "1.0.0",
+  "description": "A comprehensive Vue.js image editor demo showcasing professional image editing components with multi-library adapter architecture",
+  "author": "LuoLeYan",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "image-editor",
+    "photo-editor",
+    "canvas",
+    "graphics",
+    "konva",
+    "fabric",
+    "tui-image-editor",
+    "cropper",
+    "filters"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LuoLeYan/photoEditorDemo.git"
+  },
+  "homepage": "https://luoleyan.github.io/photoEditorDemo",
+  "private": false,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "core-js": "^3.8.3",
+    "cropperjs": "^1.6.1",
+    "fabric": "^5.3.0",
+    "jimp": "^0.22.10",
+    "konva": "^9.2.0",
+    "tui-image-editor": "^3.15.3",
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.1",
+    "vuedraggable": "^2.24.3",
+    "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "vue-template-compiler": "^2.6.14"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
