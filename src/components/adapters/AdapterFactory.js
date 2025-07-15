@@ -1,3 +1,6 @@
+import { fabric } from 'fabric';
+import Konva from 'konva';
+
 /**
  * 适配器工厂类
  * 负责创建和管理不同类型的图像编辑适配器
@@ -6,6 +9,9 @@ class AdapterFactory {
   constructor() {
     this.adapterCache = new Map();
     this.loadedLibraries = new Set();
+
+    // 确保库在全局可用
+    this._setupGlobalLibraries();
   }
 
   /**
@@ -17,17 +23,33 @@ class AdapterFactory {
    */
   async createAdapter(type, container, options = {}) {
     const adapterType = type.toLowerCase();
-    
+
     // 检查是否需要加载库
     await this.ensureLibraryLoaded(adapterType);
-    
+
     // 创建适配器实例
     const adapter = await this._instantiateAdapter(adapterType);
-    
+
     // 初始化适配器
     await adapter.initialize(container, options);
-    
+
     return adapter;
+  }
+
+  /**
+   * 设置全局库引用
+   * @private
+   */
+  _setupGlobalLibraries() {
+    // 确保Fabric.js在全局可用
+    if (fabric && !window.fabric) {
+      window.fabric = fabric;
+    }
+
+    // 确保Konva在全局可用
+    if (Konva && !window.Konva) {
+      window.Konva = Konva;
+    }
   }
 
   /**
@@ -39,20 +61,22 @@ class AdapterFactory {
     if (this.loadedLibraries.has(adapterType)) {
       return;
     }
-    
+
     switch (adapterType) {
       case 'fabric':
         if (!window.fabric) {
+          // 如果npm包没有正确加载，回退到CDN
           await this._loadScript('https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js');
         }
         break;
-        
+
       case 'konva':
         if (!window.Konva) {
+          // 如果npm包没有正确加载，回退到CDN
           await this._loadScript('https://unpkg.com/konva@9.2.0/konva.min.js');
         }
         break;
-        
+
       case 'cropper':
         if (!window.Cropper) {
           await Promise.all([
@@ -61,7 +85,7 @@ class AdapterFactory {
           ]);
         }
         break;
-        
+
       case 'tui':
         if (!window.tui || !window.tui.ImageEditor) {
           await Promise.all([
@@ -70,17 +94,17 @@ class AdapterFactory {
           ]);
         }
         break;
-        
+
       case 'jimp':
         if (!window.Jimp) {
           await this._loadScript('https://cdn.jsdelivr.net/npm/jimp@0.22.10/browser/lib/jimp.min.js');
         }
         break;
-        
+
       default:
         throw new Error(`Unsupported adapter type: ${adapterType}`);
     }
-    
+
     this.loadedLibraries.add(adapterType);
   }
 

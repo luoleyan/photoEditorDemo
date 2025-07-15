@@ -1,6 +1,6 @@
 # PhotoEditor Demo
 
-A comprehensive Vue.js image editor demonstration showcasing professional image editing components with multi-library adapter architecture.
+A comprehensive Vue.js image editor demonstration showcasing professional image editing components with enterprise-grade multi-library adapter architecture, advanced performance optimization, mobile support, and intelligent error handling.
 
 ## 📚 文档导航
 
@@ -14,256 +14,671 @@ A comprehensive Vue.js image editor demonstration showcasing professional image 
 - **[部署指南](docs/deployment/README.md)** - 项目部署相关
 - **[故障排除](docs/troubleshooting/README.md)** - 问题解决方案
 
-## 🌟 Features
+## 🌟 核心特性
 
-### Core Architecture
-- **Multi-Library Adapter System**: Seamlessly integrates Konva.js, Fabric.js, and TUI Image Editor
-- **Unified API Layer**: Consistent interface across different rendering engines
-- **Performance Optimization**: Automatic library selection based on operation type
-- **Modular Design**: Pluggable components for maximum flexibility
+### 🏗️ 企业级架构
+- **多库适配器系统**: 无缝集成 Konva.js、Fabric.js 和 TUI Image Editor
+- **统一API层**: 跨不同渲染引擎的一致接口
+- **智能性能优化**: 基于操作类型的自动库选择和内存管理
+- **模块化设计**: 可插拔组件，最大化灵活性
+- **完整测试覆盖**: Jest测试框架，70%+代码覆盖率
 
-### High Priority Components
-- **ImagePreview**: Advanced image viewing with zoom, pan, thumbnail navigation, and comparison mode
-- **HistoryPanel**: Visual undo/redo system with operation thumbnails and search functionality
-- **FilterPanel**: Real-time filter preview with presets and custom combinations
+### 📱 移动端支持
+- **响应式设计**: 完美适配移动设备和平板
+- **触摸手势**: 原生触摸操作支持（缩放、平移、旋转）
+- **移动端工具栏**: 专为触摸优化的界面
+- **性能优化**: 移动设备专用的性能配置
+- **自适应布局**: 智能布局调整和组件重排
 
-### Medium Priority Components
-- **LayerPanel**: Complete layer management with drag-and-drop reordering, blend modes, and opacity control
-- **CropTool**: Flexible cropping with aspect ratio constraints, grid lines, and reference guides
-- **TextTool**: Rich text editing with fonts, styles, effects, and transformations
+### 🛡️ 智能错误处理
+- **统一错误管理**: 全局错误捕获和分类处理
+- **自动错误恢复**: 智能错误恢复策略和系统稳定性保障
+- **用户友好提示**: 技术错误转换为用户可理解的消息
+- **系统健康监控**: 实时系统状态监控和性能指标
+- **错误报告系统**: 完整的错误日志和分析功能
 
-### Low Priority Components
-- **ShapeTool**: Vector shape creation with properties, transformations, and grouping operations
-- **BrushTool**: Advanced painting system with multiple brush types, pressure sensitivity, and blend modes
-- **ExportPanel**: Multi-format export with quality settings, batch processing, and preview
+### ⚡ 性能优化
+- **内存管理**: 智能内存监控、清理和泄漏防护
+- **性能监控**: 实时性能指标监控和优化建议
+- **资源优化**: 图像压缩、缓存管理和懒加载
+- **渲染优化**: 高效的Canvas渲染和更新策略
+- **移动端优化**: 专门的移动设备性能配置
 
-## 🚀 Quick Start
+### 🎨 高级编辑功能
+- **ImagePreview**: 高级图像查看，支持缩放、平移、缩略图导航和对比模式
+- **HistoryPanel**: 可视化撤销/重做系统，操作缩略图和搜索功能
+- **FilterPanel**: 实时滤镜预览，预设和自定义组合
+- **LayerPanel**: 完整图层管理，拖拽重排、混合模式和透明度控制
+- **CropTool**: 灵活裁剪，宽高比约束、网格线和参考指南
+- **TextTool**: 富文本编辑，字体、样式、效果和变换
 
-### Prerequisites
-- Node.js 14+
-- npm or yarn
+## 🚀 快速开始
 
-### Installation
+### 📋 系统要求
+- **Node.js**: 14.x 或更高版本
+- **包管理器**: yarn (推荐) 或 npm
+- **浏览器**: Chrome 60+, Firefox 55+, Safari 12+, Edge 79+
+
+### 📦 安装步骤
+
 ```bash
-# Clone the repository
+# 1. 克隆仓库
 git clone https://github.com/LuoLeYan/photoEditorDemo.git
 cd photoEditorDemo
 
-# Install dependencies
+# 2. 安装依赖 (推荐使用 yarn)
+yarn install
+# 或使用 npm
 npm install
 
-# Start development server
+# 3. 启动开发服务器
+yarn serve
+# 或使用 npm
 npm run serve
+
+# 4. 访问应用
+# 打开浏览器访问 http://localhost:8080
 ```
 
-### Build for Production
+### 🏗️ 构建和部署
+
 ```bash
-npm run build
+# 生产环境构建
+yarn build
+
+# 运行测试
+yarn test:unit
+
+# 测试覆盖率报告
+yarn test:unit:coverage
+
+# 监视模式运行测试
+yarn test:unit:watch
 ```
 
-## 📖 Usage
+### 🧪 测试命令
 
-### Basic Setup
+```bash
+# 运行所有单元测试
+yarn test:unit
+
+# 生成覆盖率报告
+yarn test:unit:coverage
+
+# 监视模式（开发时使用）
+yarn test:unit:watch
+
+# CI环境测试
+yarn test:unit:ci
+```
+
+## 📖 使用指南
+
+### 🔧 基础配置
+
 ```javascript
-import { ImageAdapter } from '@/adapters/ImageAdapter'
-import ImagePreview from '@/components/ui/ImagePreview.vue'
+import { AdapterManager } from '@/utils/AdapterManager'
+import { BaseImageEditorAdapter } from '@/components/adapters/BaseImageEditorAdapter'
+import UnifiedEditorDemo from '@/views/UnifiedEditorDemo.vue'
 
-// Initialize adapter
-const adapter = new ImageAdapter('konva') // or 'fabric', 'tui'
+// 初始化适配器管理器
+const adapterManager = new AdapterManager({
+  enablePerformanceMonitoring: true,
+  enableErrorHandling: true,
+  mobileOptimization: true
+})
 
-// Use in component
+// 创建适配器实例
+const adapter = await adapterManager.getAdapter('fabric') // 或 'konva'
+
+// 在组件中使用
 export default {
-  components: { ImagePreview },
+  components: { UnifiedEditorDemo },
   data() {
     return {
-      imageAdapter: adapter,
+      currentAdapter: adapter,
       imageSrc: 'path/to/image.jpg'
     }
   }
 }
 ```
 
-### Component Examples
+### 🎨 组件示例
 
-#### Image Preview with Zoom and Pan
+#### 统一编辑器（推荐）
 ```vue
 <template>
-  <image-preview
-    :image-src="imageSrc"
-    :zoom-enabled="true"
-    :pan-enabled="true"
-    :show-thumbnail="true"
-    @zoom-change="handleZoomChange"
-    @pan-change="handlePanChange"
+  <unified-editor-demo
+    :initial-adapter="'fabric'"
+    :enable-mobile-support="true"
+    :enable-performance-monitoring="true"
+    @adapter-switched="handleAdapterSwitch"
+    @image-processed="handleImageProcessed"
   />
 </template>
 ```
 
-#### Layer Management
+#### 移动端工具栏
 ```vue
 <template>
-  <layer-panel
-    :layers="layers"
-    :selected-layer-ids="selectedLayers"
-    @layer-select="handleLayerSelect"
-    @layer-visibility-change="handleVisibilityChange"
-    @layers-reorder="handleReorder"
+  <mobile-toolbar
+    :current-adapter="currentAdapter"
+    :has-image="hasImage"
+    :is-mobile="isMobile"
+    @mobile-action="handleMobileAction"
+    @tool-select="handleToolSelect"
   />
 </template>
 ```
 
-#### Advanced Cropping
+#### 性能监控
 ```vue
 <template>
-  <crop-tool
-    :image-src="imageSrc"
-    :aspect-ratio="16/9"
-    :show-grid="true"
-    :show-guides="true"
-    @crop-change="handleCropChange"
-    @apply="handleCropApply"
+  <performance-monitor
+    :adapter="currentAdapter"
+    :show-details="showPerformanceDetails"
+    @memory-warning="handleMemoryWarning"
+    @performance-issue="handlePerformanceIssue"
   />
 </template>
 ```
 
-## 🏗️ Architecture
-
-### Adapter Pattern Implementation
-```
-┌─────────────────────────────────────────┐
-│              UI Components              │
-├─────────────────────────────────────────┤
-│            Unified API Layer            │
-├─────────────────────────────────────────┤
-│              Adapter System             │
-├─────────┬─────────────┬─────────────────┤
-│ Konva.js│  Fabric.js  │ TUI Image Editor│
-│ Adapter │   Adapter   │     Adapter     │
-└─────────┴─────────────┴─────────────────┘
+#### 错误处理通知
+```vue
+<template>
+  <error-notification
+    @error-action="handleErrorAction"
+    @info-message="handleInfoMessage"
+    @report-error="handleReportError"
+  />
+</template>
 ```
 
-### Component Hierarchy
-- **Core Components**: Essential editing functionality
-- **UI Components**: User interface elements
-- **Adapters**: Library-specific implementations
-- **Utils**: Helper functions and utilities
+#### 系统健康监控
+```vue
+<template>
+  <system-health-monitor
+    @health-updated="handleHealthUpdated"
+    @action-request="handleSystemAction"
+    @recommendation-executed="handleRecommendationExecuted"
+  />
+</template>
+```
 
-## 📱 Demo Pages
+## 🏗️ 系统架构
 
-Visit the following routes to explore different component categories:
+### 企业级适配器架构
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    UI Components Layer                     │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │
+│  │ Mobile UI   │ │ Desktop UI  │ │ Error Notifications │   │
+│  └─────────────┘ └─────────────┘ └─────────────────────┘   │
+├─────────────────────────────────────────────────────────────┤
+│                   Unified API Layer                        │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │
+│  │ State Mgmt  │ │ Event Bus   │ │ Performance Monitor │   │
+│  └─────────────┘ └─────────────┘ └─────────────────────┘   │
+├─────────────────────────────────────────────────────────────┤
+│                  Adapter System                            │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │
+│  │ Fabric.js   │ │ Konva.js    │ │ Error Recovery      │   │
+│  │ Adapter     │ │ Adapter     │ │ Manager             │   │
+│  └─────────────┘ └─────────────┘ └─────────────────────┘   │
+├─────────────────────────────────────────────────────────────┤
+│                   Utility Layer                            │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐   │
+│  │ Memory Mgmt │ │ Mobile      │ │ Performance         │   │
+│  │             │ │ Adapter     │ │ Optimizer           │   │
+│  └─────────────┘ └─────────────┘ └─────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
 
-- `/basic-components` - Basic UI components and adapters
-- `/advanced-components` - High-priority editing features
-- `/mid-priority-components` - Layer, crop, and text tools
-- `/low-priority-components` - Shape, brush, and export tools
+### 核心组件层次
+- **UI组件层**: 用户界面元素和交互组件
+- **统一API层**: 跨适配器的一致接口和状态管理
+- **适配器系统**: 库特定的实现和错误恢复
+- **工具层**: 性能优化、内存管理和移动端支持
 
-## 🛠️ Development
+## 📱 演示页面
 
-### Project Structure
+访问以下路由探索不同的组件功能：
+
+- `/unified-editor` - **统一编辑器** (推荐) - 完整的图像编辑体验
+- `/basic-components` - 基础UI组件和适配器
+- `/advanced-components` - 高级编辑功能
+- `/mid-priority-components` - 图层、裁剪和文本工具
+- `/low-priority-components` - 形状、画笔和导出工具
+
+## 🛠️ 开发指南
+
+### 📁 项目结构
 ```
 src/
-├── adapters/           # Library adapters
-│   ├── ImageAdapter.js
-│   ├── KonvaAdapter.js
-│   ├── FabricAdapter.js
-│   └── TUIAdapter.js
 ├── components/
-│   └── ui/            # UI components
-├── views/             # Demo pages
-├── utils/             # Utilities
-└── router/            # Vue Router config
+│   ├── adapters/           # 适配器实现
+│   │   ├── BaseImageEditorAdapter.js
+│   │   ├── FabricAdapter.js
+│   │   ├── KonvaAdapter.js
+│   │   └── AdapterFactory.js
+│   ├── state/              # 状态管理
+│   │   ├── StateManager.js
+│   │   └── HistoryManager.js
+│   └── ui/                 # UI组件
+│       ├── ErrorNotification.vue
+│       ├── MobileToolbar.vue
+│       ├── PerformanceMonitor.vue
+│       └── SystemHealthMonitor.vue
+├── utils/                  # 工具类
+│   ├── ErrorHandler.js
+│   ├── ErrorRecoveryManager.js
+│   ├── MemoryManager.js
+│   ├── MobileAdapter.js
+│   └── PerformanceOptimizer.js
+├── styles/                 # 样式文件
+│   └── mobile.css
+├── views/                  # 页面组件
+│   └── UnifiedEditorDemo.vue
+└── tests/                  # 测试文件
+    ├── unit/
+    └── setup.js
 ```
 
-### Adding New Components
-1. Create component in `src/components/ui/`
-2. Follow Vue 2 syntax and naming conventions
-3. Implement adapter integration
-4. Add to appropriate demo page
-5. Update documentation
+### 🔧 技术栈
 
-### Adapter Integration
-```javascript
-// Example adapter method
-async processImage(operation, params) {
-  switch(this.library) {
-    case 'konva':
-      return this.konvaAdapter.process(operation, params)
-    case 'fabric':
-      return this.fabricAdapter.process(operation, params)
-    case 'tui':
-      return this.tuiAdapter.process(operation, params)
-  }
-}
-```
+#### 核心框架
+- **Vue.js 2.6.14** - 渐进式JavaScript框架
+- **Vue Router 3.5.1** - 官方路由管理器
+- **Vuex 3.6.2** - 状态管理模式
 
-## 🎨 Customization
+#### 图像处理库
+- **Fabric.js 5.3.0** - 交互式Canvas库
+- **Konva.js 9.2.0** - 2D Canvas库
+- **Jimp 0.22.10** - 纯JavaScript图像处理
+- **CropperJS 1.6.1** - 图像裁剪库
 
-### Themes
-Components support multiple themes:
-- `default`: Standard appearance
-- `minimal`: Clean, minimal design
-- `compact`: Space-efficient layout
+#### 测试框架
+- **Jest 27.5.1** - JavaScript测试框架
+- **@vue/test-utils 1.3.6** - Vue组件测试工具
+- **Jest Environment JSDOM 27.5.1** - DOM测试环境
 
-### Styling
+#### 开发工具
+- **Vue CLI 5.0** - Vue.js开发工具链
+- **Babel** - JavaScript编译器
+- **Webpack** - 模块打包器
+
+### 🚀 添加新组件
+
+1. **创建组件文件**
+   ```bash
+   # 在 src/components/ui/ 目录下创建新组件
+   touch src/components/ui/NewComponent.vue
+   ```
+
+2. **遵循Vue 2语法和命名规范**
+   ```vue
+   <template>
+     <div class="new-component">
+       <!-- 组件内容 -->
+     </div>
+   </template>
+
+   <script>
+   export default {
+     name: 'NewComponent',
+     props: {
+       // 定义属性
+     },
+     data() {
+       return {
+         // 组件数据
+       }
+     },
+     methods: {
+       // 组件方法
+     }
+   }
+   </script>
+   ```
+
+3. **实现适配器集成**
+   ```javascript
+   // 在组件中使用适配器
+   methods: {
+     async processWithAdapter(operation, params) {
+       if (!this.currentAdapter) return;
+
+       try {
+         const result = await this.currentAdapter[operation](params);
+         return result;
+       } catch (error) {
+         this.$emit('error', error);
+       }
+     }
+   }
+   ```
+
+4. **添加到演示页面**
+   ```javascript
+   // 在相应的演示页面中导入和使用
+   import NewComponent from '@/components/ui/NewComponent.vue'
+
+   export default {
+     components: {
+       NewComponent
+     }
+   }
+   ```
+
+5. **编写测试**
+   ```javascript
+   // 在 tests/unit/ 目录下创建测试文件
+   import { mount } from '@vue/test-utils'
+   import NewComponent from '@/components/ui/NewComponent.vue'
+
+   describe('NewComponent', () => {
+     test('应该正确渲染', () => {
+       const wrapper = mount(NewComponent)
+       expect(wrapper.exists()).toBe(true)
+     })
+   })
+   ```
+
+6. **更新文档**
+   - 更新README.md
+   - 添加组件API文档
+   - 更新使用示例
+
+## 🎨 自定义配置
+
+### 🎭 主题系统
+组件支持多种主题配置：
+- `default`: 标准外观
+- `minimal`: 简洁设计
+- `compact`: 紧凑布局
+- `mobile`: 移动端优化
+
+### 🎨 样式定制
 ```vue
 <template>
-  <image-preview
+  <unified-editor-demo
     variant="minimal"
     :theme="currentTheme"
     :custom-styles="customStyles"
+    :mobile-optimized="true"
   />
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      currentTheme: 'default',
+      customStyles: {
+        primaryColor: '#007bff',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px'
+      }
+    }
+  }
+}
+</script>
 ```
 
-## 📋 API Reference
+### 📱 移动端配置
+```javascript
+// 移动端特定配置
+const mobileConfig = {
+  touchSensitivity: 1.2,
+  gestureThreshold: 10,
+  compressionQuality: 0.8,
+  maxImageSize: 2048,
+  enableHapticFeedback: true
+}
+```
 
-### ImageAdapter
-- `setLibrary(library)`: Switch rendering library
-- `loadImage(src)`: Load image for editing
-- `applyFilter(filter, params)`: Apply image filter
-- `exportImage(format, quality)`: Export processed image
+## 📋 API参考
 
-### Component Props
-Each component accepts:
-- `variant`: Visual style variant
-- `disabled`: Disable component
-- `theme`: Color theme
-- `customStyles`: Custom CSS properties
+### 🔧 BaseImageEditorAdapter
+核心适配器基类，提供统一的图像编辑接口：
 
-## 🤝 Contributing
+```javascript
+// 基础操作
+await adapter.initialize(container)
+await adapter.loadImage(imageSource)
+await adapter.destroy()
 
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+// 图像操作
+await adapter.resize(width, height)
+await adapter.crop(x, y, width, height)
+await adapter.rotate(angle)
+await adapter.flip(direction)
 
-## 📄 License
+// 滤镜和调整
+await adapter.applyFilter(filterType, params)
+await adapter.adjustBrightness(value)
+await adapter.adjustContrast(value)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+// 状态管理
+const state = await adapter.getState()
+await adapter.setState(state)
+await adapter.reset()
 
-## 👨‍💻 Author
+// 导出
+const imageData = await adapter.exportImage(format, quality)
+```
+
+### 🛠️ 工具类API
+
+#### ErrorHandler
+```javascript
+import { errorHandler } from '@/utils/ErrorHandler.js'
+
+// 注册错误处理
+errorHandler.onError('adapter', (errorInfo, recoveryResult) => {
+  console.log('适配器错误:', errorInfo)
+})
+
+// 手动处理错误
+errorHandler.handleError(error, context, category, severity)
+```
+
+#### MemoryManager
+```javascript
+import { memoryManager } from '@/utils/MemoryManager.js'
+
+// 获取内存使用情况
+const usage = memoryManager.getMemoryUsage()
+
+// 执行内存清理
+memoryManager.forceCleanup()
+
+// 监听内存警告
+memoryManager.addCleanupCallback(() => {
+  console.log('内存清理完成')
+})
+```
+
+#### MobileAdapter
+```javascript
+import { mobileAdapter } from '@/utils/MobileAdapter.js'
+
+// 检测移动设备
+const isMobile = mobileAdapter.isMobileDevice()
+
+// 初始化移动端支持
+mobileAdapter.initializeMobileSupport(container)
+
+// 处理触摸事件
+mobileAdapter.handleTouchGesture(gestureType, params)
+```
+
+### 🎛️ 组件属性
+
+#### 通用属性
+所有组件都支持以下属性：
+- `variant`: 视觉样式变体 (`default` | `minimal` | `compact`)
+- `disabled`: 禁用组件 (Boolean)
+- `theme`: 颜色主题 (String)
+- `customStyles`: 自定义CSS属性 (Object)
+- `mobileOptimized`: 移动端优化 (Boolean)
+
+#### UnifiedEditorDemo 特有属性
+- `initialAdapter`: 初始适配器类型 (`'fabric'` | `'konva'`)
+- `enablePerformanceMonitoring`: 启用性能监控 (Boolean)
+- `enableErrorHandling`: 启用错误处理 (Boolean)
+- `mobileConfig`: 移动端配置对象 (Object)
+
+## 🧪 测试
+
+### 🔬 测试覆盖率
+项目包含完整的测试套件，覆盖率目标为70%+：
+
+```bash
+# 运行所有测试
+yarn test:unit
+
+# 查看覆盖率报告
+yarn test:unit:coverage
+open coverage/lcov-report/index.html
+```
+
+### 📊 测试结构
+```
+tests/
+├── unit/
+│   ├── adapters/           # 适配器测试
+│   │   ├── BaseImageEditorAdapter.test.js
+│   │   ├── FabricAdapter.test.js
+│   │   └── AdapterManager.test.js
+│   ├── state/              # 状态管理测试
+│   │   └── StateManager.test.js
+│   └── example.test.js     # 示例测试
+├── setup.js                # 测试环境配置
+└── README.md              # 测试文档
+```
+
+## 🤝 贡献指南
+
+### 🚀 参与贡献
+
+1. **Fork 仓库**
+   ```bash
+   # 在GitHub上Fork项目
+   # 然后克隆你的Fork
+   git clone https://github.com/YOUR_USERNAME/photoEditorDemo.git
+   ```
+
+2. **创建功能分支**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+
+3. **开发和测试**
+   ```bash
+   # 安装依赖
+   yarn install
+
+   # 运行开发服务器
+   yarn serve
+
+   # 运行测试
+   yarn test:unit
+   ```
+
+4. **提交更改**
+   ```bash
+   git add .
+   git commit -m 'feat: add amazing feature'
+   ```
+
+5. **推送分支**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+
+6. **创建Pull Request**
+   - 在GitHub上创建PR
+   - 描述你的更改
+   - 等待代码审查
+
+### 📝 提交规范
+使用[Conventional Commits](https://conventionalcommits.org/)规范：
+
+- `feat:` 新功能
+- `fix:` 错误修复
+- `docs:` 文档更新
+- `style:` 代码格式化
+- `refactor:` 代码重构
+- `test:` 测试相关
+- `chore:` 构建过程或辅助工具的变动
+
+## 📄 许可证
+
+本项目基于 MIT 许可证开源 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 👨‍💻 作者
 
 **LuoLeYan**
 - GitHub: [@LuoLeYan](https://github.com/LuoLeYan)
+- 项目主页: [photoEditorDemo](https://github.com/LuoLeYan/photoEditorDemo)
 
-## 🙏 Acknowledgments
+## 🙏 致谢
 
-- [Konva.js](https://konvajs.org/) - 2D canvas library
-- [Fabric.js](http://fabricjs.com/) - Interactive canvas library
-- [TUI Image Editor](https://ui.toast.com/tui-image-editor) - Full-featured image editor
-- [Vue.js](https://vuejs.org/) - Progressive JavaScript framework
+### 核心依赖
+- **[Vue.js](https://vuejs.org/)** - 渐进式JavaScript框架
+- **[Fabric.js](http://fabricjs.com/)** - 交互式Canvas库
+- **[Konva.js](https://konvajs.org/)** - 2D Canvas库
+- **[Jimp](https://github.com/oliver-moran/jimp)** - 纯JavaScript图像处理
 
-## 📊 Browser Support
+### 测试和工具
+- **[Jest](https://jestjs.io/)** - JavaScript测试框架
+- **[Vue Test Utils](https://vue-test-utils.vuejs.org/)** - Vue组件测试工具
+- **[Vue CLI](https://cli.vuejs.org/)** - Vue.js开发工具链
 
-- Chrome 60+
-- Firefox 55+
-- Safari 12+
-- Edge 79+
+## 📊 浏览器支持
 
-## 🔧 Configuration
+| 浏览器 | 版本 | 状态 |
+|--------|------|------|
+| Chrome | 60+ | ✅ 完全支持 |
+| Firefox | 55+ | ✅ 完全支持 |
+| Safari | 12+ | ✅ 完全支持 |
+| Edge | 79+ | ✅ 完全支持 |
+| Mobile Safari | iOS 12+ | ✅ 移动端优化 |
+| Chrome Mobile | Android 7+ | ✅ 移动端优化 |
 
-See [Vue CLI Configuration Reference](https://cli.vuejs.org/config/) for build customization.
+## ⚙️ 配置
+
+### 🔧 Vue CLI配置
+查看 [Vue CLI配置参考](https://cli.vuejs.org/config/) 了解构建自定义选项。
+
+### 📱 移动端配置
+```javascript
+// vue.config.js
+module.exports = {
+  css: {
+    loaderOptions: {
+      sass: {
+        additionalData: `@import "@/styles/mobile.css";`
+      }
+    }
+  },
+  configureWebpack: {
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all'
+          }
+        }
+      }
+    }
+  }
+}
+```
 
 ---
 

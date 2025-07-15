@@ -1,4 +1,6 @@
 import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
+import PerformanceOptimizer from '@/utils/PerformanceOptimizer.js';
+import { memoryManager } from '@/utils/MemoryManager.js';
 
 /**
  * Konva.js适配器实现
@@ -18,6 +20,14 @@ class KonvaAdapter extends BaseImageEditorAdapter {
       lastRenderTime: Date.now(),
       operationCount: 0
     };
+
+    // 性能优化器
+    this.performanceOptimizer = new PerformanceOptimizer();
+
+    // 注册内存清理回调
+    memoryManager.addCleanupCallback(() => {
+      this._performMemoryCleanup();
+    });
   }
 
   /**
@@ -262,11 +272,16 @@ class KonvaAdapter extends BaseImageEditorAdapter {
       throw new Error('No image loaded');
     }
 
-    // Konva.js的亮度滤镜
-    this.currentImage.filters([window.Konva.Filters.Brighten]);
-    this.currentImage.brightness(value);
-    this.currentImage.cache();
+    // 移除现有滤镜
+    this.currentImage.filters([]);
 
+    // 添加亮度滤镜
+    if (value !== 0) {
+      this.currentImage.filters([window.Konva.Filters.Brighten]);
+      this.currentImage.brightness(value);
+    }
+
+    this.currentImage.cache();
     this.layer.draw();
     this._updatePerformanceMetrics();
   }
@@ -282,11 +297,16 @@ class KonvaAdapter extends BaseImageEditorAdapter {
       throw new Error('No image loaded');
     }
 
-    // Konva.js的对比度滤镜
-    this.currentImage.filters([window.Konva.Filters.Contrast]);
-    this.currentImage.contrast(value * 100); // Konva使用-100到100的范围
-    this.currentImage.cache();
+    // 移除现有滤镜
+    this.currentImage.filters([]);
 
+    // 添加对比度滤镜
+    if (value !== 0) {
+      this.currentImage.filters([window.Konva.Filters.Contrast]);
+      this.currentImage.contrast(value * 100); // Konva使用-100到100的范围
+    }
+
+    this.currentImage.cache();
     this.layer.draw();
     this._updatePerformanceMetrics();
   }
@@ -533,6 +553,38 @@ class KonvaAdapter extends BaseImageEditorAdapter {
     this.performanceMetrics.renderTime = now - this.performanceMetrics.lastRenderTime;
     this.performanceMetrics.lastRenderTime = now;
     this.performanceMetrics.operationCount++;
+  }
+
+  /**
+   * 执行内存清理
+   * @private
+   */
+  _performMemoryCleanup() {
+    try {
+      // 清理性能优化器缓存
+      if (this.performanceOptimizer) {
+        this.performanceOptimizer.cleanupMemory();
+      }
+
+      // 清理图像缓存
+      if (this.currentImage) {
+        this.currentImage.clearCache();
+      }
+
+      // 清理图层
+      if (this.layer) {
+        this.layer.clearCache();
+      }
+
+      // 清理舞台
+      if (this.stage) {
+        this.stage.clearCache();
+      }
+
+      console.log('KonvaAdapter 内存清理完成');
+    } catch (error) {
+      console.error('KonvaAdapter 内存清理失败:', error);
+    }
   }
 }
 

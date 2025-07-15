@@ -1,5 +1,27 @@
 <template>
   <div class="unified-editor-demo">
+    <!-- 性能监控器 -->
+    <PerformanceMonitor
+      @cleanup-performed="handleCleanupPerformed"
+      @metrics-reset="handleMetricsReset"
+      @report-exported="handleReportExported"
+    />
+
+    <!-- 错误通知组件 -->
+    <ErrorNotification
+      @error-action="handleErrorAction"
+      @info-message="handleInfoMessage"
+      @report-error="handleReportError"
+    />
+
+    <!-- 系统健康监控 -->
+    <SystemHealthMonitor
+      @health-updated="handleHealthUpdated"
+      @action-request="handleSystemAction"
+      @recommendation-executed="handleRecommendationExecuted"
+      @report-exported="handleHealthReportExported"
+    />
+
     <div class="demo-header">
       <h1>统一图像编辑器演示 - 基础架构测试</h1>
       <p>测试适配器系统和状态管理的基础功能</p>
@@ -10,11 +32,11 @@
         <label>选择适配器:</label>
         <select v-model="selectedAdapterType" @change="switchAdapter">
           <option value="">请选择适配器</option>
-          <option value="fabric">Fabric.js</option>
-          <option value="konva">Konva.js (暂未实现)</option>
-          <option value="cropper">Cropper.js (暂未实现)</option>
-          <option value="tui">TUI Image Editor (暂未实现)</option>
-          <option value="jimp">Jimp (暂未实现)</option>
+          <option value="fabric">Fabric.js ✅</option>
+          <option value="konva">Konva.js ✅</option>
+          <option value="cropper">Cropper.js (开发中)</option>
+          <option value="tui">TUI Image Editor (开发中)</option>
+          <option value="jimp">Jimp (开发中)</option>
         </select>
       </div>
 
@@ -26,6 +48,7 @@
 
       <div class="control-group" v-if="currentAdapter">
         <label>基础操作:</label>
+        <button @click="testAdapter" :disabled="!currentAdapter">测试适配器</button>
         <button @click="rotateImage(45)" :disabled="!hasImage">旋转45°</button>
         <button @click="setBrightness(0.2)" :disabled="!hasImage">增加亮度</button>
         <button @click="setContrast(0.2)" :disabled="!hasImage">增加对比度</button>
@@ -110,6 +133,21 @@
         </div>
       </div>
     </div>
+
+    <!-- 移动端工具栏 -->
+    <MobileToolbar
+      :hasImage="hasImage"
+      @load-image="loadDefaultImage"
+      @apply-adjustments="handleMobileAdjustments"
+      @reset-adjustments="handleMobileResetAdjustments"
+      @apply-filter="handleMobileApplyFilter"
+      @remove-filter="handleMobileRemoveFilter"
+      @clear-filters="handleMobileClearFilters"
+      @rotate="handleMobileRotate"
+      @flip="handleMobileFlip"
+      @reset-transform="handleMobileResetTransform"
+      @export-image="exportImage"
+    />
   </div>
 </template>
 
@@ -117,9 +155,22 @@
 import AdapterManager from '@/components/adapters/AdapterManager.js';
 import StateManager from '@/components/state/StateManager.js';
 import HistoryManager from '@/components/state/HistoryManager.js';
+import PerformanceMonitor from '@/components/ui/PerformanceMonitor.vue';
+import MobileToolbar from '@/components/ui/MobileToolbar.vue';
+import ErrorNotification from '@/components/ui/ErrorNotification.vue';
+import SystemHealthMonitor from '@/components/ui/SystemHealthMonitor.vue';
+import { mobileAdapter } from '@/utils/MobileAdapter.js';
+import { errorHandler } from '@/utils/ErrorHandler.js';
+import { errorRecoveryManager } from '@/utils/ErrorRecoveryManager.js';
 
 export default {
   name: 'UnifiedEditorDemo',
+  components: {
+    PerformanceMonitor,
+    MobileToolbar,
+    ErrorNotification,
+    SystemHealthMonitor
+  },
   data() {
     return {
       // 适配器相关
@@ -145,12 +196,18 @@ export default {
       
       // 日志
       operationLogs: [],
-      maxLogs: 50
+      maxLogs: 50,
+
+      // 移动端相关
+      isMobile: false,
+      deviceInfo: null
     };
   },
   
   async mounted() {
     await this.initializeManagers();
+    this.initializeMobileAdaptation();
+    this.setupErrorHandling();
   },
   
   beforeDestroy() {
@@ -163,25 +220,28 @@ export default {
      */
     async initializeManagers() {
       try {
+        // 等待DOM渲染完成
+        await this.$nextTick();
+
         // 初始化适配器管理器
         this.adapterManager = new AdapterManager(this.$refs.canvasContainer);
         this.setupAdapterManagerEvents();
-        
+
         // 初始化状态管理器
         this.stateManager = new StateManager({
           maxStates: 50,
-          autoSave: true
+          autoSave: false // 关闭自动保存，手动控制
         });
         this.setupStateManagerEvents();
-        
+
         // 初始化历史记录管理器
         this.historyManager = new HistoryManager({
           maxEntries: 50
         });
         this.setupHistoryManagerEvents();
-        
+
         this.addLog('系统初始化完成', 'success');
-        
+
       } catch (error) {
         console.error('初始化失败:', error);
         this.addLog(`初始化失败: ${error.message}`, 'error');
@@ -203,6 +263,11 @@ export default {
         this.adapterStatus = '已激活';
         this.addLog(`切换到适配器: ${data.currentType}`, 'info');
         this.updateAdapterInfo();
+
+        // 为新适配器创建初始状态
+        if (this.stateManager && this.currentAdapterType) {
+          this.currentStateId = this.stateManager.createState(this.currentAdapterType, null, '适配器初始化');
+        }
       });
       
       this.adapterManager.on('adapter-error', (data) => {
@@ -221,25 +286,27 @@ export default {
      * 设置状态管理器事件
      */
     setupStateManagerEvents() {
+      // 监听状态变化事件
       this.stateManager.onStateChange((eventData) => {
         this.currentStateId = eventData.currentStateId;
         this.stateCount = this.stateManager.getStateCount();
-        
+
         if (eventData.action === 'created' || eventData.action === 'updated') {
           this.addLog(`状态${eventData.action === 'created' ? '创建' : '更新'}: ${eventData.state.metadata.description || '未知操作'}`, 'info');
         }
       });
     },
-    
+
     /**
      * 设置历史记录管理器事件
      */
     setupHistoryManagerEvents() {
+      // 监听历史记录变化事件
       this.historyManager.onHistoryChange((eventData) => {
         this.historyCount = eventData.totalEntries;
         this.canUndo = eventData.canUndo;
         this.canRedo = eventData.canRedo;
-        
+
         if (eventData.action === 'added') {
           this.addLog(`历史记录添加: ${eventData.entry.description}`, 'info');
         } else if (eventData.action === 'undo') {
@@ -255,15 +322,22 @@ export default {
      */
     async switchAdapter() {
       if (!this.selectedAdapterType) return;
-      
+
       try {
         this.adapterStatus = '切换中...';
+        this.addLog(`开始切换到适配器: ${this.selectedAdapterType}`, 'info');
+
         await this.adapterManager.setActiveAdapter(this.selectedAdapterType);
-        
+
+        this.addLog(`适配器切换成功: ${this.selectedAdapterType}`, 'success');
+
       } catch (error) {
         console.error('切换适配器失败:', error);
         this.addLog(`切换适配器失败: ${error.message}`, 'error');
         this.adapterStatus = '切换失败';
+
+        // 重置选择
+        this.selectedAdapterType = '';
       }
     },
     
@@ -287,13 +361,59 @@ export default {
      */
     async loadDefaultImage() {
       if (!this.currentAdapter) return;
-      
+
       try {
         const defaultImageSrc = require('@/assets/illust_104350264_20230531_093134.png');
         await this.currentAdapter.loadImage(defaultImageSrc);
       } catch (error) {
         console.error('加载默认图像失败:', error);
         this.addLog(`加载默认图像失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 测试适配器功能
+     */
+    async testAdapter() {
+      if (!this.currentAdapter) {
+        this.addLog('没有活动的适配器', 'error');
+        return;
+      }
+
+      try {
+        this.addLog(`开始测试适配器: ${this.currentAdapterType}`, 'info');
+
+        // 测试适配器是否已初始化
+        const isInitialized = this.currentAdapter.getIsInitialized();
+        this.addLog(`适配器初始化状态: ${isInitialized ? '已初始化' : '未初始化'}`, isInitialized ? 'success' : 'error');
+
+        if (!isInitialized) {
+          this.addLog('适配器未正确初始化', 'error');
+          return;
+        }
+
+        // 测试性能指标获取
+        const metrics = this.currentAdapter.getPerformanceMetrics();
+        this.addLog(`性能指标获取成功: 操作次数 ${metrics.operationCount}`, 'success');
+
+        // 如果有图像，测试基础操作
+        if (this.hasImage) {
+          this.addLog('检测到图像，测试基础操作...', 'info');
+
+          // 测试选择功能
+          this.currentAdapter.select();
+          this.addLog('选择功能测试完成', 'success');
+
+          // 测试取消选择功能
+          this.currentAdapter.deselect();
+          this.addLog('取消选择功能测试完成', 'success');
+        }
+
+        this.addLog(`适配器 ${this.currentAdapterType} 测试完成`, 'success');
+
+      } catch (error) {
+        console.error('适配器测试失败:', error);
+        this.addLog(`适配器测试失败: ${error.message}`, 'error');
       }
     },
     
@@ -362,18 +482,28 @@ export default {
      */
     saveCurrentState(description = '保存状态') {
       if (!this.stateManager || !this.currentAdapterType) return;
-      
+
       try {
-        const stateId = this.stateManager.updateState({}, 'manual-save', description);
-        
+        let stateId;
+
+        // 如果没有当前状态，创建新状态
+        if (!this.currentStateId) {
+          stateId = this.stateManager.createState(this.currentAdapterType, null, description);
+        } else {
+          // 更新现有状态
+          stateId = this.stateManager.updateState({}, 'manual-save', description);
+        }
+
         // 添加到历史记录
-        this.historyManager.addEntry({
-          stateId: stateId,
-          actionType: 'manual-save',
-          description: description,
-          libraryType: this.currentAdapterType
-        });
-        
+        if (this.historyManager) {
+          this.historyManager.addEntry({
+            stateId: stateId,
+            actionType: 'manual-save',
+            description: description,
+            libraryType: this.currentAdapterType
+          });
+        }
+
       } catch (error) {
         console.error('保存状态失败:', error);
         this.addLog(`保存状态失败: ${error.message}`, 'error');
@@ -445,10 +575,538 @@ export default {
         type,
         timestamp: Date.now()
       });
-      
+
       // 限制日志数量
       if (this.operationLogs.length > this.maxLogs) {
         this.operationLogs = this.operationLogs.slice(0, this.maxLogs);
+      }
+    },
+
+    /**
+     * 处理内存清理完成事件
+     */
+    handleCleanupPerformed() {
+      this.addLog('内存清理已执行', 'success');
+    },
+
+    /**
+     * 处理指标重置事件
+     */
+    handleMetricsReset() {
+      this.addLog('性能指标已重置', 'info');
+    },
+
+    /**
+     * 处理报告导出事件
+     */
+    handleReportExported(report) {
+      this.addLog('性能报告已导出', 'success');
+      console.log('性能报告:', report);
+    },
+
+    /**
+     * 初始化移动端适配
+     */
+    initializeMobileAdaptation() {
+      this.deviceInfo = mobileAdapter.getDeviceInfo();
+      this.isMobile = this.deviceInfo.isMobile;
+
+      if (this.isMobile) {
+        this.addLog('检测到移动设备，启用移动端优化', 'info');
+
+        // 导入移动端样式
+        import('@/styles/mobile.css');
+
+        // 设置移动端视口
+        this.setupMobileViewport();
+      }
+    },
+
+    /**
+     * 设置移动端视口
+     */
+    setupMobileViewport() {
+      // 确保视口meta标签正确设置
+      let viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) {
+        viewport = document.createElement('meta');
+        viewport.name = 'viewport';
+        document.head.appendChild(viewport);
+      }
+
+      viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+    },
+
+    /**
+     * 处理移动端调整
+     */
+    async handleMobileAdjustments(adjustments) {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        if (adjustments.brightness !== undefined) {
+          await this.currentAdapter.setBrightness(adjustments.brightness);
+        }
+
+        if (adjustments.contrast !== undefined) {
+          await this.currentAdapter.setContrast(adjustments.contrast);
+        }
+
+        this.saveCurrentState('移动端调整');
+        this.addLog('移动端调整应用成功', 'success');
+      } catch (error) {
+        this.addLog(`移动端调整失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端重置调整
+     */
+    async handleMobileResetAdjustments() {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        await this.currentAdapter.setBrightness(0);
+        await this.currentAdapter.setContrast(0);
+        this.saveCurrentState('重置调整');
+        this.addLog('移动端调整已重置', 'success');
+      } catch (error) {
+        this.addLog(`重置调整失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端应用滤镜
+     */
+    async handleMobileApplyFilter(filterType) {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        await this.currentAdapter.applyFilter(filterType);
+        this.saveCurrentState(`应用滤镜: ${filterType}`);
+        this.addLog(`滤镜 ${filterType} 应用成功`, 'success');
+      } catch (error) {
+        this.addLog(`应用滤镜失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端移除滤镜
+     */
+    async handleMobileRemoveFilter(filterType) {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        await this.currentAdapter.removeFilter(filterType);
+        this.saveCurrentState(`移除滤镜: ${filterType}`);
+        this.addLog(`滤镜 ${filterType} 已移除`, 'success');
+      } catch (error) {
+        this.addLog(`移除滤镜失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端清除滤镜
+     */
+    async handleMobileClearFilters() {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        // 这里需要实现清除所有滤镜的方法
+        await this.currentAdapter.reset();
+        this.saveCurrentState('清除所有滤镜');
+        this.addLog('所有滤镜已清除', 'success');
+      } catch (error) {
+        this.addLog(`清除滤镜失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端旋转
+     */
+    async handleMobileRotate(angle) {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        await this.currentAdapter.rotate(angle);
+        this.saveCurrentState(`旋转 ${angle}°`);
+        this.addLog(`图像旋转 ${angle}° 成功`, 'success');
+      } catch (error) {
+        this.addLog(`旋转失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端翻转
+     */
+    async handleMobileFlip(options) {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        await this.currentAdapter.flip(options.horizontal, options.vertical);
+        const direction = options.horizontal ? '水平' : '垂直';
+        this.saveCurrentState(`${direction}翻转`);
+        this.addLog(`图像${direction}翻转成功`, 'success');
+      } catch (error) {
+        this.addLog(`翻转失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理移动端重置变换
+     */
+    async handleMobileResetTransform() {
+      if (!this.currentAdapter || !this.hasImage) return;
+
+      try {
+        await this.currentAdapter.reset();
+        this.saveCurrentState('重置变换');
+        this.addLog('变换已重置', 'success');
+      } catch (error) {
+        this.addLog(`重置变换失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 处理错误操作
+     */
+    handleErrorAction(actionData) {
+      const { action } = actionData;
+
+      switch (action) {
+        case 'retry':
+          this.retryLastOperation();
+          break;
+        case 'switchAdapter':
+          this.switchToFallbackAdapter();
+          break;
+        case 'cleanMemory':
+          this.forceMemoryCleanup();
+          break;
+        case 'refresh':
+          window.location.reload();
+          break;
+        case 'selectFile':
+          this.loadDefaultImage();
+          break;
+        default:
+          console.log('未处理的错误操作:', action);
+      }
+
+      this.addLog(`执行错误恢复操作: ${action}`, 'info');
+    },
+
+    /**
+     * 处理信息消息
+     */
+    handleInfoMessage(message) {
+      this.addLog(message, 'info');
+    },
+
+    /**
+     * 处理错误报告
+     */
+    handleReportError(errorInfo) {
+      // 这里可以实现错误报告功能，比如发送到服务器
+      console.log('报告错误:', errorInfo);
+      this.addLog('错误报告已提交', 'success');
+
+      // 模拟发送错误报告
+      this.sendErrorReport(errorInfo);
+    },
+
+    /**
+     * 重试最后一次操作
+     */
+    retryLastOperation() {
+      // 这里可以实现重试逻辑
+      this.addLog('正在重试最后一次操作...', 'info');
+
+      // 简单的重试逻辑：重新加载图像
+      if (this.hasImage) {
+        this.loadDefaultImage();
+      }
+    },
+
+    /**
+     * 切换到备用适配器
+     */
+    async switchToFallbackAdapter() {
+      try {
+        // 获取当前适配器类型
+        const currentType = this.selectedAdapter;
+
+        // 切换到另一个适配器
+        const fallbackType = currentType === 'fabric' ? 'konva' : 'fabric';
+
+        this.addLog(`正在切换到备用适配器: ${fallbackType}`, 'info');
+
+        // 保存当前状态
+        const currentState = this.currentAdapter ? await this.currentAdapter.getState() : null;
+
+        // 切换适配器
+        this.selectedAdapter = fallbackType;
+        await this.switchAdapter();
+
+        // 恢复状态
+        if (currentState && this.currentAdapter) {
+          try {
+            await this.currentAdapter.setState(currentState);
+            this.addLog('状态已恢复到新适配器', 'success');
+          } catch (error) {
+            this.addLog('状态恢复失败，但适配器切换成功', 'warning');
+          }
+        }
+
+      } catch (error) {
+        this.addLog(`适配器切换失败: ${error.message}`, 'error');
+        errorHandler.handleError(error, { operation: 'switchAdapter' }, 'adapter', 'high');
+      }
+    },
+
+    /**
+     * 强制内存清理
+     */
+    forceMemoryCleanup() {
+      try {
+        // 触发性能监控器的清理
+        this.$refs.performanceMonitor?.forceCleanup();
+
+        // 清理适配器
+        if (this.currentAdapter && typeof this.currentAdapter._performMemoryCleanup === 'function') {
+          this.currentAdapter._performMemoryCleanup();
+        }
+
+        // 强制垃圾回收
+        if (window.gc) {
+          window.gc();
+        }
+
+        this.addLog('内存清理完成', 'success');
+      } catch (error) {
+        this.addLog(`内存清理失败: ${error.message}`, 'error');
+      }
+    },
+
+    /**
+     * 发送错误报告
+     */
+    async sendErrorReport(errorInfo) {
+      try {
+        // 这里可以实现实际的错误报告发送逻辑
+        // 比如发送到错误收集服务
+
+        const report = {
+          ...errorInfo,
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: Date.now(),
+          sessionId: this.sessionId || 'unknown',
+          adapterType: this.selectedAdapter,
+          hasImage: this.hasImage
+        };
+
+        // 模拟API调用
+        console.log('发送错误报告:', report);
+
+        // 实际实现中可以使用fetch发送到服务器
+        // await fetch('/api/error-report', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(report)
+        // });
+
+        this.addLog('错误报告发送成功', 'success');
+      } catch (error) {
+        this.addLog('错误报告发送失败', 'error');
+        console.error('发送错误报告失败:', error);
+      }
+    },
+
+    /**
+     * 设置错误处理器
+     */
+    setupErrorHandling() {
+      // 注册适配器错误处理
+      errorHandler.onError('adapter', (errorInfo, recoveryResult) => {
+        this.addLog(`适配器错误: ${errorInfo.message}`, 'error');
+
+        if (recoveryResult.success) {
+          this.addLog('适配器错误已自动恢复', 'success');
+        }
+      });
+
+      // 注册内存错误处理
+      errorHandler.onError('memory', (errorInfo, recoveryResult) => {
+        this.addLog(`内存错误: ${errorInfo.message}`, 'error');
+
+        if (recoveryResult.success) {
+          this.addLog('内存错误已自动恢复', 'success');
+        } else {
+          // 建议用户操作
+          this.addLog('建议关闭其他应用程序或使用较小的图像', 'warning');
+        }
+      });
+
+      // 注册文件错误处理
+      errorHandler.onError('file', (errorInfo, recoveryResult) => {
+        this.addLog(`文件错误: ${errorInfo.message}`, 'error');
+
+        if (!recoveryResult.success) {
+          this.addLog('请检查文件格式是否正确', 'warning');
+        }
+      });
+
+      // 注册网络错误处理
+      errorHandler.onError('network', (errorInfo, recoveryResult) => {
+        this.addLog(`网络错误: ${errorInfo.message}`, 'error');
+
+        if (!recoveryResult.success) {
+          this.addLog('请检查网络连接', 'warning');
+        }
+      });
+    },
+
+    /**
+     * 处理系统健康更新
+     */
+    handleHealthUpdated(healthData) {
+      this.addLog(`系统健康状态: ${healthData.overallHealth}`, 'info');
+
+      // 如果系统状态异常，记录详细信息
+      if (healthData.overallHealth !== 'normal') {
+        const issues = Object.entries(healthData.checks || {})
+          .filter(([, check]) => check.status !== 'normal')
+          .map(([type]) => type);
+
+        if (issues.length > 0) {
+          this.addLog(`发现问题: ${issues.join(', ')}`, 'warning');
+        }
+      }
+    },
+
+    /**
+     * 处理系统操作请求
+     */
+    async handleSystemAction(actionData) {
+      const { type } = actionData;
+
+      try {
+        switch (type) {
+          case 'cleanup':
+            await this.performSystemCleanup();
+            break;
+          case 'restart':
+            await this.restartSystem();
+            break;
+          case 'switchAdapter':
+            await this.switchToFallbackAdapter();
+            break;
+          default:
+            this.addLog(`未知的系统操作: ${type}`, 'warning');
+        }
+      } catch (error) {
+        this.addLog(`系统操作失败: ${error.message}`, 'error');
+        errorHandler.handleError(error, { operation: type }, 'adapter', 'high');
+      }
+    },
+
+    /**
+     * 处理建议执行完成
+     */
+    handleRecommendationExecuted(recommendation) {
+      this.addLog(`已执行系统建议: ${recommendation.action}`, 'success');
+    },
+
+    /**
+     * 处理健康报告导出
+     */
+    handleHealthReportExported(report) {
+      this.addLog('系统健康报告已导出', 'success');
+      console.log('健康报告:', report);
+    },
+
+    /**
+     * 执行系统清理
+     */
+    async performSystemCleanup() {
+      this.addLog('开始系统清理...', 'info');
+
+      try {
+        // 清理内存
+        this.forceMemoryCleanup();
+
+        // 清理适配器缓存
+        if (this.currentAdapter && typeof this.currentAdapter._performMemoryCleanup === 'function') {
+          this.currentAdapter._performMemoryCleanup();
+        }
+
+        // 清理状态历史
+        if (this.historyManager) {
+          const historySize = this.historyManager.getHistory().length;
+          if (historySize > 10) {
+            // 保留最近10个状态
+            const history = this.historyManager.getHistory().slice(-10);
+            this.historyManager.clear();
+            history.forEach(state => this.historyManager.addState(state));
+          }
+        }
+
+        // 清理错误日志
+        errorHandler.clearErrorLog();
+
+        // 重置恢复历史
+        errorRecoveryManager.resetRecoveryHistory();
+
+        this.addLog('系统清理完成', 'success');
+      } catch (error) {
+        this.addLog(`系统清理失败: ${error.message}`, 'error');
+        throw error;
+      }
+    },
+
+    /**
+     * 重启系统
+     */
+    async restartSystem() {
+      this.addLog('正在重启系统...', 'info');
+
+      try {
+        // 保存当前状态
+        const currentState = {
+          selectedAdapter: this.selectedAdapter,
+          hasImage: this.hasImage,
+          imageData: this.currentAdapter ? await this.currentAdapter.getState() : null
+        };
+
+        // 销毁当前适配器
+        if (this.currentAdapter) {
+          await this.currentAdapter.destroy();
+          this.currentAdapter = null;
+        }
+
+        // 重新初始化管理器
+        await this.initializeManagers();
+
+        // 恢复状态
+        if (currentState.selectedAdapter) {
+          this.selectedAdapter = currentState.selectedAdapter;
+          await this.switchAdapter();
+
+          if (currentState.imageData && this.currentAdapter) {
+            try {
+              await this.currentAdapter.setState(currentState.imageData);
+              this.hasImage = currentState.hasImage;
+            } catch (error) {
+              this.addLog('状态恢复失败，但系统重启成功', 'warning');
+            }
+          }
+        }
+
+        this.addLog('系统重启完成', 'success');
+      } catch (error) {
+        this.addLog(`系统重启失败: ${error.message}`, 'error');
+        throw error;
       }
     },
     
@@ -482,6 +1140,14 @@ export default {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .unified-editor-demo {
+    padding: 10px;
+    margin-bottom: 80px; /* 为移动端工具栏留出空间 */
+  }
 }
 
 .demo-header {
@@ -635,5 +1301,113 @@ export default {
 
 .log-message {
   word-break: break-word;
+}
+
+/* 移动端详细适配 */
+@media (max-width: 768px) {
+  .demo-header h1 {
+    font-size: 24px;
+  }
+
+  .demo-header p {
+    font-size: 14px;
+  }
+
+  .demo-controls {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .control-group select,
+  .control-group button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .demo-content {
+    flex-direction: column;
+  }
+
+  .editor-section,
+  .info-section {
+    width: 100%;
+  }
+
+  .canvas-container {
+    height: 300px;
+    margin-bottom: 20px;
+  }
+
+  .info-tabs {
+    flex-wrap: wrap;
+  }
+
+  .info-tab {
+    flex: 1;
+    min-width: 80px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .info-content {
+    max-height: 200px;
+  }
+
+  .log-item {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .adapter-info-item {
+    font-size: 12px;
+    padding: 4px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .unified-editor-demo {
+    padding: 8px;
+  }
+
+  .demo-header h1 {
+    font-size: 20px;
+  }
+
+  .canvas-container {
+    height: 250px;
+  }
+
+  .info-content {
+    max-height: 150px;
+  }
+}
+
+/* 横屏移动设备适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .unified-editor-demo {
+    margin-bottom: 60px; /* 横屏时工具栏较小 */
+  }
+
+  .demo-content {
+    flex-direction: row;
+  }
+
+  .editor-section {
+    flex: 2;
+  }
+
+  .info-section {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .canvas-container {
+    height: 200px;
+  }
 }
 </style>

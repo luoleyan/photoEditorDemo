@@ -1,3 +1,5 @@
+import { errorHandler } from '@/utils/ErrorHandler.js';
+
 /**
  * 基础图像编辑器适配器接口
  * 定义了所有图像编辑适配器必须实现的标准接口
@@ -9,6 +11,10 @@ class BaseImageEditorAdapter {
     this.eventListeners = new Map();
     this.currentImageData = null;
     this.adapterType = 'base';
+    this.errorContext = {
+      adapterType: this.constructor.name,
+      version: '1.0.0'
+    };
   }
 
   /**
@@ -465,6 +471,133 @@ class BaseImageEditorAdapter {
   async _doToDataURL(type, quality) { throw new Error('Not implemented'); }
   async _doToBlob(type, quality) { throw new Error('Not implemented'); }
   _doGetPerformanceMetrics() { return {}; }
+
+  // ========== 错误处理方法 ==========
+
+  /**
+   * 处理适配器错误
+   * @param {Error|string} error - 错误对象或消息
+   * @param {string} operation - 操作名称
+   * @param {Object} context - 额外上下文
+   * @returns {Object} 错误处理结果
+   * @protected
+   */
+  _handleError(error, operation = 'unknown', context = {}) {
+    const errorContext = {
+      ...this.errorContext,
+      operation,
+      timestamp: Date.now(),
+      ...context
+    };
+
+    return errorHandler.handleError(
+      error,
+      errorContext,
+      errorHandler.errorTypes.ADAPTER,
+      this._getErrorLevel(error, operation)
+    );
+  }
+
+  /**
+   * 安全执行操作（带错误处理）
+   * @param {Function} operation - 要执行的操作
+   * @param {string} operationName - 操作名称
+   * @param {Object} context - 上下文信息
+   * @returns {Promise<*>} 操作结果
+   * @protected
+   */
+  async _safeExecute(operation, operationName, context = {}) {
+    try {
+      return await operation();
+    } catch (error) {
+      const result = this._handleError(error, operationName, context);
+
+      // 如果可以恢复，返回默认值或重试
+      if (result.canRecover) {
+        return this._getDefaultValue(operationName);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * 获取错误级别
+   * @param {Error} error - 错误对象
+   * @param {string} operation - 操作名称
+   * @returns {string} 错误级别
+   * @private
+   */
+  _getErrorLevel(error, operation) {
+    // 关键操作的错误级别较高
+    const criticalOperations = ['initialize', 'loadImage', 'destroy'];
+    const highOperations = ['applyFilter', 'resize', 'rotate'];
+
+    if (criticalOperations.includes(operation)) {
+      return errorHandler.errorLevels.CRITICAL;
+    } else if (highOperations.includes(operation)) {
+      return errorHandler.errorLevels.HIGH;
+    } else if (error.name === 'OutOfMemoryError' || error.message.includes('memory')) {
+      return errorHandler.errorLevels.CRITICAL;
+    } else {
+      return errorHandler.errorLevels.MEDIUM;
+    }
+  }
+
+  /**
+   * 获取操作的默认值
+   * @param {string} operationName - 操作名称
+   * @returns {*} 默认值
+   * @private
+   */
+  _getDefaultValue(operationName) {
+    const defaults = {
+      'getPerformanceMetrics': {},
+      'getState': null,
+      'toDataURL': '',
+      'toBlob': null
+    };
+
+    return defaults[operationName] || null;
+  }
+
+  /**
+   * 验证参数
+   * @param {*} value - 要验证的值
+   * @param {string} type - 期望的类型
+   * @param {string} paramName - 参数名称
+   * @throws {Error} 验证失败时抛出错误
+   * @protected
+   */
+  _validateParam(value, type, paramName) {
+    if (value === null || value === undefined) {
+      throw new Error(`参数 ${paramName} 不能为空`);
+    }
+
+    if (typeof value !== type) {
+      throw new Error(`参数 ${paramName} 类型错误，期望 ${type}，实际 ${typeof value}`);
+    }
+  }
+
+  /**
+   * 验证图像数据
+   * @param {Object} imageData - 图像数据
+   * @throws {Error} 验证失败时抛出错误
+   * @protected
+   */
+  _validateImageData(imageData) {
+    if (!imageData) {
+      throw new Error('图像数据不能为空');
+    }
+
+    if (!imageData.src && !imageData.data) {
+      throw new Error('图像数据必须包含 src 或 data 属性');
+    }
+
+    if (imageData.src && typeof imageData.src !== 'string') {
+      throw new Error('图像 src 必须是字符串');
+    }
+  }
 }
 
 export default BaseImageEditorAdapter;

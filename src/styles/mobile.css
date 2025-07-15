@@ -1,0 +1,445 @@
+/**
+ * 移动端适配样式
+ * 针对移动设备的响应式设计和触摸优化
+ */
+
+/* 基础移动端重置 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 允许文本选择的元素 */
+input, textarea, .selectable-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* 移动端视口设置 */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 移动端容器样式 */
+.mobile-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* 触摸友好的按钮样式 */
+.mobile-button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mobile-button:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.mobile-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 移动端输入框样式 */
+.mobile-input {
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px; /* 防止iOS缩放 */
+  background: #fff;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.mobile-input:focus {
+  border-color: #007AFF;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* 移动端滑块样式 */
+.mobile-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+.mobile-slider::-webkit-slider-track {
+  width: 100%;
+  height: 8px;
+  background: #ddd;
+  border-radius: 4px;
+}
+
+.mobile-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #007AFF;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-slider::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: #ddd;
+  border-radius: 4px;
+  border: none;
+}
+
+.mobile-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #007AFF;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Canvas容器移动端优化 */
+.mobile-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.mobile-canvas-container canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  touch-action: none;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* 移动端工具栏 */
+.mobile-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid #e0e0e0;
+  padding: 12px;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-height: 60px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.mobile-toolbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  min-width: 60px;
+}
+
+.mobile-toolbar-item:active {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.mobile-toolbar-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+}
+
+.mobile-toolbar-label {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+/* 移动端侧边栏 */
+.mobile-sidebar {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 80%;
+  max-width: 320px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
+  z-index: 1001;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-sidebar.open {
+  right: 0;
+}
+
+.mobile-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 移动端模态框 */
+.mobile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1002;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobile-modal.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-modal-content {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.mobile-modal.open .mobile-modal-content {
+  transform: translateY(0);
+}
+
+/* 移动端加载指示器 */
+.mobile-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 1003;
+}
+
+.mobile-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  animation: mobile-spin 1s linear infinite;
+}
+
+@keyframes mobile-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 响应式断点 */
+@media (max-width: 480px) {
+  .mobile-button {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  
+  .mobile-toolbar {
+    padding: 8px;
+    min-height: 56px;
+  }
+  
+  .mobile-toolbar-item {
+    min-width: 50px;
+    padding: 6px;
+  }
+  
+  .mobile-toolbar-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 18px;
+  }
+  
+  .mobile-toolbar-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-sidebar {
+    width: 90%;
+  }
+  
+  .mobile-button {
+    min-height: 40px;
+    min-width: 40px;
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}
+
+/* 横屏适配 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .mobile-toolbar {
+    position: relative;
+    bottom: auto;
+    padding: 8px;
+    min-height: 48px;
+  }
+  
+  .mobile-sidebar {
+    width: 60%;
+    max-width: 280px;
+  }
+  
+  .mobile-modal {
+    align-items: center;
+  }
+  
+  .mobile-modal-content {
+    border-radius: 16px;
+    max-height: 90vh;
+    max-width: 90%;
+    width: auto;
+  }
+}
+
+/* 安全区域适配 */
+@supports (padding: max(0px)) {
+  .mobile-toolbar {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  
+  .mobile-sidebar {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .mobile-button {
+    border: 2px solid currentColor;
+  }
+  
+  .mobile-input {
+    border-width: 3px;
+  }
+  
+  .mobile-toolbar {
+    border-top-width: 2px;
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .mobile-button:active {
+    transform: none;
+  }
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .mobile-toolbar {
+    background: rgba(28, 28, 30, 0.95);
+    border-top-color: #38383a;
+  }
+  
+  .mobile-sidebar {
+    background: #1c1c1e;
+    color: #fff;
+  }
+  
+  .mobile-modal-content {
+    background: #1c1c1e;
+    color: #fff;
+  }
+  
+  .mobile-input {
+    background: #2c2c2e;
+    border-color: #38383a;
+    color: #fff;
+  }
+  
+  .mobile-input:focus {
+    border-color: #0a84ff;
+  }
+}
