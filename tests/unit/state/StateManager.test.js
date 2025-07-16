@@ -353,4 +353,146 @@ describe('StateManager', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('状态迁移', () => {
+    test('应该正确迁移状态到不同适配器', async () => {
+      // 创建Fabric状态
+      const fabricStateId = stateManager.createState('fabric', { src: 'test.jpg' });
+      const fabricState = stateManager.getState(fabricStateId);
+
+      // 添加一些数据
+      fabricState.objects = [{
+        id: 'text1',
+        type: 'text',
+        left: 100,
+        top: 200,
+        text: 'Hello World',
+        fill: '#000000'
+      }];
+
+      // 迁移到Konva
+      const konvaStateId = await stateManager.migrateState(fabricStateId, 'konva');
+
+      expect(konvaStateId).toBeDefined();
+      expect(konvaStateId).not.toBe(fabricStateId);
+
+      const konvaState = stateManager.getState(konvaStateId);
+      expect(konvaState.libraryType).toBe('konva');
+      expect(konvaState.metadata.migratedFrom).toBe('fabric');
+    });
+
+    test('应该正确处理相同适配器类型的迁移', async () => {
+      const stateId = stateManager.createState('fabric');
+
+      const result = await stateManager.migrateState(stateId, 'fabric');
+
+      expect(result).toBe(stateId); // 应该返回原状态ID
+    });
+
+    test('应该正确批量迁移状态', async () => {
+      const stateIds = [
+        stateManager.createState('fabric'),
+        stateManager.createState('fabric'),
+        stateManager.createState('fabric')
+      ];
+
+      const migratedIds = await stateManager.batchMigrateStates(stateIds, 'konva');
+
+      expect(migratedIds).toHaveLength(3);
+      migratedIds.forEach(id => {
+        const state = stateManager.getState(id);
+        expect(state.libraryType).toBe('konva');
+      });
+    });
+
+    test('应该在状态不存在时抛出错误', async () => {
+      await expect(stateManager.migrateState('non-existent', 'konva')).rejects.toThrow(
+        'Source state not found: non-existent'
+      );
+    });
+  });
+
+  describe('兼容性检查', () => {
+    test('应该正确检查状态兼容性', () => {
+      const stateId = stateManager.createState('fabric');
+      const state = stateManager.getState(stateId);
+
+      // 添加一些可能不兼容的功能
+      state.objects = [
+        { id: 'obj1', type: 'text' },
+        { id: 'obj2', type: 'path' },
+        { id: 'obj3', type: 'group' }
+      ];
+      state.filters = [
+        { type: 'grayscale' },
+        { type: 'customFilter' } // 不支持的滤镜
+      ];
+
+      const compatibility = stateManager.checkStateCompatibility(stateId, 'jimp');
+
+      expect(compatibility).toBeDefined();
+      expect(compatibility.compatible).toBe(false);
+      expect(compatibility.unsupportedFeatures.length).toBeGreaterThan(0);
+      expect(compatibility.dataLoss.length).toBeGreaterThan(0);
+      expect(compatibility.recommendations.length).toBeGreaterThan(0);
+    });
+
+    test('应该正确识别兼容的状态', () => {
+      const stateId = stateManager.createState('fabric');
+      const state = stateManager.getState(stateId);
+
+      // 只添加兼容的功能
+      state.objects = [
+        { id: 'obj1', type: 'text' },
+        { id: 'obj2', type: 'image' }
+      ];
+      state.filters = [
+        { type: 'grayscale' },
+        { type: 'blur' }
+      ];
+
+      const compatibility = stateManager.checkStateCompatibility(stateId, 'konva');
+
+      expect(compatibility.compatible).toBe(true);
+      expect(compatibility.unsupportedFeatures.length).toBe(0);
+      expect(compatibility.dataLoss.length).toBe(0);
+    });
+  });
+
+  describe('迁移路径', () => {
+    test('应该返回支持的迁移路径', () => {
+      const paths = stateManager.getSupportedMigrationPaths('fabric');
+
+      expect(paths).toContain('konva');
+      expect(paths).toContain('tui');
+      expect(paths).toContain('jimp');
+      expect(paths).not.toContain('fabric'); // 不应该包含自己
+    });
+
+    test('应该处理未知适配器类型', () => {
+      const paths = stateManager.getSupportedMigrationPaths('unknown');
+
+      expect(paths).toEqual([]);
+    });
+  });
+
+  describe('状态快照', () => {
+    test('应该正确创建迁移快照', () => {
+      const stateId = stateManager.createState('fabric', { src: 'test.jpg' });
+
+      const snapshot = stateManager.createMigrationSnapshot(stateId);
+
+      expect(snapshot).toBeDefined();
+      expect(snapshot.snapshotMetadata).toBeDefined();
+      expect(snapshot.snapshotMetadata.originalStateId).toBe(stateId);
+      expect(snapshot.snapshotMetadata.sourceLibraryType).toBe('fabric');
+      expect(snapshot.snapshotMetadata.purpose).toBe('migration');
+    });
+
+    test('应该在状态不存在时抛出错误', () => {
+      expect(() => {
+        stateManager.createMigrationSnapshot('non-existent');
+      }).toThrow('State not found: non-existent');
+    });
+  });
 });

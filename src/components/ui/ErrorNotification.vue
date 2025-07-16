@@ -14,7 +14,8 @@
       >
         <!-- 通知图标 -->
         <div class="notification-icon">
-          <span v-if="notification.level === 'critical'">🚨</span>
+          <span v-if="notification.icon">{{ notification.icon }}</span>
+          <span v-else-if="notification.level === 'critical'">🚨</span>
           <span v-else-if="notification.level === 'high'">⚠️</span>
           <span v-else-if="notification.level === 'medium'">⚡</span>
           <span v-else>ℹ️</span>
@@ -45,6 +46,26 @@
               @click="handleAction(notification, action)"
             >
               {{ action.label }}
+            </button>
+          </div>
+
+          <!-- 快速帮助按钮 -->
+          <div class="quick-help-actions">
+            <button
+              v-if="hasOperationGuidance(notification)"
+              class="help-button guidance"
+              @click="showOperationGuidance(notification)"
+              title="查看操作指导"
+            >
+              📖 操作指导
+            </button>
+            <button
+              v-if="hasTroubleshootingSteps(notification)"
+              class="help-button troubleshooting"
+              @click="showTroubleshootingSteps(notification)"
+              title="查看故障排除步骤"
+            >
+              🔧 故障排除
             </button>
           </div>
         </div>
@@ -113,6 +134,98 @@
       </div>
     </div>
 
+    <!-- 操作指导模态框 -->
+    <div v-if="showGuidance" class="guidance-modal" @click="closeGuidance">
+      <div class="modal-content guidance-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ currentGuidance.title }}</h3>
+          <button class="close-button" @click="closeGuidance">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="guidance-section">
+            <h4>操作步骤</h4>
+            <ol class="guidance-steps">
+              <li v-for="(step, index) in currentGuidance.steps" :key="index" class="guidance-step">
+                {{ step }}
+              </li>
+            </ol>
+          </div>
+
+          <div v-if="currentGuidance.tips && currentGuidance.tips.length > 0" class="guidance-section">
+            <h4>💡 小贴士</h4>
+            <ul class="guidance-tips">
+              <li v-for="(tip, index) in currentGuidance.tips" :key="index" class="guidance-tip">
+                {{ tip }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="action-button secondary" @click="closeGuidance">知道了</button>
+          <button class="action-button primary" @click="markAsHelpful">这很有用</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 故障排除模态框 -->
+    <div v-if="showTroubleshooting" class="troubleshooting-modal" @click="closeTroubleshooting">
+      <div class="modal-content troubleshooting-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ currentTroubleshooting.title }}</h3>
+          <button class="close-button" @click="closeTroubleshooting">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="troubleshooting-section">
+            <h4>请按以下步骤排除问题</h4>
+            <div class="troubleshooting-steps">
+              <div
+                v-for="(step, index) in currentTroubleshooting.steps"
+                :key="index"
+                class="troubleshooting-step"
+                :class="{ 'completed': completedSteps.includes(index) }"
+              >
+                <div class="step-header">
+                  <div class="step-number">{{ index + 1 }}</div>
+                  <div class="step-title">{{ step.step }}</div>
+                  <button
+                    v-if="step.action"
+                    class="step-action-button"
+                    @click="executeTroubleshootingAction(step.action, index)"
+                  >
+                    执行
+                  </button>
+                </div>
+                <div class="step-description">{{ step.description }}</div>
+                <div class="step-actions">
+                  <button
+                    class="step-check-button"
+                    :class="{ 'checked': completedSteps.includes(index) }"
+                    @click="toggleStepCompletion(index)"
+                  >
+                    {{ completedSteps.includes(index) ? '✓ 已完成' : '标记为完成' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="action-button secondary" @click="closeTroubleshooting">关闭</button>
+          <button
+            class="action-button primary"
+            @click="reportTroubleshootingResult"
+            :disabled="completedSteps.length === 0"
+          >
+            问题已解决
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 全局错误统计 -->
     <div v-if="showStats" class="error-stats">
       <div class="stats-header">
@@ -158,7 +271,14 @@ export default {
         recent: 0,
         byType: {},
         byLevel: {}
-      }
+      },
+      // 操作指导相关
+      showGuidance: false,
+      currentGuidance: null,
+      // 故障排除相关
+      showTroubleshooting: false,
+      currentTroubleshooting: null,
+      completedSteps: []
     };
   },
   computed: {
@@ -373,6 +493,227 @@ export default {
      */
     clearAllNotifications() {
       this.notifications = [];
+    },
+
+    // ========== 操作指导和故障排除方法 ==========
+
+    /**
+     * 检查是否有操作指导
+     * @param {Object} notification - 通知对象
+     * @returns {boolean} 是否有操作指导
+     */
+    hasOperationGuidance(notification) {
+      const operationType = this.getOperationType(notification);
+      return operationType && errorHandler.getOperationGuidance(operationType).steps.length > 0;
+    },
+
+    /**
+     * 检查是否有故障排除步骤
+     * @param {Object} notification - 通知对象
+     * @returns {boolean} 是否有故障排除步骤
+     */
+    hasTroubleshootingSteps(notification) {
+      const issueType = this.getIssueType(notification);
+      return issueType && errorHandler.getTroubleshootingSteps(issueType).steps.length > 0;
+    },
+
+    /**
+     * 获取操作类型
+     * @param {Object} notification - 通知对象
+     * @returns {string} 操作类型
+     */
+    getOperationType(notification) {
+      // 根据错误类型和上下文推断操作类型
+      if (notification.context && notification.context.operation) {
+        return notification.context.operation;
+      }
+
+      switch (notification.type) {
+        case 'file':
+          return 'file_upload';
+        case 'ui':
+          if (notification.context && notification.context.component === 'TextTool') {
+            return 'text_editing';
+          }
+          if (notification.context && notification.context.component === 'BrushTool') {
+            return 'brush_drawing';
+          }
+          break;
+        case 'adapter':
+          return 'filter_application';
+      }
+
+      return null;
+    },
+
+    /**
+     * 获取问题类型
+     * @param {Object} notification - 通知对象
+     * @returns {string} 问题类型
+     */
+    getIssueType(notification) {
+      switch (notification.type) {
+        case 'network':
+          return 'network_issues';
+        case 'memory':
+          return 'performance_issues';
+        case 'adapter':
+        case 'ui':
+        case 'validation':
+          return 'feature_issues';
+        default:
+          return 'feature_issues';
+      }
+    },
+
+    /**
+     * 显示操作指导
+     * @param {Object} notification - 通知对象
+     */
+    showOperationGuidance(notification) {
+      const operationType = this.getOperationType(notification);
+      if (operationType) {
+        this.currentGuidance = errorHandler.getOperationGuidance(operationType);
+        this.showGuidance = true;
+      }
+    },
+
+    /**
+     * 显示故障排除步骤
+     * @param {Object} notification - 通知对象
+     */
+    showTroubleshootingSteps(notification) {
+      const issueType = this.getIssueType(notification);
+      if (issueType) {
+        this.currentTroubleshooting = errorHandler.getTroubleshootingSteps(issueType);
+        this.completedSteps = [];
+        this.showTroubleshooting = true;
+      }
+    },
+
+    /**
+     * 关闭操作指导
+     */
+    closeGuidance() {
+      this.showGuidance = false;
+      this.currentGuidance = null;
+    },
+
+    /**
+     * 关闭故障排除
+     */
+    closeTroubleshooting() {
+      this.showTroubleshooting = false;
+      this.currentTroubleshooting = null;
+      this.completedSteps = [];
+    },
+
+    /**
+     * 标记为有用
+     */
+    markAsHelpful() {
+      this.$emit('guidance-helpful', {
+        type: 'operation_guidance',
+        guidance: this.currentGuidance
+      });
+      this.closeGuidance();
+    },
+
+    /**
+     * 切换步骤完成状态
+     * @param {number} stepIndex - 步骤索引
+     */
+    toggleStepCompletion(stepIndex) {
+      const index = this.completedSteps.indexOf(stepIndex);
+      if (index > -1) {
+        this.completedSteps.splice(index, 1);
+      } else {
+        this.completedSteps.push(stepIndex);
+      }
+    },
+
+    /**
+     * 执行故障排除操作
+     * @param {string} action - 操作类型
+     * @param {number} stepIndex - 步骤索引
+     */
+    executeTroubleshootingAction(action, stepIndex) {
+      switch (action) {
+        case 'refresh_page':
+          if (confirm('确定要刷新页面吗？未保存的工作可能会丢失。')) {
+            window.location.reload();
+          }
+          break;
+
+        case 'clear_cache':
+          if ('caches' in window) {
+            caches.keys().then(names => {
+              names.forEach(name => {
+                caches.delete(name);
+              });
+            });
+          }
+          localStorage.clear();
+          sessionStorage.clear();
+          this.$emit('info-message', '缓存已清除');
+          break;
+
+        case 'clear_history':
+          this.$emit('clear-edit-history');
+          this.$emit('info-message', '编辑历史已清除');
+          break;
+
+        case 'check_connection':
+          this.checkNetworkConnection();
+          break;
+
+        case 'contact_support':
+          this.$emit('contact-support');
+          break;
+
+        default:
+          this.$emit('troubleshooting-action', { action, stepIndex });
+      }
+
+      // 自动标记步骤为完成
+      if (!this.completedSteps.includes(stepIndex)) {
+        this.completedSteps.push(stepIndex);
+      }
+    },
+
+    /**
+     * 检查网络连接
+     */
+    async checkNetworkConnection() {
+      try {
+        const response = await fetch('/api/health', {
+          method: 'HEAD',
+          cache: 'no-cache'
+        });
+
+        if (response.ok) {
+          this.$emit('info-message', '✅ 网络连接正常');
+        } else {
+          this.$emit('warning-message', '⚠️ 网络连接不稳定');
+        }
+      } catch (error) {
+        this.$emit('error-message', '❌ 网络连接失败');
+      }
+    },
+
+    /**
+     * 报告故障排除结果
+     */
+    reportTroubleshootingResult() {
+      this.$emit('troubleshooting-completed', {
+        issueType: this.getIssueType(this.currentTroubleshooting),
+        completedSteps: this.completedSteps,
+        totalSteps: this.currentTroubleshooting.steps.length,
+        resolved: true
+      });
+
+      this.$emit('success-message', '✅ 问题已解决，感谢您的反馈！');
+      this.closeTroubleshooting();
     }
   }
 };

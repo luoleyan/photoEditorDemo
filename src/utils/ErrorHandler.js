@@ -11,6 +11,8 @@ class ErrorHandler {
       MEMORY: 'memory',
       FILE: 'file',
       PERMISSION: 'permission',
+      UI: 'ui',
+      STATE: 'state',
       UNKNOWN: 'unknown'
     };
 
@@ -26,9 +28,19 @@ class ErrorHandler {
     this.errorCallbacks = new Map();
     this.recoveryStrategies = new Map();
     this.userNotificationCallbacks = new Set();
+    this.userGuidanceCallbacks = new Set();
+    this.contextualHelpCallbacks = new Set();
+
+    // 用户友好的错误消息映射
+    this.userFriendlyMessages = new Map();
+    this.operationGuidance = new Map();
+    this.troubleshootingSteps = new Map();
 
     this._setupGlobalErrorHandlers();
     this._setupRecoveryStrategies();
+    this._setupUserFriendlyMessages();
+    this._setupOperationGuidance();
+    this._setupTroubleshootingSteps();
   }
 
   /**
@@ -427,6 +439,342 @@ class ErrorHandler {
       default:
         return 'log';
     }
+  }
+
+  // ========== 用户体验增强方法 ==========
+
+  /**
+   * 设置用户友好的错误消息
+   * @private
+   */
+  _setupUserFriendlyMessages() {
+    // 网络错误
+    this.userFriendlyMessages.set('network_timeout', {
+      title: '网络连接超时',
+      message: '请检查您的网络连接，然后重试',
+      icon: '🌐',
+      severity: 'medium'
+    });
+
+    this.userFriendlyMessages.set('network_offline', {
+      title: '网络连接断开',
+      message: '您似乎已离线，请检查网络连接',
+      icon: '📡',
+      severity: 'high'
+    });
+
+    // 文件错误
+    this.userFriendlyMessages.set('file_too_large', {
+      title: '文件过大',
+      message: '选择的文件太大，请选择小于10MB的图片',
+      icon: '📁',
+      severity: 'medium'
+    });
+
+    this.userFriendlyMessages.set('file_invalid_format', {
+      title: '不支持的文件格式',
+      message: '请选择JPG、PNG或GIF格式的图片',
+      icon: '🖼️',
+      severity: 'medium'
+    });
+
+    // 内存错误
+    this.userFriendlyMessages.set('memory_insufficient', {
+      title: '内存不足',
+      message: '图片太大或操作过多，建议刷新页面重新开始',
+      icon: '💾',
+      severity: 'high'
+    });
+
+    // 适配器错误
+    this.userFriendlyMessages.set('adapter_not_supported', {
+      title: '功能不支持',
+      message: '当前编辑器不支持此操作，请尝试其他工具',
+      icon: '🔧',
+      severity: 'medium'
+    });
+
+    // 权限错误
+    this.userFriendlyMessages.set('permission_denied', {
+      title: '权限不足',
+      message: '无法访问所需资源，请检查浏览器权限设置',
+      icon: '🔒',
+      severity: 'high'
+    });
+
+    // UI错误
+    this.userFriendlyMessages.set('ui_component_error', {
+      title: '界面组件错误',
+      message: '界面出现问题，正在尝试恢复',
+      icon: '🖥️',
+      severity: 'medium'
+    });
+
+    // 状态错误
+    this.userFriendlyMessages.set('state_corruption', {
+      title: '编辑状态异常',
+      message: '编辑历史出现问题，建议保存当前工作并刷新',
+      icon: '⚠️',
+      severity: 'high'
+    });
+  }
+
+  /**
+   * 设置操作指导
+   * @private
+   */
+  _setupOperationGuidance() {
+    // 文件操作指导
+    this.operationGuidance.set('file_upload', {
+      title: '如何上传图片',
+      steps: [
+        '点击"选择文件"按钮或拖拽图片到编辑区域',
+        '支持JPG、PNG、GIF格式，文件大小不超过10MB',
+        '上传后图片会自动显示在编辑器中'
+      ],
+      tips: [
+        '建议使用高质量的原图以获得最佳编辑效果',
+        '大尺寸图片可能需要较长加载时间'
+      ]
+    });
+
+    // 文本编辑指导
+    this.operationGuidance.set('text_editing', {
+      title: '文本编辑指南',
+      steps: [
+        '点击"添加文本"按钮创建文本对象',
+        '双击文本进行编辑，输入您想要的内容',
+        '使用工具栏调整字体、大小、颜色等样式',
+        '拖拽文本到合适的位置'
+      ],
+      tips: [
+        '按Esc键可以退出文本编辑模式',
+        '可以添加多个文本对象'
+      ]
+    });
+
+    // 画笔工具指导
+    this.operationGuidance.set('brush_drawing', {
+      title: '画笔绘制指南',
+      steps: [
+        '选择画笔工具并设置画笔大小和颜色',
+        '在图片上按住鼠标左键并拖动进行绘制',
+        '使用橡皮擦工具可以擦除绘制内容',
+        '调整不透明度可以创建半透明效果'
+      ],
+      tips: [
+        '使用较小的画笔可以绘制精细的细节',
+        '按住Shift键可以绘制直线'
+      ]
+    });
+
+    // 滤镜应用指导
+    this.operationGuidance.set('filter_application', {
+      title: '滤镜应用指南',
+      steps: [
+        '在滤镜面板中选择想要的滤镜效果',
+        '调整滤镜强度以获得理想效果',
+        '可以叠加多个滤镜创建独特效果',
+        '使用"重置"按钮可以移除所有滤镜'
+      ],
+      tips: [
+        '建议先保存原图备份',
+        '某些滤镜可能会影响图片质量'
+      ]
+    });
+  }
+
+  /**
+   * 设置故障排除步骤
+   * @private
+   */
+  _setupTroubleshootingSteps() {
+    // 网络问题排除
+    this.troubleshootingSteps.set('network_issues', {
+      title: '网络问题排除',
+      steps: [
+        {
+          step: '检查网络连接',
+          description: '确保设备已连接到互联网',
+          action: 'check_connection'
+        },
+        {
+          step: '刷新页面',
+          description: '按F5或点击浏览器刷新按钮',
+          action: 'refresh_page'
+        },
+        {
+          step: '清除缓存',
+          description: '清除浏览器缓存和Cookie',
+          action: 'clear_cache'
+        },
+        {
+          step: '尝试其他网络',
+          description: '切换到其他WiFi或使用移动数据',
+          action: 'switch_network'
+        }
+      ]
+    });
+
+    // 性能问题排除
+    this.troubleshootingSteps.set('performance_issues', {
+      title: '性能问题排除',
+      steps: [
+        {
+          step: '关闭其他标签页',
+          description: '关闭不必要的浏览器标签页释放内存',
+          action: 'close_tabs'
+        },
+        {
+          step: '降低图片质量',
+          description: '使用较小尺寸的图片进行编辑',
+          action: 'reduce_quality'
+        },
+        {
+          step: '清理编辑历史',
+          description: '清除撤销历史记录释放内存',
+          action: 'clear_history'
+        },
+        {
+          step: '重启浏览器',
+          description: '完全关闭并重新打开浏览器',
+          action: 'restart_browser'
+        }
+      ]
+    });
+
+    // 功能问题排除
+    this.troubleshootingSteps.set('feature_issues', {
+      title: '功能问题排除',
+      steps: [
+        {
+          step: '检查浏览器兼容性',
+          description: '确保使用现代浏览器（Chrome、Firefox、Safari、Edge）',
+          action: 'check_browser'
+        },
+        {
+          step: '启用JavaScript',
+          description: '确保浏览器已启用JavaScript',
+          action: 'enable_javascript'
+        },
+        {
+          step: '禁用广告拦截器',
+          description: '暂时禁用广告拦截器或将网站加入白名单',
+          action: 'disable_adblocker'
+        },
+        {
+          step: '更新浏览器',
+          description: '将浏览器更新到最新版本',
+          action: 'update_browser'
+        }
+      ]
+    });
+  }
+
+  /**
+   * 获取用户友好的错误消息
+   * @param {string} errorKey - 错误键
+   * @param {Object} context - 上下文信息
+   * @returns {Object} 用户友好的错误信息
+   */
+  getUserFriendlyMessage(errorKey, context = {}) {
+    const message = this.userFriendlyMessages.get(errorKey);
+    if (message) {
+      return {
+        ...message,
+        context,
+        timestamp: Date.now()
+      };
+    }
+
+    // 默认消息
+    return {
+      title: '出现了问题',
+      message: '操作无法完成，请稍后重试',
+      icon: '❌',
+      severity: 'medium',
+      context,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * 获取操作指导
+   * @param {string} operation - 操作类型
+   * @returns {Object} 操作指导信息
+   */
+  getOperationGuidance(operation) {
+    return this.operationGuidance.get(operation) || {
+      title: '操作指南',
+      steps: ['请参考帮助文档或联系技术支持'],
+      tips: []
+    };
+  }
+
+  /**
+   * 获取故障排除步骤
+   * @param {string} issueType - 问题类型
+   * @returns {Object} 故障排除步骤
+   */
+  getTroubleshootingSteps(issueType) {
+    return this.troubleshootingSteps.get(issueType) || {
+      title: '故障排除',
+      steps: [
+        {
+          step: '联系技术支持',
+          description: '如果问题持续存在，请联系我们的技术支持团队',
+          action: 'contact_support'
+        }
+      ]
+    };
+  }
+
+  /**
+   * 注册用户指导回调
+   * @param {Function} callback - 回调函数
+   */
+  onUserGuidance(callback) {
+    this.userGuidanceCallbacks.add(callback);
+  }
+
+  /**
+   * 注册上下文帮助回调
+   * @param {Function} callback - 回调函数
+   */
+  onContextualHelp(callback) {
+    this.contextualHelpCallbacks.add(callback);
+  }
+
+  /**
+   * 触发用户指导
+   * @param {string} operation - 操作类型
+   * @param {Object} context - 上下文信息
+   */
+  triggerUserGuidance(operation, context = {}) {
+    const guidance = this.getOperationGuidance(operation);
+    this.userGuidanceCallbacks.forEach(callback => {
+      try {
+        callback(guidance, context);
+      } catch (error) {
+        console.error('User guidance callback error:', error);
+      }
+    });
+  }
+
+  /**
+   * 触发上下文帮助
+   * @param {string} issueType - 问题类型
+   * @param {Object} context - 上下文信息
+   */
+  triggerContextualHelp(issueType, context = {}) {
+    const troubleshooting = this.getTroubleshootingSteps(issueType);
+    this.contextualHelpCallbacks.forEach(callback => {
+      try {
+        callback(troubleshooting, context);
+      } catch (error) {
+        console.error('Contextual help callback error:', error);
+      }
+    });
   }
 }
 

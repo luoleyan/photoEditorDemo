@@ -162,7 +162,27 @@ export default {
         { type: 'blur', name: '模糊', icon: '💫' },
         { type: 'sharpen', name: '锐化', icon: '🔪' },
         { type: 'emboss', name: '浮雕', icon: '🗿' }
-      ]
+      ],
+
+      // 触摸手势支持
+      touchStartX: 0,
+      touchStartY: 0,
+      touchStartTime: 0,
+      isGesturing: false,
+      gestureStartDistance: 0,
+      gestureStartRotation: 0,
+
+      // 性能优化
+      isProcessing: false,
+      processingQueue: [],
+
+      // 移动端特定设置
+      mobileSettings: {
+        enableHapticFeedback: true,
+        enableGestures: true,
+        autoHideToolbar: false,
+        compactMode: false
+      }
     };
   },
   mounted() {
@@ -315,6 +335,276 @@ export default {
      */
     resetTransform() {
       this.$emit('reset-transform');
+    },
+
+    // ========== 触摸手势支持 ==========
+
+    /**
+     * 处理触摸开始
+     * @param {TouchEvent} event - 触摸事件
+     */
+    handleTouchStart(event) {
+      if (!this.mobileSettings.enableGestures) return;
+
+      const touch = event.touches[0];
+      this.touchStartX = touch.clientX;
+      this.touchStartY = touch.clientY;
+      this.touchStartTime = Date.now();
+
+      if (event.touches.length === 2) {
+        // 双指手势
+        const touch2 = event.touches[1];
+        this.gestureStartDistance = this._getDistance(touch, touch2);
+        this.gestureStartRotation = this._getAngle(touch, touch2);
+        this.isGesturing = true;
+      }
+
+      // 触觉反馈
+      if (this.mobileSettings.enableHapticFeedback && navigator.vibrate) {
+        navigator.vibrate(10);
+      }
+    },
+
+    /**
+     * 处理触摸移动
+     * @param {TouchEvent} event - 触摸事件
+     */
+    handleTouchMove(event) {
+      if (!this.mobileSettings.enableGestures) return;
+
+      event.preventDefault();
+
+      if (event.touches.length === 2 && this.isGesturing) {
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+
+        // 缩放手势
+        const currentDistance = this._getDistance(touch1, touch2);
+        const scaleChange = currentDistance / this.gestureStartDistance;
+
+        // 旋转手势
+        const currentRotation = this._getAngle(touch1, touch2);
+        const rotationChange = currentRotation - this.gestureStartRotation;
+
+        this.$emit('gesture-transform', {
+          scale: scaleChange,
+          rotation: rotationChange
+        });
+      }
+    },
+
+    /**
+     * 处理触摸结束
+     * @param {TouchEvent} event - 触摸事件
+     */
+    handleTouchEnd(event) {
+      if (!this.mobileSettings.enableGestures) return;
+
+      const touchDuration = Date.now() - this.touchStartTime;
+      const touch = event.changedTouches[0];
+      const deltaX = touch.clientX - this.touchStartX;
+      const deltaY = touch.clientY - this.touchStartY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+      // 检测手势类型
+      if (touchDuration < 300 && distance < 10) {
+        // 点击
+        this._handleTap(touch);
+      } else if (touchDuration < 500 && distance > 50) {
+        // 滑动
+        this._handleSwipe(deltaX, deltaY);
+      }
+
+      this.isGesturing = false;
+    },
+
+    /**
+     * 处理点击
+     * @param {Touch} touch - 触摸点
+     * @private
+     */
+    _handleTap(touch) {
+      // 双击检测可以在这里实现
+      this.$emit('tap', {
+        x: touch.clientX,
+        y: touch.clientY
+      });
+    },
+
+    /**
+     * 处理滑动
+     * @param {number} deltaX - X轴偏移
+     * @param {number} deltaY - Y轴偏移
+     * @private
+     */
+    _handleSwipe(deltaX, deltaY) {
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      if (absX > absY) {
+        // 水平滑动
+        if (deltaX > 0) {
+          this.$emit('swipe-right');
+        } else {
+          this.$emit('swipe-left');
+        }
+      } else {
+        // 垂直滑动
+        if (deltaY > 0) {
+          this.$emit('swipe-down');
+        } else {
+          this.$emit('swipe-up');
+        }
+      }
+    },
+
+    /**
+     * 计算两点距离
+     * @param {Touch} touch1 - 触摸点1
+     * @param {Touch} touch2 - 触摸点2
+     * @returns {number} 距离
+     * @private
+     */
+    _getDistance(touch1, touch2) {
+      const dx = touch1.clientX - touch2.clientX;
+      const dy = touch1.clientY - touch2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    },
+
+    /**
+     * 计算两点角度
+     * @param {Touch} touch1 - 触摸点1
+     * @param {Touch} touch2 - 触摸点2
+     * @returns {number} 角度（弧度）
+     * @private
+     */
+    _getAngle(touch1, touch2) {
+      return Math.atan2(
+        touch2.clientY - touch1.clientY,
+        touch2.clientX - touch1.clientX
+      );
+    },
+
+    // ========== 性能优化方法 ==========
+
+    /**
+     * 防抖处理
+     * @param {Function} func - 要防抖的函数
+     * @param {number} delay - 延迟时间
+     * @returns {Function} 防抖后的函数
+     */
+    debounce(func, delay) {
+      let timeoutId;
+      return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+      };
+    },
+
+    /**
+     * 节流处理
+     * @param {Function} func - 要节流的函数
+     * @param {number} limit - 限制时间
+     * @returns {Function} 节流后的函数
+     */
+    throttle(func, limit) {
+      let inThrottle;
+      return (...args) => {
+        if (!inThrottle) {
+          func.apply(this, args);
+          inThrottle = true;
+          setTimeout(() => inThrottle = false, limit);
+        }
+      };
+    },
+
+    /**
+     * 队列处理操作
+     * @param {Function} operation - 操作函数
+     * @param {Object} params - 参数
+     */
+    async queueOperation(operation, params) {
+      if (this.isProcessing) {
+        this.processingQueue.push({ operation, params });
+        return;
+      }
+
+      this.isProcessing = true;
+
+      try {
+        await operation(params);
+      } catch (error) {
+        console.error('Operation failed:', error);
+        this.$emit('error', error);
+      } finally {
+        this.isProcessing = false;
+
+        // 处理队列中的下一个操作
+        if (this.processingQueue.length > 0) {
+          const next = this.processingQueue.shift();
+          this.queueOperation(next.operation, next.params);
+        }
+      }
+    },
+
+    /**
+     * 优化图像处理
+     * @param {string} operation - 操作类型
+     * @param {Object} params - 参数
+     */
+    async optimizedImageProcess(operation, params) {
+      // 使用Web Worker进行图像处理
+      if (window.Worker) {
+        try {
+          const worker = new Worker('/workers/image-processor.js');
+
+          return new Promise((resolve, reject) => {
+            worker.onmessage = (event) => {
+              const { success, data, error } = event.data;
+              if (success) {
+                resolve(data);
+              } else {
+                reject(new Error(error));
+              }
+              worker.terminate();
+            };
+
+            worker.onerror = (error) => {
+              reject(error);
+              worker.terminate();
+            };
+
+            worker.postMessage({
+              type: operation,
+              ...params
+            });
+          });
+        } catch (error) {
+          console.warn('Web Worker not available, falling back to main thread');
+          return this._fallbackImageProcess(operation, params);
+        }
+      } else {
+        return this._fallbackImageProcess(operation, params);
+      }
+    },
+
+    /**
+     * 回退图像处理
+     * @param {string} operation - 操作类型
+     * @param {Object} params - 参数
+     * @private
+     */
+    _fallbackImageProcess(operation, params) {
+      // 在主线程中处理，使用requestAnimationFrame分帧
+      return new Promise((resolve) => {
+        const process = () => {
+          // 这里实现具体的图像处理逻辑
+          this.$emit('image-process', { operation, params });
+          resolve();
+        };
+
+        requestAnimationFrame(process);
+      });
     }
   }
 };

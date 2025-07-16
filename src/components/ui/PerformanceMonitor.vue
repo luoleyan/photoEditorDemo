@@ -1,19 +1,36 @@
 <template>
-  <div class="performance-monitor" :class="{ 'expanded': isExpanded }">
-    <!-- 监控器头部 -->
-    <div class="monitor-header" @click="toggleExpanded">
-      <div class="status-indicator" :class="statusClass"></div>
-      <span class="title">性能监控</span>
-      <div class="memory-usage">
-        {{ formatBytes(memoryUsage.allocated) }} / {{ formatBytes(memoryUsage.maxMemory) }}
+  <div>
+    <!-- 主组件 -->
+    <div
+      class="performance-monitor"
+      :class="{ 'expanded': isExpanded, 'dragging': isDragging, 'snapped': position.isSnapped }"
+      :style="draggableStyle"
+      ref="draggableComponent"
+    >
+      <!-- 吸附状态标识 -->
+      <div
+        v-if="position.isSnapped"
+        class="snap-status-badge"
+        :style="snapStatusStyle"
+      >
+        已吸附到{{ getEdgeDisplayName(position.snapEdge) }}
       </div>
-      <button class="toggle-btn" :class="{ 'expanded': isExpanded }">
-        <span>{{ isExpanded ? '▼' : '▶' }}</span>
-      </button>
-    </div>
 
-    <!-- 详细信息面板 -->
-    <div class="monitor-content" v-show="isExpanded">
+      <!-- 监控器头部 -->
+      <div class="monitor-header" @click="toggleExpanded">
+        <div class="drag-handle" :title="`拖拽手柄 - 当前位置: (${Math.round(position.x)}, ${Math.round(position.y)})`">⋮⋮</div>
+        <div class="status-indicator" :class="statusClass"></div>
+        <span class="title">性能监控</span>
+        <div class="memory-usage">
+          {{ formatBytes(memoryUsage.allocated) }} / {{ formatBytes(memoryUsage.maxMemory) }}
+        </div>
+        <button class="toggle-btn" :class="{ 'expanded': isExpanded }">
+          <span>{{ isExpanded ? '▼' : '▶' }}</span>
+        </button>
+      </div>
+
+      <!-- 详细信息面板 -->
+      <div class="monitor-content" v-show="isExpanded">
       <!-- 内存使用情况 -->
       <div class="metric-section">
         <h4>内存使用</h4>
@@ -85,15 +102,45 @@
         <button @click="resetMetrics" class="reset-btn">重置指标</button>
         <button @click="exportReport" class="export-btn">导出报告</button>
       </div>
+      </div>
+    </div>
+
+    <!-- 边缘吸附触发区域 -->
+    <div
+      v-if="position.isSnapped"
+      class="snap-trigger-area"
+      :style="triggerAreaStyle"
+      @click="handleTriggerClick"
+      @mouseenter="handleTriggerHover"
+      :title="`点击展开 - 当前吸附在${getEdgeDisplayName(position.snapEdge)}`"
+    >
+      <div class="trigger-hint">
+        <span class="trigger-icon">📌</span>
+        <span class="trigger-text">{{ getEdgeDisplayName(position.snapEdge) }}</span>
+      </div>
+    </div>
+
+    <!-- 边缘指示器 -->
+    <div
+      v-if="edgeIndicator.visible"
+      class="edge-indicator"
+      :style="edgeIndicatorStyle"
+    >
+      <div class="indicator-content">
+        <div class="indicator-icon">{{ getEdgeIcon(edgeIndicator.edge) }}</div>
+        <div class="indicator-text">拖拽到{{ getEdgeDisplayName(edgeIndicator.edge) }}边缘吸附</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { memoryManager } from '@/utils/MemoryManager.js';
+import DraggableMixin from '@/mixins/DraggableMixin.js';
 
 export default {
   name: 'PerformanceMonitor',
+  mixins: [DraggableMixin],
   data() {
     return {
       isExpanded: false,
@@ -120,6 +167,9 @@ export default {
   },
   mounted() {
     this.startMonitoring();
+    // 设置初始位置
+    this.position.x = 20;
+    this.position.y = 20;
   },
   beforeDestroy() {
     this.stopMonitoring();
@@ -230,12 +280,69 @@ export default {
      */
     formatBytes(bytes) {
       if (bytes === 0) return '0 B';
-      
+
       const k = 1024;
       const sizes = ['B', 'KB', 'MB', 'GB'];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
-      
+
       return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    },
+
+    /**
+     * 处理触发区域悬停
+     */
+    handleTriggerHover() {
+      // 可以添加悬停预览效果
+      this.$emit('trigger-hover');
+    },
+
+    /**
+     * 重写拖拽手柄检测
+     */
+    isDragHandle(target) {
+      // 首先检查是否是专门的拖拽手柄
+      const dragHandle = this.$el.querySelector('.drag-handle');
+      if (dragHandle && (dragHandle === target || dragHandle.contains(target))) {
+        return true;
+      }
+
+      // 检查是否是监控器头部区域，但排除切换按钮
+      const monitorHeader = this.$el.querySelector('.monitor-header');
+      if (!monitorHeader || !monitorHeader.contains(target)) {
+        return false;
+      }
+
+      // 排除切换按钮和其他交互元素
+      const excludeSelectors = [
+        '.toggle-btn',
+        'button',
+        'input',
+        'select',
+        '[role="button"]',
+        '.clickable'
+      ];
+
+      for (const selector of excludeSelectors) {
+        const excludeElement = target.closest(selector);
+        if (excludeElement && monitorHeader.contains(excludeElement)) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+
+    /**
+     * 获取边缘图标
+     */
+    getEdgeIcon(edge) {
+      const icons = {
+        top: '⬆️',
+        bottom: '⬇️',
+        left: '⬅️',
+        right: '➡️'
+      };
+      return icons[edge] || '📌';
     }
   }
 };
@@ -243,17 +350,16 @@ export default {
 
 <style scoped>
 .performance-monitor {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+  /* 位置由draggableStyle控制 */
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
   min-width: 280px;
   max-width: 400px;
+  width: 320px;
   font-size: 12px;
+  user-select: none;
 }
 
 .monitor-header {
@@ -264,6 +370,29 @@ export default {
   border-bottom: 1px solid #eee;
   background: #f8f9fa;
   border-radius: 8px 8px 0 0;
+  position: relative;
+}
+
+.drag-handle {
+  color: #999;
+  font-size: 12px;
+  cursor: grab;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s;
+  line-height: 1;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  margin-right: 8px;
+}
+
+.drag-handle:hover {
+  color: #666;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .status-indicator {
@@ -383,6 +512,34 @@ export default {
 .reset-btn:hover { background: #fff3e0; border-color: #ff9800; }
 .export-btn:hover { background: #e8f5e8; border-color: #4caf50; }
 
+/* 边缘吸附触发区域 */
+.snap-trigger-area {
+  background: rgba(0, 123, 255, 0.1);
+  border: 2px dashed rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.snap-trigger-area:hover {
+  background: rgba(0, 123, 255, 0.2);
+  border-color: rgba(0, 123, 255, 0.5);
+}
+
+/* 拖拽状态样式 */
+.performance-monitor.dragging {
+  transform-origin: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* 吸附状态样式 */
+.performance-monitor.snapped {
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.performance-monitor.snapped:hover {
+  opacity: 1;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .performance-monitor {
@@ -392,5 +549,28 @@ export default {
     margin: 10px;
     width: calc(100% - 20px);
   }
+
+  .drag-handle {
+    display: none; /* 移动端隐藏拖拽手柄 */
+  }
+}
+
+/* 边缘指示器样式 */
+.performance-monitor .edge-indicator {
+  border-left: 4px solid #007bff;
+}
+
+.performance-monitor .edge-indicator .indicator-content {
+  border-left: 3px solid #007bff;
+}
+
+/* 吸附状态标识样式 */
+.performance-monitor .snap-status-badge {
+  background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+}
+
+/* 触发区域样式 */
+.performance-monitor .trigger-hint {
+  border-left: 2px solid rgba(0, 123, 255, 0.6);
 }
 </style>

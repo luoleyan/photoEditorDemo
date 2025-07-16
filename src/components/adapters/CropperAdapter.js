@@ -1,8 +1,11 @@
 import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
+import { errorHandler } from '@/utils/ErrorHandler.js';
+import { memoryManager } from '@/utils/MemoryManager.js';
 
 /**
  * Cropper.js适配器实现
  * 基于Cropper.js库的图像编辑适配器，专注于专业的图像裁剪功能
+ * 通过Canvas API扩展支持基础图像调整功能
  */
 class CropperAdapter extends BaseImageEditorAdapter {
   constructor() {
@@ -12,11 +15,26 @@ class CropperAdapter extends BaseImageEditorAdapter {
     this.cropper = null;
     this.originalImageData = null;
     this.isCropping = false;
+    this.stateHistory = new Map();
+    this.currentStateId = null;
+    this.canvasElement = null; // 用于图像处理的Canvas
+    this.canvasContext = null;
+    this.imageAdjustments = { // 当前图像调整参数
+      brightness: 0,
+      contrast: 0,
+      filters: new Map()
+    };
     this.performanceMetrics = {
       renderTime: 0,
       lastRenderTime: Date.now(),
-      operationCount: 0
+      operationCount: 0,
+      memoryUsage: 0
     };
+
+    // 注册内存清理回调
+    memoryManager.addCleanupCallback(() => {
+      this._performMemoryCleanup();
+    });
   }
 
   /**
@@ -47,19 +65,35 @@ class CropperAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doInitialize() {
-    // 检查Cropper是否已加载
-    if (typeof window.Cropper === 'undefined') {
-      throw new Error('Cropper.js library is not loaded');
-    }
+    return this._safeExecute(async () => {
+      // 检查Cropper是否已加载
+      if (typeof window.Cropper === 'undefined') {
+        throw new Error('Cropper.js library is not loaded');
+      }
 
-    // 创建图像元素
-    this.imageElement = document.createElement('img');
-    this.imageElement.style.maxWidth = '100%';
-    this.imageElement.style.height = 'auto';
-    this.container.appendChild(this.imageElement);
+      // 创建图像元素
+      this.imageElement = document.createElement('img');
+      this.imageElement.style.maxWidth = '100%';
+      this.imageElement.style.height = 'auto';
+      this.container.appendChild(this.imageElement);
 
-    // 设置事件监听
-    this._setupEventListeners();
+      // 创建用于图像处理的Canvas
+      this.canvasElement = document.createElement('canvas');
+      this.canvasElement.style.display = 'none';
+      this.container.appendChild(this.canvasElement);
+      this.canvasContext = this.canvasElement.getContext('2d');
+
+      // 注册内存使用
+      const estimatedSize = 20 * 1024 * 1024; // 估算20MB
+      memoryManager.allocate(`cropper-adapter-${this.adapterType}`, this, estimatedSize);
+
+      // 设置事件监听
+      this._setupEventListeners();
+
+      // 创建初始状态
+      this.currentStateId = this._generateStateId();
+      this.stateHistory.set(this.currentStateId, this._createEmptyState());
+    }, 'initialize', { containerId: this.container.id || 'unknown' });
   }
 
   /**
@@ -67,16 +101,39 @@ class CropperAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   _doDestroy() {
+    // 清理内存
+    this._performMemoryCleanup();
+
+    // 移除内存管理器回调
+    memoryManager.removeCleanupCallback(this._performMemoryCleanup.bind(this));
+
     if (this.cropper) {
+      // 释放Cropper内存
+      memoryManager.deallocate(`cropper-adapter-${this.adapterType}`);
       this.cropper.destroy();
       this.cropper = null;
     }
+
     if (this.imageElement && this.imageElement.parentNode) {
       this.imageElement.parentNode.removeChild(this.imageElement);
     }
     this.imageElement = null;
+
+    if (this.canvasElement && this.canvasElement.parentNode) {
+      this.canvasElement.parentNode.removeChild(this.canvasElement);
+    }
+    this.canvasElement = null;
+    this.canvasContext = null;
+
     this.originalImageData = null;
     this.isCropping = false;
+    this.stateHistory.clear();
+    this.currentStateId = null;
+    this.imageAdjustments = {
+      brightness: 0,
+      contrast: 0,
+      filters: new Map()
+    };
   }
 
   /**
@@ -209,44 +266,97 @@ class CropperAdapter extends BaseImageEditorAdapter {
   }
 
   /**
-   * 设置亮度（Cropper.js不支持，抛出错误）
-   * @param {number} value - 亮度值
+   * 设置亮度（通过Canvas API实现）
+   * @param {number} value - 亮度值 (-1 到 1)
    * @returns {Promise<void>}
    * @protected
    */
   async _doSetBrightness(value) {
-    throw new Error('Brightness adjustment is not supported by Cropper.js');
+    return this._safeExecute(async () => {
+      if (!this.cropper || !this.canvasContext) {
+        throw new Error('No cropper or canvas context available');
+      }
+
+      // 验证亮度值
+      value = Math.max(-1, Math.min(1, value));
+      this.imageAdjustments.brightness = value;
+
+      // 应用图像调整
+      await this._applyImageAdjustments();
+      this._updatePerformanceMetrics();
+    }, 'setBrightness', { value });
   }
 
   /**
-   * 设置对比度（Cropper.js不支持，抛出错误）
-   * @param {number} value - 对比度值
+   * 设置对比度（通过Canvas API实现）
+   * @param {number} value - 对比度值 (-1 到 1)
    * @returns {Promise<void>}
    * @protected
    */
   async _doSetContrast(value) {
-    throw new Error('Contrast adjustment is not supported by Cropper.js');
+    return this._safeExecute(async () => {
+      if (!this.cropper || !this.canvasContext) {
+        throw new Error('No cropper or canvas context available');
+      }
+
+      // 验证对比度值
+      value = Math.max(-1, Math.min(1, value));
+      this.imageAdjustments.contrast = value;
+
+      // 应用图像调整
+      await this._applyImageAdjustments();
+      this._updatePerformanceMetrics();
+    }, 'setContrast', { value });
   }
 
   /**
-   * 应用滤镜（Cropper.js不支持，抛出错误）
+   * 应用滤镜（通过Canvas API实现基础滤镜）
    * @param {string} filterType - 滤镜类型
    * @param {Object} options - 滤镜选项
    * @returns {Promise<void>}
    * @protected
    */
   async _doApplyFilter(filterType, options = {}) {
-    throw new Error('Filters are not supported by Cropper.js');
+    return this._safeExecute(async () => {
+      if (!this.cropper || !this.canvasContext) {
+        throw new Error('No cropper or canvas context available');
+      }
+
+      // 支持的滤镜类型
+      const supportedFilters = ['grayscale', 'sepia', 'blur', 'invert'];
+      if (!supportedFilters.includes(filterType)) {
+        console.warn(`Unsupported filter type: ${filterType}. Supported: ${supportedFilters.join(', ')}`);
+        return;
+      }
+
+      // 保存滤镜设置
+      this.imageAdjustments.filters.set(filterType, options);
+
+      // 应用图像调整
+      await this._applyImageAdjustments();
+      this._updatePerformanceMetrics();
+    }, 'applyFilter', { filterType, options });
   }
 
   /**
-   * 移除滤镜（Cropper.js不支持，抛出错误）
+   * 移除滤镜
    * @param {string} filterType - 滤镜类型
    * @returns {Promise<void>}
    * @protected
    */
   async _doRemoveFilter(filterType) {
-    throw new Error('Filters are not supported by Cropper.js');
+    return this._safeExecute(async () => {
+      if (!this.cropper || !this.canvasContext) {
+        throw new Error('No cropper or canvas context available');
+      }
+
+      // 移除滤镜设置
+      this.imageAdjustments.filters.delete(filterType);
+
+      // 重新应用图像调整
+      await this._applyImageAdjustments();
+      this._updatePerformanceMetrics();
+    }, 'removeFilter', { filterType });
   }
 
   /**
@@ -308,19 +418,23 @@ class CropperAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   _doSaveState() {
-    if (!this.cropper) {
-      return { timestamp: Date.now() };
-    }
+    return this._safeExecute(() => {
+      if (!this.cropper) {
+        return this._createEmptyState();
+      }
 
-    const state = {
-      cropData: this.cropper.getData(),
-      imageData: this.cropper.getImageData(),
-      canvasData: this.cropper.getCanvasData(),
-      cropBoxData: this.cropper.getCropBoxData(),
-      timestamp: Date.now(),
-      originalImageData: this.originalImageData ? { ...this.originalImageData } : null
-    };
-    return state;
+      const stateId = this._generateStateId();
+      const state = this._createCurrentState();
+
+      // 保存到历史记录
+      this.stateHistory.set(stateId, state);
+      this.currentStateId = stateId;
+
+      // 限制历史记录数量
+      this._limitStateHistory();
+
+      return stateId;
+    }, 'saveState');
   }
 
   /**
@@ -330,21 +444,42 @@ class CropperAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doRestoreState(stateId) {
-    const state = this.stateHistory.get(stateId);
-    if (!state || !this.cropper) {
-      throw new Error(`State not found or no cropper instance: ${stateId}`);
-    }
+    return this._safeExecute(async () => {
+      const state = this.stateHistory.get(stateId);
+      if (!state) {
+        throw new Error(`State not found: ${stateId}`);
+      }
 
-    // 恢复各种数据
-    if (state.cropData) {
-      this.cropper.setData(state.cropData);
-    }
-    if (state.canvasData) {
-      this.cropper.setCanvasData(state.canvasData);
-    }
-    if (state.cropBoxData) {
-      this.cropper.setCropBoxData(state.cropBoxData);
-    }
+      if (!this.cropper) {
+        throw new Error('No cropper instance');
+      }
+
+      // 恢复Cropper数据
+      if (state.cropData) {
+        this.cropper.setData(state.cropData);
+      }
+      if (state.canvasData) {
+        this.cropper.setCanvasData(state.canvasData);
+      }
+      if (state.cropBoxData) {
+        this.cropper.setCropBoxData(state.cropBoxData);
+      }
+
+      // 恢复图像调整参数
+      if (state.imageAdjustments) {
+        this.imageAdjustments = { ...state.imageAdjustments };
+        this.imageAdjustments.filters = new Map(state.imageAdjustments.filters || []);
+        await this._applyImageAdjustments();
+      }
+
+      // 恢复其他状态信息
+      if (state.originalImageData) {
+        this.originalImageData = { ...state.originalImageData };
+      }
+
+      this.currentStateId = stateId;
+      this._updatePerformanceMetrics();
+    }, 'restoreState', { stateId });
   }
 
   /**
@@ -499,6 +634,223 @@ class CropperAdapter extends BaseImageEditorAdapter {
     this.performanceMetrics.renderTime = now - this.performanceMetrics.lastRenderTime;
     this.performanceMetrics.lastRenderTime = now;
     this.performanceMetrics.operationCount++;
+  }
+
+  /**
+   * 应用图像调整（通过Canvas API）
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _applyImageAdjustments() {
+    if (!this.cropper || !this.canvasContext || !this.originalImageData) {
+      return;
+    }
+
+    try {
+      // 获取当前图像
+      const canvas = this.cropper.getCroppedCanvas() || this.cropper.getCanvasData();
+      if (!canvas) return;
+
+      // 设置Canvas尺寸
+      const imageData = this.cropper.getImageData();
+      this.canvasElement.width = imageData.naturalWidth;
+      this.canvasElement.height = imageData.naturalHeight;
+
+      // 绘制原始图像
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          try {
+            // 清除Canvas
+            this.canvasContext.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+
+            // 应用滤镜
+            this._applyCanvasFilters();
+
+            // 绘制图像
+            this.canvasContext.drawImage(img, 0, 0);
+
+            // 应用亮度和对比度调整
+            this._applyBrightnessContrast();
+
+            // 更新Cropper图像
+            const adjustedDataURL = this.canvasElement.toDataURL();
+            this.imageElement.src = adjustedDataURL;
+
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        img.onerror = reject;
+        img.src = this.originalImageData.src;
+      });
+    } catch (error) {
+      console.error('Failed to apply image adjustments:', error);
+    }
+  }
+
+  /**
+   * 应用Canvas滤镜
+   * @private
+   */
+  _applyCanvasFilters() {
+    const filters = [];
+
+    // 构建滤镜字符串
+    this.imageAdjustments.filters.forEach((options, filterType) => {
+      switch (filterType) {
+        case 'grayscale':
+          filters.push('grayscale(100%)');
+          break;
+        case 'sepia':
+          filters.push('sepia(100%)');
+          break;
+        case 'blur':
+          const blurAmount = options.amount || 5;
+          filters.push(`blur(${blurAmount}px)`);
+          break;
+        case 'invert':
+          filters.push('invert(100%)');
+          break;
+      }
+    });
+
+    // 应用滤镜
+    if (filters.length > 0) {
+      this.canvasContext.filter = filters.join(' ');
+    } else {
+      this.canvasContext.filter = 'none';
+    }
+  }
+
+  /**
+   * 应用亮度和对比度调整
+   * @private
+   */
+  _applyBrightnessContrast() {
+    if (this.imageAdjustments.brightness === 0 && this.imageAdjustments.contrast === 0) {
+      return;
+    }
+
+    const imageData = this.canvasContext.getImageData(0, 0, this.canvasElement.width, this.canvasElement.height);
+    const data = imageData.data;
+
+    const brightness = this.imageAdjustments.brightness * 255;
+    const contrast = (this.imageAdjustments.contrast + 1) * (this.imageAdjustments.contrast + 1);
+
+    for (let i = 0; i < data.length; i += 4) {
+      // 应用亮度
+      data[i] += brightness;     // Red
+      data[i + 1] += brightness; // Green
+      data[i + 2] += brightness; // Blue
+
+      // 应用对比度
+      data[i] = ((data[i] / 255 - 0.5) * contrast + 0.5) * 255;
+      data[i + 1] = ((data[i + 1] / 255 - 0.5) * contrast + 0.5) * 255;
+      data[i + 2] = ((data[i + 2] / 255 - 0.5) * contrast + 0.5) * 255;
+
+      // 确保值在有效范围内
+      data[i] = Math.max(0, Math.min(255, data[i]));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
+    }
+
+    this.canvasContext.putImageData(imageData, 0, 0);
+  }
+
+  /**
+   * 创建空状态
+   * @returns {Object}
+   * @private
+   */
+  _createEmptyState() {
+    return {
+      id: this._generateStateId(),
+      timestamp: Date.now(),
+      cropData: null,
+      imageData: null,
+      canvasData: null,
+      cropBoxData: null,
+      originalImageData: null,
+      imageAdjustments: {
+        brightness: 0,
+        contrast: 0,
+        filters: []
+      }
+    };
+  }
+
+  /**
+   * 创建当前状态
+   * @returns {Object}
+   * @private
+   */
+  _createCurrentState() {
+    try {
+      return {
+        id: this._generateStateId(),
+        timestamp: Date.now(),
+        cropData: this.cropper ? this.cropper.getData() : null,
+        imageData: this.cropper ? this.cropper.getImageData() : null,
+        canvasData: this.cropper ? this.cropper.getCanvasData() : null,
+        cropBoxData: this.cropper ? this.cropper.getCropBoxData() : null,
+        originalImageData: this.originalImageData ? { ...this.originalImageData } : null,
+        imageAdjustments: {
+          brightness: this.imageAdjustments.brightness,
+          contrast: this.imageAdjustments.contrast,
+          filters: Array.from(this.imageAdjustments.filters.entries())
+        }
+      };
+    } catch (error) {
+      console.warn('Failed to create current state:', error);
+      return this._createEmptyState();
+    }
+  }
+
+  /**
+   * 限制状态历史数量
+   * @private
+   */
+  _limitStateHistory() {
+    const maxStates = 30; // 最多保存30个状态
+    if (this.stateHistory.size > maxStates) {
+      const entries = Array.from(this.stateHistory.entries());
+      const toDelete = entries.slice(0, this.stateHistory.size - maxStates);
+
+      toDelete.forEach(([stateId]) => {
+        this.stateHistory.delete(stateId);
+      });
+    }
+  }
+
+  /**
+   * 执行内存清理
+   * @private
+   */
+  _performMemoryCleanup() {
+    // 清理状态历史
+    if (this.stateHistory.size > 15) {
+      const entries = Array.from(this.stateHistory.entries());
+      const toDelete = entries.slice(0, this.stateHistory.size - 15);
+
+      toDelete.forEach(([stateId]) => {
+        this.stateHistory.delete(stateId);
+      });
+    }
+
+    // 清理Canvas
+    if (this.canvasContext) {
+      this.canvasContext.clearRect(0, 0, this.canvasElement.width, this.canvasElement.height);
+    }
+
+    // 强制垃圾回收（如果可用）
+    if (window.gc) {
+      window.gc();
+    }
   }
 }
 

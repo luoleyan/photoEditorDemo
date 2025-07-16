@@ -22,13 +22,52 @@ config.mocks = {
   }
 };
 
+// 增强DOM元素模拟
+Object.defineProperty(HTMLElement.prototype, 'setAttribute', {
+  value: jest.fn(),
+  writable: true
+});
+
+Object.defineProperty(HTMLElement.prototype, 'getAttribute', {
+  value: jest.fn(() => ''),
+  writable: true
+});
+
+Object.defineProperty(HTMLElement.prototype, 'removeAttribute', {
+  value: jest.fn(),
+  writable: true
+});
+
+Object.defineProperty(HTMLElement.prototype, 'classList', {
+  value: {
+    add: jest.fn(),
+    remove: jest.fn(),
+    contains: jest.fn(() => false),
+    toggle: jest.fn()
+  },
+  writable: true
+});
+
+Object.defineProperty(HTMLElement.prototype, 'style', {
+  value: {},
+  writable: true
+});
+
 // 模拟 Canvas API
 HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   fillRect: jest.fn(),
   clearRect: jest.fn(),
-  getImageData: jest.fn(() => ({ data: new Array(4) })),
+  getImageData: jest.fn(() => ({
+    data: new Uint8ClampedArray(4),
+    width: 1,
+    height: 1
+  })),
   putImageData: jest.fn(),
-  createImageData: jest.fn(() => ({ data: new Array(4) })),
+  createImageData: jest.fn(() => ({
+    data: new Uint8ClampedArray(4),
+    width: 1,
+    height: 1
+  })),
   setTransform: jest.fn(),
   drawImage: jest.fn(),
   save: jest.fn(),
@@ -47,7 +86,17 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   measureText: jest.fn(() => ({ width: 0 })),
   transform: jest.fn(),
   rect: jest.fn(),
-  clip: jest.fn()
+  clip: jest.fn(),
+  strokeStyle: '#000000',
+  fillStyle: '#000000',
+  lineWidth: 1,
+  globalAlpha: 1,
+  font: '10px sans-serif',
+  textAlign: 'start',
+  textBaseline: 'alphabetic',
+  imageSmoothingEnabled: true,
+  imageSmoothingQuality: 'low',
+  filter: 'none'
 }));
 
 HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,mockdata');
@@ -189,6 +238,69 @@ global.MutationObserver = class {
   disconnect() {}
   takeRecords() {
     return [];
+  }
+};
+
+// 模拟 Web APIs
+global.navigator = {
+  ...global.navigator,
+  hardwareConcurrency: 4,
+  deviceMemory: 4,
+  connection: {
+    effectiveType: '4g',
+    addEventListener: jest.fn()
+  },
+  getBattery: jest.fn(() => Promise.resolve({
+    level: 0.8,
+    addEventListener: jest.fn()
+  })),
+  vibrate: jest.fn()
+};
+
+// 模拟 performance API
+global.performance = {
+  ...global.performance,
+  now: jest.fn(() => Date.now()),
+  memory: {
+    usedJSHeapSize: 50 * 1024 * 1024,
+    totalJSHeapSize: 100 * 1024 * 1024,
+    jsHeapSizeLimit: 200 * 1024 * 1024
+  }
+};
+
+// 模拟 Worker
+global.Worker = class MockWorker {
+  constructor(url) {
+    this.url = url;
+    this.onmessage = null;
+    this.onerror = null;
+    this.isAvailable = true;
+  }
+
+  postMessage(data) {
+    setTimeout(() => {
+      if (this.onmessage) {
+        this.onmessage({
+          data: {
+            success: true,
+            data: data
+          }
+        });
+      }
+    }, 0);
+  }
+
+  terminate() {
+    this.isAvailable = false;
+  }
+};
+
+// 模拟 ImageData
+global.ImageData = class MockImageData {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+    this.data = new Uint8ClampedArray(width * height * 4);
   }
 };
 

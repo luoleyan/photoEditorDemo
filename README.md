@@ -44,6 +44,13 @@ A comprehensive Vue.js image editor demonstration showcasing professional image 
 - **渲染优化**: 高效的Canvas渲染和更新策略
 - **移动端优化**: 专门的移动设备性能配置
 
+### 🎯 可拖拽监控系统
+- **智能边缘吸附**: 四边缘统一吸附行为，自动隐藏到边缘外
+- **边缘位置视觉标识**: 彩色指示器实时预览吸附位置，支持四个方向
+- **智能初始位置**: 根据组件类型和屏幕尺寸自动计算最佳位置
+- **吸附状态标识**: 明确显示当前吸附边缘，提供位置提示
+- **触发区域增强**: 吸附后显示触发区域，支持点击展开和位置提示
+
 ### 🎨 高级编辑功能
 - **ImagePreview**: 高级图像查看，支持缩放、平移、缩略图导航和对比模式
 - **HistoryPanel**: 可视化撤销/重做系统，操作缩略图和搜索功能
@@ -205,6 +212,43 @@ export default {
 </template>
 ```
 
+#### 可拖拽监控系统
+```vue
+<template>
+  <div>
+    <!-- 性能监控器 - 支持拖拽和边缘吸附 -->
+    <performance-monitor
+      @drag-start="handleDragStart"
+      @drag-end="handleDragEnd"
+      @snapped="handleSnapped"
+      @edge-indicator-show="handleEdgeIndicatorShow"
+    />
+
+    <!-- 系统健康监控器 - 智能初始位置 -->
+    <system-health-monitor
+      @health-updated="handleHealthUpdated"
+      @edge-indicator-hide="handleEdgeIndicatorHide"
+    />
+  </div>
+</template>
+
+<script>
+export default {
+  methods: {
+    handleDragStart(monitorType) {
+      console.log(`${monitorType} 监控器开始拖拽`)
+    },
+    handleSnapped(monitorType, { edge }) {
+      console.log(`${monitorType} 监控器吸附到${edge}边缘`)
+    },
+    handleEdgeIndicatorShow(monitorType, { edge, distance }) {
+      console.log(`显示${edge}边缘指示器，距离: ${distance}px`)
+    }
+  }
+}
+</script>
+```
+
 ## 🏗️ 系统架构
 
 ### 企业级适配器架构
@@ -245,6 +289,7 @@ export default {
 访问以下路由探索不同的组件功能：
 
 - `/unified-editor` - **统一编辑器** (推荐) - 完整的图像编辑体验
+- `/draggable-monitors` - **可拖拽监控系统** - 边缘吸附和视觉标识演示
 - `/basic-components` - 基础UI组件和适配器
 - `/advanced-components` - 高级编辑功能
 - `/mid-priority-components` - 图层、裁剪和文本工具

@@ -103,7 +103,11 @@ describe('AdapterManager', () => {
   describe('适配器创建', () => {
     test('应该正确创建新适配器', async () => {
       const mockAdapter = new MockAdapter('fabric');
-      mockAdapterFactory.createAdapter.mockResolvedValue(mockAdapter);
+      // 模拟适配器工厂返回已初始化的适配器
+      mockAdapterFactory.createAdapter.mockImplementation(async (type, container, options) => {
+        await mockAdapter.initialize(container, options);
+        return mockAdapter;
+      });
 
       const adapter = await adapterManager.getAdapter('fabric');
 
@@ -114,7 +118,12 @@ describe('AdapterManager', () => {
 
     test('应该缓存已创建的适配器', async () => {
       const mockAdapter = new MockAdapter('fabric');
-      mockAdapterFactory.createAdapter.mockResolvedValue(mockAdapter);
+      // 重置mock调用计数
+      mockAdapterFactory.createAdapter.mockClear();
+      mockAdapterFactory.createAdapter.mockImplementation(async (type, container, options) => {
+        await mockAdapter.initialize(container, options);
+        return mockAdapter;
+      });
 
       // 第一次获取
       const adapter1 = await adapterManager.getAdapter('fabric');

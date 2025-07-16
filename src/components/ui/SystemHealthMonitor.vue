@@ -1,20 +1,37 @@
 <template>
-  <div class="system-health-monitor" v-if="showMonitor">
-    <!-- 健康状态指示器 -->
-    <div class="health-indicator" :class="overallHealthClass" @click="toggleDetails">
-      <div class="indicator-icon">
-        <span v-if="systemHealth.overallHealth === 'normal'">✅</span>
-        <span v-else-if="systemHealth.overallHealth === 'warning'">⚠️</span>
-        <span v-else>🚨</span>
+  <div>
+    <!-- 主组件 -->
+    <div
+      class="system-health-monitor"
+      v-if="showMonitor"
+      :style="draggableStyle"
+      ref="draggableComponent"
+    >
+      <!-- 吸附状态标识 -->
+      <div
+        v-if="position.isSnapped"
+        class="snap-status-badge"
+        :style="snapStatusStyle"
+      >
+        已吸附到{{ getEdgeDisplayName(position.snapEdge) }}
       </div>
-      <div class="indicator-text">
-        <div class="health-status">{{ getHealthStatusText() }}</div>
-        <div class="health-summary">{{ getHealthSummary() }}</div>
-      </div>
-      <div class="toggle-arrow" :class="{ 'expanded': showDetails }">▼</div>
-    </div>
 
-    <!-- 详细信息面板 -->
+      <!-- 健康状态指示器 -->
+      <div class="health-indicator" :class="overallHealthClass" @click="toggleDetails">
+        <div class="drag-handle" :title="`拖拽手柄 - 当前位置: (${Math.round(position.x)}, ${Math.round(position.y)})`">⋮⋮</div>
+        <div class="indicator-icon">
+          <span v-if="systemHealth.overallHealth === 'normal'">✅</span>
+          <span v-else-if="systemHealth.overallHealth === 'warning'">⚠️</span>
+          <span v-else>🚨</span>
+        </div>
+        <div class="indicator-text">
+          <div class="health-status">{{ getHealthStatusText() }}</div>
+          <div class="health-summary">{{ getHealthSummary() }}</div>
+        </div>
+        <div class="toggle-arrow" :class="{ 'expanded': showDetails }">▼</div>
+      </div>
+
+      <!-- 详细信息面板 -->
     <div class="health-details" v-show="showDetails">
       <!-- 系统检查结果 -->
       <div class="health-section">
@@ -112,15 +129,45 @@
           导出报告
         </button>
       </div>
+      </div>
+    </div>
+
+    <!-- 边缘吸附触发区域 -->
+    <div
+      v-if="position.isSnapped"
+      class="snap-trigger-area"
+      :style="triggerAreaStyle"
+      @click="handleTriggerClick"
+      @mouseenter="handleTriggerHover"
+      :title="`点击展开 - 当前吸附在${getEdgeDisplayName(position.snapEdge)}`"
+    >
+      <div class="trigger-hint">
+        <span class="trigger-icon">📌</span>
+        <span class="trigger-text">{{ getEdgeDisplayName(position.snapEdge) }}</span>
+      </div>
+    </div>
+
+    <!-- 边缘指示器 -->
+    <div
+      v-if="edgeIndicator.visible"
+      class="edge-indicator"
+      :style="edgeIndicatorStyle"
+    >
+      <div class="indicator-content">
+        <div class="indicator-icon">{{ getEdgeIcon(edgeIndicator.edge) }}</div>
+        <div class="indicator-text">拖拽到{{ getEdgeDisplayName(edgeIndicator.edge) }}边缘吸附</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { errorRecoveryManager } from '@/utils/ErrorRecoveryManager.js';
+import DraggableMixin from '@/mixins/DraggableMixin.js';
 
 export default {
   name: 'SystemHealthMonitor',
+  mixins: [DraggableMixin],
   props: {
     autoCheck: {
       type: Boolean,
@@ -153,6 +200,9 @@ export default {
   },
   mounted() {
     this.initializeMonitor();
+    // 设置初始位置（避免与性能监控器重叠）
+    this.position.x = 20;
+    this.position.y = 80;
   },
   beforeDestroy() {
     this.cleanup();
@@ -260,7 +310,7 @@ export default {
           this.$emit('action-request', { type: 'switchAdapter' });
           break;
         default:
-          console.log('未知的建议操作:', recommendation.action);
+          // 未知的建议操作，忽略
       }
     },
 
@@ -396,6 +446,63 @@ export default {
     },
 
     /**
+     * 处理触发区域悬停
+     */
+    handleTriggerHover() {
+      // 可以添加悬停预览效果
+      this.$emit('trigger-hover');
+    },
+
+    /**
+     * 重写拖拽手柄检测
+     */
+    isDragHandle(target) {
+      // 首先检查是否是专门的拖拽手柄
+      const dragHandle = this.$el.querySelector('.drag-handle');
+      if (dragHandle && (dragHandle === target || dragHandle.contains(target))) {
+        return true;
+      }
+
+      // 检查是否是健康指示器区域，但排除切换箭头
+      const healthIndicator = this.$el.querySelector('.health-indicator');
+      if (!healthIndicator || !healthIndicator.contains(target)) {
+        return false;
+      }
+
+      // 排除切换箭头和其他交互元素
+      const excludeSelectors = [
+        '.toggle-arrow',
+        'button',
+        'input',
+        'select',
+        '[role="button"]',
+        '.clickable'
+      ];
+
+      for (const selector of excludeSelectors) {
+        const excludeElement = target.closest(selector);
+        if (excludeElement && healthIndicator.contains(excludeElement)) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+
+    /**
+     * 获取边缘图标
+     */
+    getEdgeIcon(edge) {
+      const icons = {
+        top: '⬆️',
+        bottom: '⬇️',
+        left: '⬅️',
+        right: '➡️'
+      };
+      return icons[edge] || '📌';
+    },
+
+    /**
      * 清理资源
      */
     cleanup() {
@@ -407,13 +514,11 @@ export default {
 
 <style scoped>
 .system-health-monitor {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  z-index: 1500;
+  /* 位置由draggableStyle控制 */
   max-width: 350px;
-  width: 100%;
+  width: 350px;
   font-size: 13px;
+  user-select: none;
 }
 
 .health-indicator {
@@ -427,6 +532,28 @@ export default {
   cursor: pointer;
   transition: all 0.2s;
   border-left: 4px solid #28a745;
+  position: relative;
+}
+
+.drag-handle {
+  color: #999;
+  font-size: 12px;
+  cursor: grab;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s;
+  line-height: 1;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+}
+
+.drag-handle:hover {
+  color: #666;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .health-indicator.health-warning {
@@ -680,6 +807,53 @@ export default {
 
 .action-button:hover:not(:disabled) {
   background: #0056b3;
+}
+
+/* 边缘吸附触发区域 */
+.snap-trigger-area {
+  background: rgba(0, 123, 255, 0.1);
+  border: 2px dashed rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.snap-trigger-area:hover {
+  background: rgba(0, 123, 255, 0.2);
+  border-color: rgba(0, 123, 255, 0.5);
+}
+
+/* 拖拽状态样式 */
+.system-health-monitor.dragging {
+  transform-origin: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* 吸附状态样式 */
+.system-health-monitor.snapped {
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.system-health-monitor.snapped:hover {
+  opacity: 1;
+}
+
+/* 边缘指示器样式 */
+.system-health-monitor .edge-indicator {
+  border-left: 4px solid #28a745;
+}
+
+.system-health-monitor .edge-indicator .indicator-content {
+  border-left: 3px solid #28a745;
+}
+
+/* 吸附状态标识样式 */
+.system-health-monitor .snap-status-badge {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* 触发区域样式 */
+.system-health-monitor .trigger-hint {
+  border-left: 2px solid rgba(40, 167, 69, 0.6);
 }
 
 .action-button:disabled {

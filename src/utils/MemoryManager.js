@@ -9,6 +9,10 @@ class MemoryManager {
       warningThreshold: options.warningThreshold || 0.8, // 80%
       cleanupInterval: options.cleanupInterval || 30000, // 30秒
       enableAutoCleanup: options.enableAutoCleanup !== false,
+      enableImageOptimization: options.enableImageOptimization !== false,
+      maxImageSize: options.maxImageSize || 4096, // 最大图像尺寸
+      compressionQuality: options.compressionQuality || 0.8, // 压缩质量
+      enableWebWorker: options.enableWebWorker !== false,
       ...options
     };
 
@@ -23,9 +27,29 @@ class MemoryManager {
     this.performanceObserver = null;
     this._initPerformanceObserver();
 
+    // 图像处理缓存
+    this.imageCache = new Map();
+    this.maxCacheSize = 50 * 1024 * 1024; // 50MB缓存
+
+    // Web Worker池
+    this.workerPool = [];
+    this.maxWorkers = navigator.hardwareConcurrency || 4;
+
+    // 性能监控数据
+    this.performanceMetrics = {
+      renderTime: [],
+      memoryUsage: [],
+      imageProcessingTime: []
+    };
+
     // 开始监控
     if (this.options.enableAutoCleanup) {
       this.startMonitoring();
+    }
+
+    // 初始化Web Worker池
+    if (this.options.enableWebWorker) {
+      this._initWorkerPool();
     }
   }
 
@@ -383,12 +407,195 @@ class MemoryManager {
    */
   _formatBytes(bytes) {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // ========== 性能优化方法 ==========
+
+  /**
+   * 初始化Web Worker池
+   * @private
+   */
+  _initWorkerPool() {
+    for (let i = 0; i < this.maxWorkers; i++) {
+      try {
+        const worker = new Worker('/workers/image-processor.js');
+        worker.isAvailable = true;
+        this.workerPool.push(worker);
+      } catch (error) {
+        console.warn('Failed to create Web Worker:', error);
+        break;
+      }
+    }
+  }
+
+  /**
+   * 获取可用的Web Worker
+   * @returns {Worker|null} 可用的Worker或null
+   */
+  getAvailableWorker() {
+    return this.workerPool.find(worker => worker.isAvailable) || null;
+  }
+
+  /**
+   * 释放Web Worker
+   * @param {Worker} worker - 要释放的Worker
+   */
+  releaseWorker(worker) {
+    if (worker) {
+      worker.isAvailable = true;
+    }
+  }
+
+  /**
+   * 优化图像尺寸
+   * @param {HTMLImageElement|HTMLCanvasElement} image - 图像元素
+   * @param {Object} options - 优化选项
+   * @returns {Promise<HTMLCanvasElement>} 优化后的画布
+   */
+  async optimizeImageSize(image, options = {}) {
+    const {
+      maxWidth = this.options.maxImageSize,
+      maxHeight = this.options.maxImageSize,
+      quality = this.options.compressionQuality,
+      format = 'image/jpeg'
+    } = options;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // 计算优化后的尺寸
+    const { width, height } = this._calculateOptimalSize(
+      image.width || image.naturalWidth,
+      image.height || image.naturalHeight,
+      maxWidth,
+      maxHeight
+    );
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // 使用高质量缩放
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // 绘制优化后的图像
+    ctx.drawImage(image, 0, 0, width, height);
+
+    return canvas;
+  }
+
+  /**
+   * 计算最优尺寸
+   * @param {number} originalWidth - 原始宽度
+   * @param {number} originalHeight - 原始高度
+   * @param {number} maxWidth - 最大宽度
+   * @param {number} maxHeight - 最大高度
+   * @returns {Object} 优化后的尺寸
+   * @private
+   */
+  _calculateOptimalSize(originalWidth, originalHeight, maxWidth, maxHeight) {
+    let width = originalWidth;
+    let height = originalHeight;
+
+    // 如果图像超过最大尺寸，按比例缩放
+    if (width > maxWidth || height > maxHeight) {
+      const aspectRatio = width / height;
+
+      if (width > height) {
+        width = maxWidth;
+        height = width / aspectRatio;
+      } else {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+
+      // 确保不超过任何一个维度的限制
+      if (width > maxWidth) {
+        width = maxWidth;
+        height = width / aspectRatio;
+      }
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+    }
+
+    return {
+      width: Math.round(width),
+      height: Math.round(height)
+    };
+  }
+
+  /**
+   * 记录性能指标
+   * @param {string} type - 指标类型
+   * @param {number} value - 指标值
+   */
+  recordPerformanceMetric(type, value) {
+    if (!this.performanceMetrics[type]) {
+      this.performanceMetrics[type] = [];
+    }
+
+    this.performanceMetrics[type].push({
+      value,
+      timestamp: Date.now()
+    });
+
+    // 保持最近100个记录
+    if (this.performanceMetrics[type].length > 100) {
+      this.performanceMetrics[type].shift();
+    }
+  }
+
+  /**
+   * 获取性能统计
+   * @returns {Object} 性能统计信息
+   */
+  getPerformanceStats() {
+    const stats = {};
+
+    Object.keys(this.performanceMetrics).forEach(type => {
+      const metrics = this.performanceMetrics[type];
+      if (metrics.length > 0) {
+        const values = metrics.map(m => m.value);
+        stats[type] = {
+          count: values.length,
+          average: values.reduce((a, b) => a + b, 0) / values.length,
+          min: Math.min(...values),
+          max: Math.max(...values),
+          latest: values[values.length - 1]
+        };
+      }
+    });
+
+    return stats;
+  }
+
+  /**
+   * 清理图像缓存
+   */
+  clearImageCache() {
+    this.imageCache.clear();
+  }
+
+  /**
+   * 销毁内存管理器
+   */
+  destroy() {
+    this.stopMonitoring();
+    this.clearImageCache();
+
+    // 终止所有Web Workers
+    this.workerPool.forEach(worker => {
+      worker.terminate();
+    });
+    this.workerPool = [];
   }
 }
 

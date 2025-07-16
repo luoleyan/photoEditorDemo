@@ -1,0 +1,320 @@
+/**
+ * 可拖拽组件全局样式
+ */
+
+/* 拖拽状态的全局样式 */
+.draggable-component {
+  transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+.draggable-component.dragging {
+  opacity: 0.8;
+  transform-origin: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  z-index: 2000 !important;
+}
+
+.draggable-component.snapped {
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.draggable-component.snapped:hover {
+  opacity: 1;
+}
+
+/* 拖拽手柄通用样式 */
+.drag-handle {
+  color: #999;
+  font-size: 14px;
+  cursor: grab;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  min-height: 20px;
+  position: relative;
+}
+
+.drag-handle:hover {
+  color: #666;
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.1);
+}
+
+.drag-handle:active,
+.dragging .drag-handle {
+  cursor: grabbing;
+  color: #333;
+  background: rgba(0, 0, 0, 0.15);
+  transform: scale(0.95);
+}
+
+/* 拖拽手柄提示 */
+.drag-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* 边缘吸附触发区域通用样式 */
+.snap-trigger-area {
+  background: rgba(0, 123, 255, 0.1);
+  border: 2px dashed rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  z-index: 1600;
+}
+
+.snap-trigger-area:hover {
+  background: rgba(0, 123, 255, 0.2);
+  border-color: rgba(0, 123, 255, 0.5);
+}
+
+.snap-trigger-area:active {
+  background: rgba(0, 123, 255, 0.3);
+}
+
+/* 边缘指示器 */
+.edge-indicator {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1900;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+.indicator-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+.indicator-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.indicator-text {
+  font-size: 11px;
+  color: #666;
+}
+
+/* 吸附状态标识 */
+.snap-status-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  z-index: 10;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: snapStatusPulse 2s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes snapStatusPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+/* 触发区域提示 */
+.trigger-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.trigger-icon {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.trigger-text {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.snap-trigger-area:hover .trigger-hint {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.02);
+}
+
+/* 冲突检测高亮 */
+.conflict-highlight {
+  outline: 2px solid #ff6b6b !important;
+  outline-offset: 2px;
+  animation: conflictPulse 0.5s ease-in-out;
+}
+
+@keyframes conflictPulse {
+  0%, 100% {
+    outline-color: #ff6b6b;
+  }
+  50% {
+    outline-color: #ff9999;
+  }
+}
+
+/* 位置网格辅助线（开发模式） */
+.position-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.1;
+  background-image: 
+    linear-gradient(to right, #000 1px, transparent 1px),
+    linear-gradient(to bottom, #000 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* 拖拽预览样式 */
+.drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2100;
+  opacity: 0.7;
+  transform: rotate(5deg);
+  filter: blur(1px);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .drag-handle {
+    display: none; /* 移动端隐藏拖拽手柄 */
+  }
+  
+  .draggable-component {
+    position: relative !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+  
+  .snap-trigger-area {
+    display: none; /* 移动端不显示触发区域 */
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .drag-handle {
+    font-size: 16px; /* 触摸设备上增大手柄尺寸 */
+    padding: 8px;
+  }
+  
+  .draggable-component {
+    /* 触摸设备上增加触摸目标大小 */
+    min-height: 44px;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .drag-handle {
+    color: #000;
+    background: #fff;
+    border: 1px solid #000;
+  }
+  
+  .snap-trigger-area {
+    background: #000;
+    border-color: #fff;
+  }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+  .draggable-component,
+  .drag-handle,
+  .snap-trigger-area,
+  .snap-indicator {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* 深色主题支持 */
+@media (prefers-color-scheme: dark) {
+  .drag-handle {
+    color: #ccc;
+  }
+  
+  .drag-handle:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .snap-trigger-area {
+    background: rgba(100, 200, 255, 0.2);
+    border-color: rgba(100, 200, 255, 0.5);
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .draggable-component {
+    position: static !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+  
+  .drag-handle,
+  .snap-trigger-area {
+    display: none !important;
+  }
+}

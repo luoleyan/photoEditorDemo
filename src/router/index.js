@@ -64,6 +64,11 @@ const routes = [
     path: '/low-priority-components',
     name: 'low-priority-components',
     component: () => import('../views/LowPriorityComponentsDemo.vue')
+  },
+  {
+    path: '/draggable-monitors',
+    name: 'draggable-monitors',
+    component: () => import('../views/DraggableMonitorsDemo.vue')
   }
 ]
 

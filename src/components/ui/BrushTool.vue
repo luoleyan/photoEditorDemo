@@ -241,6 +241,25 @@ export default {
     disabled: {
       type: Boolean,
       default: false
+    },
+
+    // 适配器实例
+    adapter: {
+      type: Object,
+      required: true,
+      validator(value) {
+        return value && (
+          typeof value.startDrawing === 'function' ||
+          typeof value.enableDrawingMode === 'function'
+        );
+      }
+    },
+
+    // 适配器类型
+    adapterType: {
+      type: String,
+      default: 'fabric',
+      validator: value => ['fabric', 'konva', 'tui', 'cropper', 'jimp'].includes(value)
     }
   },
 
@@ -649,7 +668,7 @@ export default {
       /**
        * 开始绘制
        */
-      startDrawing(x, y, pressure) {
+      async startDrawing(x, y, pressure) {
         this.isDrawing = true;
 
         // 记录起始点
@@ -670,6 +689,13 @@ export default {
           isEraser: this.isEraserMode,
           points: [{ x, y, pressure }]
         };
+
+        // 启用适配器绘制模式
+        try {
+          await this._enableAdapterDrawingMode();
+        } catch (error) {
+          console.error('Failed to enable adapter drawing mode:', error);
+        }
 
         // 绘制第一个点
         this.drawPoint(this.previewCtx, x, y, pressure);
@@ -767,7 +793,7 @@ export default {
       /**
        * 完成绘制
        */
-      finishDrawing() {
+      async finishDrawing() {
         if (!this.isDrawing || !this.currentStroke) return;
 
         this.isDrawing = false;
@@ -784,6 +810,18 @@ export default {
 
         // 清除预览画布
         this.previewCtx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
+
+        // 同步到适配器
+        try {
+          await this._syncStrokeToAdapter(this.currentStroke);
+        } catch (error) {
+          console.error('Failed to sync stroke to adapter:', error);
+          this.$emit('error', {
+            type: 'stroke-sync-failed',
+            message: '同步笔触到适配器失败',
+            error
+          });
+        }
 
         // 重置当前笔触
         this.currentStroke = null;
@@ -1160,6 +1198,145 @@ export default {
         const b = parseInt(result[3], 16);
 
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      },
+
+      // ========== 适配器集成方法 ==========
+
+      /**
+       * 启用适配器绘制模式
+       * @returns {Promise<void>}
+       */
+      async _enableAdapterDrawingMode() {
+        if (!this.adapter) return;
+
+        try {
+          // 根据适配器类型启用绘制模式
+          switch (this.adapterType) {
+            case 'fabric':
+              if (typeof this.adapter.enableDrawingMode === 'function') {
+                this.adapter.enableDrawingMode({
+                  width: this.brushSize,
+                  color: this.isEraserMode ? 'transparent' : this.brushColor,
+                  opacity: this.brushOpacity / 100
+                });
+              }
+              break;
+
+            case 'konva':
+              if (typeof this.adapter.startDrawing === 'function') {
+                this.adapter.startDrawing({
+                  strokeWidth: this.brushSize,
+                  stroke: this.isEraserMode ? 'transparent' : this.brushColor,
+                  opacity: this.brushOpacity / 100,
+                  globalCompositeOperation: this.isEraserMode ? 'destination-out' : 'source-over'
+                });
+              }
+              break;
+
+            case 'tui':
+              if (typeof this.adapter.startDrawing === 'function') {
+                this.adapter.startDrawing({
+                  width: this.brushSize,
+                  color: this.isEraserMode ? 'transparent' : this.brushColor
+                });
+              }
+              break;
+
+            default:
+              console.warn(`Drawing mode not supported for adapter type: ${this.adapterType}`);
+          }
+        } catch (error) {
+          console.error('Failed to enable adapter drawing mode:', error);
+          throw error;
+        }
+      },
+
+      /**
+       * 同步笔触到适配器
+       * @param {Object} stroke - 笔触数据
+       * @returns {Promise<void>}
+       */
+      async _syncStrokeToAdapter(stroke) {
+        if (!this.adapter || !stroke) return;
+
+        try {
+          // 根据适配器类型同步笔触
+          switch (this.adapterType) {
+            case 'fabric':
+              await this._syncStrokeToFabric(stroke);
+              break;
+
+            case 'konva':
+              await this._syncStrokeToKonva(stroke);
+              break;
+
+            case 'tui':
+              await this._syncStrokeToTui(stroke);
+              break;
+
+            default:
+              console.warn(`Stroke sync not supported for adapter type: ${this.adapterType}`);
+          }
+        } catch (error) {
+          console.error('Failed to sync stroke to adapter:', error);
+          throw error;
+        }
+      },
+
+      /**
+       * 同步笔触到Fabric适配器
+       * @param {Object} stroke - 笔触数据
+       * @returns {Promise<void>}
+       */
+      async _syncStrokeToFabric(stroke) {
+        if (typeof this.adapter.addPath === 'function') {
+          // 将点转换为SVG路径
+          const pathData = this._convertPointsToSVGPath(stroke.points);
+
+          await this.adapter.addPath(pathData, {
+            stroke: stroke.color,
+            strokeWidth: stroke.size,
+            opacity: stroke.opacity,
+            fill: 'transparent'
+          });
+        }
+      },
+
+      /**
+       * 同步笔触到Konva适配器
+       * @param {Object} stroke - 笔触数据
+       * @returns {Promise<void>}
+       */
+      async _syncStrokeToKonva(stroke) {
+        if (typeof this.adapter.addLine === 'function') {
+          // 将点转换为Konva线条格式
+          const points = stroke.points.flatMap(point => [point.x, point.y]);
+
+          await this.adapter.addLine(points, {
+            stroke: stroke.color,
+            strokeWidth: stroke.size,
+            opacity: stroke.opacity,
+            lineCap: 'round',
+            lineJoin: 'round'
+          });
+        }
+      },
+
+      /**
+       * 将点转换为SVG路径
+       * @param {Array} points - 点数组
+       * @returns {string} SVG路径字符串
+       */
+      _convertPointsToSVGPath(points) {
+        if (!points || points.length === 0) return '';
+
+        let path = `M ${points[0].x} ${points[0].y}`;
+
+        for (let i = 1; i < points.length; i++) {
+          path += ` L ${points[i].x} ${points[i].y}`;
+        }
+
+        return path;
       }
     }
   }

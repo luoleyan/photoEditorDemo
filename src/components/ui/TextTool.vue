@@ -360,6 +360,22 @@ export default {
       type: String,
       default: 'default',
       validator: value => ['default', 'minimal', 'compact'].includes(value)
+    },
+
+    // 适配器实例
+    adapter: {
+      type: Object,
+      required: true,
+      validator(value) {
+        return value && typeof value.addText === 'function';
+      }
+    },
+
+    // 适配器类型
+    adapterType: {
+      type: String,
+      default: 'fabric',
+      validator: value => ['fabric', 'konva', 'tui', 'cropper', 'jimp'].includes(value)
     }
   },
   
@@ -504,47 +520,78 @@ export default {
     /**
      * 处理添加文本
      */
-    handleAddText() {
-      if (this.disabled) return;
+    async handleAddText() {
+      if (this.disabled || !this.adapter) return;
 
-      const newText = {
-        id: `text-${Date.now()}`,
-        content: '双击编辑文本',
-        x: 100,
-        y: 100,
-        fontFamily: this.selectedFont,
-        fontSize: this.fontSize,
-        color: this.textColor,
-        textAlign: this.textAlign,
-        fontWeight: this.textStyle.bold ? 'bold' : 'normal',
-        fontStyle: this.textStyle.italic ? 'italic' : 'normal',
-        textDecoration: this.textStyle.underline ? 'underline' : 'none',
-        rotation: 0,
-        scale: 1,
-        effects: {
-          shadow: { ...this.textEffects.shadow },
-          stroke: { ...this.textEffects.stroke }
+      try {
+        const newText = {
+          id: `text-${Date.now()}`,
+          content: '双击编辑文本',
+          x: 100,
+          y: 100,
+          fontFamily: this.selectedFont,
+          fontSize: this.fontSize,
+          color: this.textColor,
+          textAlign: this.textAlign,
+          fontWeight: this.textStyle.bold ? 'bold' : 'normal',
+          fontStyle: this.textStyle.italic ? 'italic' : 'normal',
+          textDecoration: this.textStyle.underline ? 'underline' : 'none',
+          rotation: 0,
+          scale: 1,
+          effects: {
+            shadow: { ...this.textEffects.shadow },
+            stroke: { ...this.textEffects.stroke }
+          }
+        };
+
+        // 调用适配器添加文本
+        const adapterId = await this._addTextToAdapter(newText);
+        if (adapterId) {
+          newText.adapterId = adapterId;
         }
-      };
 
-      this.textElements.push(newText);
-      this.activeTextId = newText.id;
+        this.textElements.push(newText);
+        this.activeTextId = newText.id;
 
-      this.$emit('text-add', newText);
+        this.$emit('text-add', newText);
+      } catch (error) {
+        console.error('Failed to add text:', error);
+        this.$emit('error', {
+          type: 'text-add-failed',
+          message: '添加文本失败',
+          error
+        });
+      }
     },
 
     /**
      * 处理删除文本
      */
-    handleDeleteText() {
-      if (this.disabled || !this.activeText) return;
+    async handleDeleteText() {
+      if (this.disabled || !this.activeText || !this.adapter) return;
 
-      const index = this.textElements.findIndex(text => text.id === this.activeTextId);
-      if (index !== -1) {
-        const deletedText = this.textElements.splice(index, 1)[0];
-        this.activeTextId = '';
+      try {
+        const index = this.textElements.findIndex(text => text.id === this.activeTextId);
+        if (index !== -1) {
+          const deletedText = this.textElements[index];
 
-        this.$emit('text-delete', deletedText);
+          // 从适配器中删除文本
+          if (deletedText.adapterId) {
+            await this._removeTextFromAdapter(deletedText);
+          }
+
+          this.textElements.splice(index, 1);
+          this.activeTextId = '';
+
+          this.$emit('text-delete', deletedText);
+        }
+      } catch (error) {
+        console.error('Failed to delete text:', error);
+        this.$emit('error', {
+          type: 'text-delete-failed',
+          message: '删除文本失败',
+          error
+        });
       }
     },
 
@@ -578,12 +625,24 @@ export default {
     /**
      * 处理文本编辑完成
      */
-    handleTextEditComplete() {
+    async handleTextEditComplete() {
       if (this.editingTextId && this.editingContent.trim()) {
         const text = this.textElements.find(t => t.id === this.editingTextId);
         if (text) {
           text.content = this.editingContent.trim();
-          this.$emit('text-content-change', text);
+
+          // 同步到适配器
+          try {
+            await this._updateTextInAdapter(text);
+            this.$emit('text-content-change', text);
+          } catch (error) {
+            console.error('Failed to update text content:', error);
+            this.$emit('error', {
+              type: 'text-update-failed',
+              message: '更新文本内容失败',
+              error
+            });
+          }
         }
       }
 
@@ -623,21 +682,43 @@ export default {
     /**
      * 处理字体变化
      */
-    handleFontChange() {
+    async handleFontChange() {
       if (!this.activeText) return;
 
       this.activeText.fontFamily = this.selectedFont;
-      this.$emit('text-style-change', this.activeText);
+
+      try {
+        await this._updateTextInAdapter(this.activeText);
+        this.$emit('text-style-change', this.activeText);
+      } catch (error) {
+        console.error('Failed to update font:', error);
+        this.$emit('error', {
+          type: 'text-style-update-failed',
+          message: '更新字体失败',
+          error
+        });
+      }
     },
 
     /**
      * 处理字号变化
      */
-    handleFontSizeChange() {
+    async handleFontSizeChange() {
       if (!this.activeText) return;
 
       this.activeText.fontSize = this.fontSize;
-      this.$emit('text-style-change', this.activeText);
+
+      try {
+        await this._updateTextInAdapter(this.activeText);
+        this.$emit('text-style-change', this.activeText);
+      } catch (error) {
+        console.error('Failed to update font size:', error);
+        this.$emit('error', {
+          type: 'text-style-update-failed',
+          message: '更新字号失败',
+          error
+        });
+      }
     },
 
     /**
@@ -962,6 +1043,163 @@ export default {
 
       // 将换行符转换为<br>标签
       return content.replace(/\n/g, '<br>');
+    },
+
+    // ========== 适配器集成方法 ==========
+
+    /**
+     * 添加文本到适配器
+     * @param {Object} textData - 文本数据
+     * @returns {Promise<string>} 适配器中的文本ID
+     */
+    async _addTextToAdapter(textData) {
+      if (!this.adapter || typeof this.adapter.addText !== 'function') {
+        console.warn('Adapter does not support addText method');
+        return null;
+      }
+
+      try {
+        // 根据适配器类型调整参数
+        const adapterOptions = this._convertToAdapterFormat(textData);
+
+        // 调用适配器添加文本
+        const result = await this.adapter.addText(
+          textData.content,
+          textData.x,
+          textData.y,
+          adapterOptions
+        );
+
+        return result;
+      } catch (error) {
+        console.error('Failed to add text to adapter:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 从适配器中移除文本
+     * @param {Object} textData - 文本数据
+     * @returns {Promise<void>}
+     */
+    async _removeTextFromAdapter(textData) {
+      if (!this.adapter || !textData.adapterId) {
+        return;
+      }
+
+      try {
+        // 根据适配器类型选择删除方法
+        if (typeof this.adapter.removeText === 'function') {
+          await this.adapter.removeText(textData.adapterId);
+        } else if (typeof this.adapter.removeObject === 'function') {
+          await this.adapter.removeObject(textData.adapterId);
+        } else if (typeof this.adapter.deleteObject === 'function') {
+          await this.adapter.deleteObject(textData.adapterId);
+        } else {
+          console.warn('Adapter does not support text removal');
+        }
+      } catch (error) {
+        console.error('Failed to remove text from adapter:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 更新适配器中的文本
+     * @param {Object} textData - 文本数据
+     * @returns {Promise<void>}
+     */
+    async _updateTextInAdapter(textData) {
+      if (!this.adapter || !textData.adapterId) {
+        return;
+      }
+
+      try {
+        const adapterOptions = this._convertToAdapterFormat(textData);
+
+        // 根据适配器类型选择更新方法
+        if (typeof this.adapter.updateText === 'function') {
+          await this.adapter.updateText(textData.adapterId, adapterOptions);
+        } else if (typeof this.adapter.updateObject === 'function') {
+          await this.adapter.updateObject(textData.adapterId, adapterOptions);
+        } else {
+          // 如果没有更新方法，先删除再添加
+          await this._removeTextFromAdapter(textData);
+          const newId = await this._addTextToAdapter(textData);
+          textData.adapterId = newId;
+        }
+      } catch (error) {
+        console.error('Failed to update text in adapter:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * 转换为适配器格式
+     * @param {Object} textData - 文本数据
+     * @returns {Object} 适配器格式的选项
+     */
+    _convertToAdapterFormat(textData) {
+      const baseOptions = {
+        fontFamily: textData.fontFamily,
+        fontSize: textData.fontSize,
+        fill: textData.color,
+        textAlign: textData.textAlign,
+        fontWeight: textData.fontWeight,
+        fontStyle: textData.fontStyle,
+        textDecoration: textData.textDecoration
+      };
+
+      // 根据适配器类型调整格式
+      switch (this.adapterType) {
+        case 'fabric':
+          return {
+            ...baseOptions,
+            left: textData.x,
+            top: textData.y,
+            angle: textData.rotation || 0,
+            scaleX: textData.scale || 1,
+            scaleY: textData.scale || 1,
+            shadow: textData.effects?.shadow?.enabled ? {
+              color: textData.effects.shadow.color,
+              blur: textData.effects.shadow.blur,
+              offsetX: textData.effects.shadow.offsetX || 2,
+              offsetY: textData.effects.shadow.offsetY || 2
+            } : null,
+            stroke: textData.effects?.stroke?.enabled ? textData.effects.stroke.color : null,
+            strokeWidth: textData.effects?.stroke?.enabled ? textData.effects.stroke.width : 0
+          };
+
+        case 'konva':
+          return {
+            ...baseOptions,
+            x: textData.x,
+            y: textData.y,
+            rotation: textData.rotation || 0,
+            scaleX: textData.scale || 1,
+            scaleY: textData.scale || 1,
+            shadowColor: textData.effects?.shadow?.enabled ? textData.effects.shadow.color : null,
+            shadowBlur: textData.effects?.shadow?.enabled ? textData.effects.shadow.blur : 0,
+            shadowOffsetX: textData.effects?.shadow?.enabled ? (textData.effects.shadow.offsetX || 2) : 0,
+            shadowOffsetY: textData.effects?.shadow?.enabled ? (textData.effects.shadow.offsetY || 2) : 0,
+            stroke: textData.effects?.stroke?.enabled ? textData.effects.stroke.color : null,
+            strokeWidth: textData.effects?.stroke?.enabled ? textData.effects.stroke.width : 0
+          };
+
+        case 'tui':
+          return {
+            styles: {
+              ...baseOptions,
+              textShadow: textData.effects?.shadow?.enabled ?
+                `${textData.effects.shadow.offsetX || 2}px ${textData.effects.shadow.offsetY || 2}px ${textData.effects.shadow.blur}px ${textData.effects.shadow.color}` :
+                'none'
+            },
+            position: { x: textData.x, y: textData.y }
+          };
+
+        default:
+          return baseOptions;
+      }
     }
   }
 };

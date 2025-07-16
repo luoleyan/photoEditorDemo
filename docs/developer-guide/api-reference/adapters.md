@@ -156,7 +156,9 @@ adapter.zoomTo(ratio);
 
 ### TUIAdapter
 
-基于 TUI Image Editor 的完整编辑器适配器。
+基于 TUI Image Editor 的完整编辑器适配器，提供开箱即用的图像编辑界面。
+
+**✅ 状态**: 已完善 - 核心功能已实现，状态管理和导出功能已修复
 
 #### 初始化
 
@@ -164,9 +166,19 @@ adapter.zoomTo(ratio);
 const adapter = new TUIAdapter();
 await adapter.initialize(containerElement, {
   includeUI: {
-    theme: 'dark',
-    menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'filter']
-  }
+    menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'filter'],
+    initMenu: 'filter',
+    uiSize: {
+      width: '100%',
+      height: '100%'
+    },
+    menuBarPosition: 'bottom'
+  },
+  selectionStyle: {
+    cornerSize: 20,
+    rotatingPointOffset: 70
+  },
+  usageStatistics: false
 });
 ```
 
@@ -198,34 +210,120 @@ adapter.applyPresetFilter('vintage');
 - `addObject` - 添加对象事件
 - `undoStackChanged` - 撤销栈变化事件
 
+### CropperAdapter
+
+基于 Cropper.js 的专业裁剪适配器，通过Canvas API扩展支持基础图像调整功能。
+
+**✅ 状态**: 已增强 - 新增亮度、对比度、滤镜功能，完善状态管理
+
+#### 初始化
+
+```javascript
+const adapter = new CropperAdapter();
+await adapter.initialize(containerElement, {
+  aspectRatio: 16 / 9,
+  viewMode: 1,
+  dragMode: 'crop',
+  responsive: true,
+  restore: false,
+  checkCrossOrigin: false,
+  checkOrientation: false,
+  modal: true,
+  guides: true,
+  center: true,
+  highlight: true,
+  background: true,
+  autoCrop: true,
+  autoCropArea: 0.8,
+  movable: true,
+  rotatable: true,
+  scalable: true,
+  zoomable: true,
+  zoomOnTouch: true,
+  zoomOnWheel: true,
+  wheelZoomRatio: 0.1,
+  cropBoxMovable: true,
+  cropBoxResizable: true,
+  toggleDragModeOnDblclick: true
+});
+```
+
+#### 新增功能
+
+```javascript
+// 图像调整功能（通过Canvas API实现）
+await adapter.setBrightness(0.2);  // 设置亮度 (-1 到 1)
+await adapter.setContrast(0.1);    // 设置对比度 (-1 到 1)
+
+// 基础滤镜支持
+await adapter.applyFilter('grayscale');  // 灰度
+await adapter.applyFilter('sepia');      // 棕褐色
+await adapter.applyFilter('blur', { amount: 5 });  // 模糊
+await adapter.applyFilter('invert');     // 反色
+
+// 移除滤镜
+await adapter.removeFilter('grayscale');
+
+// 专业裁剪功能
+const cropData = adapter.getCropData();
+await adapter.applyCrop();
+adapter.cancelCrop();
+```
+
+#### 事件
+
+- `crop-applied` - 裁剪应用事件
+- `crop-cancelled` - 裁剪取消事件
+- `image-adjusted` - 图像调整事件
+
 ### JimpAdapter
 
-基于 Jimp 的纯JavaScript图像处理适配器。
+基于 Jimp 的纯JavaScript图像处理适配器，专注于服务器端和客户端的图像处理。
+
+**✅ 状态**: 已完善 - 核心方法实现完整，状态管理和操作历史已优化
 
 #### 初始化
 
 ```javascript
 const adapter = new JimpAdapter();
-await adapter.initialize(null, {
+await adapter.initialize(containerElement, {
+  width: 800,
+  height: 600,
+  background: '#ffffff',
   quality: 90,
   format: 'png'
 });
 ```
 
-#### 特有方法
+#### 核心功能
 
 ```javascript
-// 批量处理
+// 图像调整（已完善）
+await adapter.setBrightness(0.2);  // 设置亮度 (-1 到 1)
+await adapter.setContrast(0.1);    // 设置对比度 (-1 到 1)
+
+// 丰富的滤镜支持
+await adapter.applyFilter('grayscale');     // 灰度
+await adapter.applyFilter('sepia');         // 棕褐色
+await adapter.applyFilter('blur', { radius: 5 });  // 模糊
+await adapter.applyFilter('invert');        // 反色
+await adapter.applyFilter('posterize', { levels: 5 }); // 色调分离
+await adapter.applyFilter('pixelate', { size: 10 });   // 像素化
+await adapter.applyFilter('dither');        // 抖动
+
+// 智能滤镜移除（通过操作历史重放）
+await adapter.removeFilter('grayscale');
+
+// 图像变换
+await adapter.resize(400, 300);
+await adapter.rotate(90);
+await adapter.flip(true, false);  // 水平翻转
+
+// 批量处理支持
 adapter.batchProcess(operations);
 
 // 获取图像信息
 const info = adapter.getImageInfo();
-
-// 应用复合滤镜
-adapter.applyCompositeFilter([
-  { type: 'blur', radius: 2 },
-  { type: 'brightness', value: 0.2 }
-]);
 ```
 
 #### 事件

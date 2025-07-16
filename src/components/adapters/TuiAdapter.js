@@ -1,4 +1,6 @@
 import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
+import { errorHandler } from '@/utils/ErrorHandler.js';
+import { memoryManager } from '@/utils/MemoryManager.js';
 
 /**
  * TUI Image Editor适配器实现
@@ -10,11 +12,19 @@ class TuiAdapter extends BaseImageEditorAdapter {
     this.adapterType = 'tui';
     this.editor = null;
     this.originalImageData = null;
+    this.stateHistory = new Map();
+    this.currentStateId = null;
     this.performanceMetrics = {
       renderTime: 0,
       lastRenderTime: Date.now(),
-      operationCount: 0
+      operationCount: 0,
+      memoryUsage: 0
     };
+
+    // 注册内存清理回调
+    memoryManager.addCleanupCallback(() => {
+      this._performMemoryCleanup();
+    });
   }
 
   /**
@@ -47,31 +57,41 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doInitialize() {
-    // 检查TUI Image Editor是否已加载
-    if (typeof window.tui === 'undefined' || typeof window.tui.ImageEditor === 'undefined') {
-      throw new Error('TUI Image Editor library is not loaded');
-    }
-
-    // 设置容器ID
-    const containerId = `tui-image-editor-container-${Date.now()}`;
-    this.container.id = containerId;
-
-    // 创建TUI Image Editor实例
-    const options = {
-      ...this.options,
-      includeUI: {
-        ...this.options.includeUI,
-        loadImage: {
-          path: '',
-          name: 'Blank'
-        }
+    return this._safeExecute(async () => {
+      // 检查TUI Image Editor是否已加载
+      if (typeof window.tui === 'undefined' || typeof window.tui.ImageEditor === 'undefined') {
+        throw new Error('TUI Image Editor library is not loaded');
       }
-    };
 
-    this.editor = new window.tui.ImageEditor(`#${containerId}`, options);
-    
-    // 设置事件监听
-    this._setupEventListeners();
+      // 设置容器ID
+      const containerId = `tui-image-editor-container-${Date.now()}`;
+      this.container.id = containerId;
+
+      // 创建TUI Image Editor实例
+      const options = {
+        ...this.options,
+        includeUI: {
+          ...this.options.includeUI,
+          loadImage: {
+            path: '',
+            name: 'Blank'
+          }
+        }
+      };
+
+      this.editor = new window.tui.ImageEditor(`#${containerId}`, options);
+
+      // 注册内存使用
+      const estimatedSize = 50 * 1024 * 1024; // 估算50MB
+      memoryManager.allocate(`tui-editor-${this.adapterType}`, this.editor, estimatedSize);
+
+      // 设置事件监听
+      this._setupEventListeners();
+
+      // 创建初始状态
+      this.currentStateId = this._generateStateId();
+      this.stateHistory.set(this.currentStateId, this._createEmptyState());
+    }, 'initialize', { containerId: this.container.id || 'unknown' });
   }
 
   /**
@@ -79,11 +99,22 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   _doDestroy() {
+    // 清理内存
+    this._performMemoryCleanup();
+
+    // 移除内存管理器回调
+    memoryManager.removeCleanupCallback(this._performMemoryCleanup.bind(this));
+
     if (this.editor) {
+      // 释放编辑器内存
+      memoryManager.deallocate(`tui-editor-${this.adapterType}`);
       this.editor.destroy();
       this.editor = null;
     }
+
     this.originalImageData = null;
+    this.stateHistory.clear();
+    this.currentStateId = null;
   }
 
   /**
@@ -93,27 +124,43 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doLoadImage(imageData) {
-    if (!this.editor) {
-      throw new Error('No editor instance');
-    }
+    return this._safeExecute(async () => {
+      if (!this.editor) {
+        throw new Error('No editor instance');
+      }
 
-    return new Promise((resolve, reject) => {
-      this.editor.loadImageFromURL(imageData.src, 'image')
-        .then(() => {
-          // 保存原始数据
-          this.originalImageData = {
-            src: imageData.src,
-            width: this.editor.getImageWidth(),
-            height: this.editor.getImageHeight()
-          };
-          
-          this._updatePerformanceMetrics();
-          resolve();
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+      // 验证图像数据
+      this._validateImageData(imageData);
+
+      return new Promise((resolve, reject) => {
+        this.editor.loadImageFromURL(imageData.src, 'image')
+          .then(() => {
+            try {
+              // 保存原始数据
+              this.originalImageData = {
+                src: imageData.src,
+                type: imageData.type || 'url',
+                timestamp: Date.now(),
+                width: this.editor.getImageWidth(),
+                height: this.editor.getImageHeight()
+              };
+
+              // 创建新的状态
+              this.currentStateId = this._generateStateId();
+              const state = this._createCurrentState();
+              this.stateHistory.set(this.currentStateId, state);
+
+              this._updatePerformanceMetrics();
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      });
+    }, 'loadImage', { src: imageData.src });
   }
 
   /**
@@ -312,13 +359,25 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doSetPosition(x, y) {
-    if (!this.editor) {
-      throw new Error('No editor instance');
-    }
+    return this._safeExecute(async () => {
+      if (!this.editor) {
+        throw new Error('No editor instance');
+      }
 
-    // TUI Image Editor没有直接的位置设置方法
-    // 这里简化处理
-    this._updatePerformanceMetrics();
+      // TUI Image Editor没有直接的位置设置方法
+      // 尝试通过移动活动对象来实现
+      try {
+        const activeObject = this.editor.getActiveObject();
+        if (activeObject) {
+          this.editor.setObjectPosition(activeObject.id, { x, y });
+        }
+      } catch (error) {
+        // 如果没有活动对象或方法不存在，记录警告但不抛出错误
+        console.warn('Cannot set position in TUI Image Editor:', error.message);
+      }
+
+      this._updatePerformanceMetrics();
+    }, 'setPosition', { x, y });
   }
 
   /**
@@ -345,16 +404,23 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   _doSaveState() {
-    if (!this.editor) {
-      return { timestamp: Date.now() };
-    }
+    return this._safeExecute(() => {
+      if (!this.editor) {
+        return this._createEmptyState();
+      }
 
-    const state = {
-      imageData: this.editor.toDataURL(),
-      timestamp: Date.now(),
-      originalImageData: this.originalImageData ? { ...this.originalImageData } : null
-    };
-    return state;
+      const stateId = this._generateStateId();
+      const state = this._createCurrentState();
+
+      // 保存到历史记录
+      this.stateHistory.set(stateId, state);
+      this.currentStateId = stateId;
+
+      // 限制历史记录数量
+      this._limitStateHistory();
+
+      return stateId;
+    }, 'saveState');
   }
 
   /**
@@ -364,14 +430,29 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doRestoreState(stateId) {
-    const state = this.stateHistory.get(stateId);
-    if (!state || !this.editor) {
-      throw new Error(`State not found or no editor instance: ${stateId}`);
-    }
+    return this._safeExecute(async () => {
+      const state = this.stateHistory.get(stateId);
+      if (!state) {
+        throw new Error(`State not found: ${stateId}`);
+      }
 
-    if (state.imageData) {
-      await this._doLoadImage({ src: state.imageData });
-    }
+      if (!this.editor) {
+        throw new Error('No editor instance');
+      }
+
+      // 恢复图像数据
+      if (state.imageData) {
+        await this.editor.loadImageFromURL(state.imageData, 'restored-image');
+      }
+
+      // 恢复其他状态信息
+      if (state.originalImageData) {
+        this.originalImageData = { ...state.originalImageData };
+      }
+
+      this.currentStateId = stateId;
+      this._updatePerformanceMetrics();
+    }, 'restoreState', { stateId });
   }
 
   /**
@@ -393,14 +474,31 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doToDataURL(type = 'image/png', quality = 0.9) {
-    if (!this.editor) {
-      throw new Error('No editor instance');
-    }
+    return this._safeExecute(async () => {
+      if (!this.editor) {
+        throw new Error('No editor instance');
+      }
 
-    return this.editor.toDataURL({
-      format: type.replace('image/', ''),
-      quality: quality
-    });
+      // 验证参数
+      const validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+      if (!validTypes.includes(type)) {
+        console.warn(`Unsupported image type: ${type}, using image/png instead`);
+        type = 'image/png';
+      }
+
+      if (quality < 0 || quality > 1) {
+        console.warn(`Invalid quality value: ${quality}, using 0.9 instead`);
+        quality = 0.9;
+      }
+
+      // TUI Image Editor的导出选项
+      const exportOptions = {
+        format: type.replace('image/', ''),
+        quality: Math.round(quality * 100) // TUI使用0-100的质量范围
+      };
+
+      return this.editor.toDataURL(exportOptions);
+    }, 'toDataURL', { type, quality });
   }
 
   /**
@@ -411,12 +509,14 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doToBlob(type = 'image/png', quality = 0.9) {
-    if (!this.editor) {
-      throw new Error('No editor instance');
-    }
+    return this._safeExecute(async () => {
+      if (!this.editor) {
+        throw new Error('No editor instance');
+      }
 
-    const dataURL = await this._doToDataURL(type, quality);
-    return this._dataURLToBlob(dataURL);
+      const dataURL = await this._doToDataURL(type, quality);
+      return this._dataURLToBlob(dataURL);
+    }, 'toBlob', { type, quality });
   }
 
   /**
@@ -536,17 +636,112 @@ class TuiAdapter extends BaseImageEditorAdapter {
    * @private
    */
   _dataURLToBlob(dataURL) {
-    const arr = dataURL.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
+    try {
+      const arr = dataURL.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+
+      return new Blob([u8arr], { type: mime });
+    } catch (error) {
+      throw new Error(`Failed to convert DataURL to Blob: ${error.message}`);
     }
-    
-    return new Blob([u8arr], { type: mime });
+  }
+
+  /**
+   * 创建空状态
+   * @returns {Object}
+   * @private
+   */
+  _createEmptyState() {
+    return {
+      id: this._generateStateId(),
+      timestamp: Date.now(),
+      imageData: null,
+      originalImageData: null,
+      editorState: null
+    };
+  }
+
+  /**
+   * 创建当前状态
+   * @returns {Object}
+   * @private
+   */
+  _createCurrentState() {
+    try {
+      return {
+        id: this._generateStateId(),
+        timestamp: Date.now(),
+        imageData: this.editor ? this.editor.toDataURL() : null,
+        originalImageData: this.originalImageData ? { ...this.originalImageData } : null,
+        editorState: this._getEditorState()
+      };
+    } catch (error) {
+      console.warn('Failed to create current state:', error);
+      return this._createEmptyState();
+    }
+  }
+
+  /**
+   * 获取编辑器状态
+   * @returns {Object}
+   * @private
+   */
+  _getEditorState() {
+    if (!this.editor) return null;
+
+    try {
+      return {
+        canvasSize: this.editor.getCanvasSize(),
+        // 可以添加更多状态信息
+      };
+    } catch (error) {
+      console.warn('Failed to get editor state:', error);
+      return null;
+    }
+  }
+
+  /**
+   * 限制状态历史数量
+   * @private
+   */
+  _limitStateHistory() {
+    const maxStates = 50; // 最多保存50个状态
+    if (this.stateHistory.size > maxStates) {
+      const entries = Array.from(this.stateHistory.entries());
+      const toDelete = entries.slice(0, this.stateHistory.size - maxStates);
+
+      toDelete.forEach(([stateId]) => {
+        this.stateHistory.delete(stateId);
+      });
+    }
+  }
+
+  /**
+   * 执行内存清理
+   * @private
+   */
+  _performMemoryCleanup() {
+    // 清理状态历史
+    if (this.stateHistory.size > 20) {
+      const entries = Array.from(this.stateHistory.entries());
+      const toDelete = entries.slice(0, this.stateHistory.size - 20);
+
+      toDelete.forEach(([stateId]) => {
+        this.stateHistory.delete(stateId);
+      });
+    }
+
+    // 强制垃圾回收（如果可用）
+    if (window.gc) {
+      window.gc();
+    }
   }
 }
 
