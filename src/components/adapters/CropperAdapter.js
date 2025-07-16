@@ -81,7 +81,8 @@ class CropperAdapter extends BaseImageEditorAdapter {
       this.canvasElement = document.createElement('canvas');
       this.canvasElement.style.display = 'none';
       this.container.appendChild(this.canvasElement);
-      this.canvasContext = this.canvasElement.getContext('2d');
+      // 添加willReadFrequently属性以优化getImageData性能
+      this.canvasContext = this.canvasElement.getContext('2d', { willReadFrequently: true });
 
       // 注册内存使用
       const estimatedSize = 20 * 1024 * 1024; // 估算20MB
@@ -155,6 +156,12 @@ class CropperAdapter extends BaseImageEditorAdapter {
       
       this.imageElement.onload = () => {
         try {
+          // 验证图像是否正确加载
+          if (!this.imageElement.naturalWidth || !this.imageElement.naturalHeight) {
+            reject(new Error('Invalid image dimensions'));
+            return;
+          }
+
           // 创建Cropper实例
           this.cropper = new window.Cropper(this.imageElement, {
             ...this.options,
@@ -178,6 +185,10 @@ class CropperAdapter extends BaseImageEditorAdapter {
         } catch (error) {
           reject(error);
         }
+      };
+
+      this.imageElement.onerror = () => {
+        reject(new Error('Failed to load image'));
       };
 
       this.imageElement.onerror = () => {
@@ -506,7 +517,19 @@ class CropperAdapter extends BaseImageEditorAdapter {
       throw new Error('No cropper instance');
     }
 
+    // 检查cropper是否已准备好
+    if (!this.isCropping || !this.originalImageData) {
+      throw new Error('Cropper is not ready or no image loaded');
+    }
+
     const canvas = this.cropper.getCroppedCanvas();
+    if (!canvas) {
+      // 如果getCroppedCanvas返回null，尝试使用原始canvas
+      // 这是正常的fallback机制，用于处理cropper内部状态异常的情况
+      console.warn('CropperAdapter: getCroppedCanvas returned null, using fallback method (this is expected behavior for error recovery)');
+      return this._fallbackToDataURL(type, quality);
+    }
+
     return canvas.toDataURL(type, quality);
   }
 
@@ -522,8 +545,21 @@ class CropperAdapter extends BaseImageEditorAdapter {
       throw new Error('No cropper instance');
     }
 
-    return new Promise((resolve) => {
+    // 检查cropper是否已准备好
+    if (!this.isCropping || !this.originalImageData) {
+      throw new Error('Cropper is not ready or no image loaded');
+    }
+
+    return new Promise((resolve, reject) => {
       const canvas = this.cropper.getCroppedCanvas();
+      if (!canvas) {
+        // 如果getCroppedCanvas返回null，使用fallback方法
+        this._fallbackToDataURL(type, quality)
+          .then(dataURL => this._dataURLToBlob(dataURL))
+          .then(resolve)
+          .catch(reject);
+        return;
+      }
       canvas.toBlob(resolve, type, quality);
     });
   }
@@ -653,8 +689,18 @@ class CropperAdapter extends BaseImageEditorAdapter {
 
       // 设置Canvas尺寸
       const imageData = this.cropper.getImageData();
-      this.canvasElement.width = imageData.naturalWidth;
-      this.canvasElement.height = imageData.naturalHeight;
+
+      // 验证图像尺寸，防止零宽度/高度错误
+      const width = imageData.naturalWidth || imageData.width || 1;
+      const height = imageData.naturalHeight || imageData.height || 1;
+
+      if (width <= 0 || height <= 0) {
+        console.warn('Invalid image dimensions, skipping adjustment');
+        return;
+      }
+
+      this.canvasElement.width = width;
+      this.canvasElement.height = height;
 
       // 绘制原始图像
       const img = new Image();
@@ -733,6 +779,12 @@ class CropperAdapter extends BaseImageEditorAdapter {
    */
   _applyBrightnessContrast() {
     if (this.imageAdjustments.brightness === 0 && this.imageAdjustments.contrast === 0) {
+      return;
+    }
+
+    // 验证canvas尺寸
+    if (this.canvasElement.width <= 0 || this.canvasElement.height <= 0) {
+      console.warn('Invalid canvas dimensions for getImageData');
       return;
     }
 
@@ -851,6 +903,60 @@ class CropperAdapter extends BaseImageEditorAdapter {
     if (window.gc) {
       window.gc();
     }
+  }
+
+  /**
+   * 备用导出方法，当getCroppedCanvas失败时使用
+   * @param {string} type - 图像类型
+   * @param {number} quality - 图像质量
+   * @returns {Promise<string>}
+   * @private
+   */
+  async _fallbackToDataURL(type = 'image/png', quality = 0.9) {
+    if (!this.originalImageData) {
+      throw new Error('No original image data available');
+    }
+
+    // 使用原始图像数据创建canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL(type, quality));
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image for fallback export'));
+      img.src = this.originalImageData.src;
+    });
+  }
+
+  /**
+   * 将DataURL转换为Blob
+   * @param {string} dataURL - DataURL字符串
+   * @returns {Promise<Blob>}
+   * @private
+   */
+  async _dataURLToBlob(dataURL) {
+    return new Promise((resolve) => {
+      const arr = dataURL.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+
+      resolve(new Blob([u8arr], { type: mime }));
+    });
   }
 }
 

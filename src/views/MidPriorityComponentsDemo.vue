@@ -77,6 +77,7 @@
             @apply="handleCropApply"
             @cancel="handleCropCancel"
             @reset="handleCropReset"
+            @show-guides-change="handleShowGuidesChange"
           />
         </div>
         
@@ -144,6 +145,9 @@
       <div class="text-demo-container">
         <div class="text-wrapper">
           <text-tool
+            v-if="adapterInitialized && textAdapter"
+            :adapter="textAdapter"
+            :adapter-type="adapterType"
             :background-image="textBackgroundImage"
             :initial-text-elements="textElements"
             :variant="textVariant"
@@ -156,6 +160,9 @@
             @text-rotate="handleTextRotate"
             @text-resize="handleTextResize"
           />
+          <div v-else class="adapter-loading">
+            <p>正在初始化文本适配器...</p>
+          </div>
         </div>
         
         <div class="text-controls">
@@ -278,13 +285,19 @@
               />
               
               <text-tool
-                v-else-if="currentMode === 'text'"
+                v-else-if="currentMode === 'text' && adapterInitialized && textAdapter"
+                :adapter="textAdapter"
+                :adapter-type="adapterType"
                 :background-image="integratedImageSrc"
                 :show-toolbar="false"
                 :initial-text-elements="integratedTextElements"
                 @text-add="handleIntegratedTextAdd"
                 @text-delete="handleIntegratedTextDelete"
               />
+
+              <div v-else-if="currentMode === 'text'" class="adapter-loading">
+                <p>正在初始化文本适配器...</p>
+              </div>
               
               <div v-else class="canvas-placeholder">
                 <img :src="integratedImageSrc" alt="编辑图像" />
@@ -350,6 +363,7 @@ import LayerPanel from '@/components/ui/LayerPanel.vue';
 import CropTool from '@/components/ui/CropTool.vue';
 import TextTool from '@/components/ui/TextTool.vue';
 import EditorContainer from '@/components/ui/EditorContainer.vue';
+import FabricAdapter from '@/components/adapters/FabricAdapter.js';
 
 export default {
   name: 'MidPriorityComponentsDemo',
@@ -453,6 +467,11 @@ export default {
         { name: '背景4', src: 'https://picsum.photos/800/600?random=23' }
       ],
 
+      // 适配器相关
+      textAdapter: null,
+      adapterType: 'fabric',
+      adapterInitialized: false,
+
       // 集成演示相关
       editorTheme: 'light',
       editorLoading: false,
@@ -486,6 +505,18 @@ export default {
     };
   },
 
+  async mounted() {
+    // 初始化适配器
+    await this.initializeAdapter();
+  },
+
+  beforeDestroy() {
+    // 清理适配器
+    if (this.textAdapter) {
+      this.textAdapter.destroy();
+    }
+  },
+
   computed: {
     // 可见图层数量
     visibleLayersCount() {
@@ -504,6 +535,91 @@ export default {
   },
 
   methods: {
+    // ========== 适配器相关方法 ==========
+
+    /**
+     * 初始化适配器
+     */
+    async initializeAdapter() {
+      try {
+        // 创建一个临时的canvas元素用于适配器
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        canvas.style.display = 'none';
+        document.body.appendChild(canvas);
+
+        // 初始化Fabric适配器
+        this.textAdapter = new FabricAdapter();
+        await this.textAdapter.initialize(canvas, {
+          width: 800,
+          height: 600,
+          backgroundColor: 'transparent'
+        });
+
+        this.adapterInitialized = true;
+        console.log('TextTool adapter initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize adapter:', error);
+        // 创建一个mock适配器作为fallback
+        this.textAdapter = this.createMockAdapter();
+        this.adapterInitialized = true;
+      }
+    },
+
+    /**
+     * 创建Mock适配器（用于fallback）
+     */
+    createMockAdapter() {
+      return {
+        // 文本操作方法
+        addText: async (content, x, y, options = {}) => {
+          console.log('Mock adapter: addText called', { content, x, y, options });
+          return `mock-text-${Date.now()}`;
+        },
+        removeText: async (id) => {
+          console.log('Mock adapter: removeText called', { id });
+          return Promise.resolve();
+        },
+        updateText: async (id, options = {}) => {
+          console.log('Mock adapter: updateText called', { id, options });
+          return Promise.resolve();
+        },
+        removeObject: async (id) => {
+          console.log('Mock adapter: removeObject called', { id });
+          return Promise.resolve();
+        },
+        updateObject: async (id, options = {}) => {
+          console.log('Mock adapter: updateObject called', { id, options });
+          return Promise.resolve();
+        },
+
+        // 基础适配器方法
+        initialize: async (container, options = {}) => {
+          console.log('Mock adapter: initialize called', { container, options });
+          return Promise.resolve();
+        },
+        destroy: () => {
+          console.log('Mock adapter: destroy called');
+        },
+
+        // 图像操作方法
+        loadImage: async (imageData) => {
+          console.log('Mock adapter: loadImage called', { imageData });
+          return Promise.resolve();
+        },
+
+        // 性能指标
+        getPerformanceMetrics: () => {
+          return {
+            renderTime: 0,
+            operationCount: 0,
+            memoryUsage: 0
+          };
+        }
+      };
+    },
+
     // ========== 图层管理相关方法 ==========
 
     /**
@@ -686,6 +802,13 @@ export default {
      */
     handleCropChange(cropArea) {
       this.currentCropArea = cropArea;
+    },
+
+    /**
+     * 处理显示参考线变化
+     */
+    handleShowGuidesChange(showGuides) {
+      this.showCropGuides = showGuides;
     },
 
     /**
@@ -1413,5 +1536,18 @@ input[type="checkbox"] {
   .toolbar-section {
     justify-content: center;
   }
+}
+
+/* 适配器加载状态 */
+.adapter-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: #f5f5f5;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  color: #666;
+  font-size: 16px;
 }
 </style>

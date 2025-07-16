@@ -46,15 +46,131 @@ class BaseImageEditorAdapter {
    */
   destroy() {
     if (!this.isInitialized) return;
-    
+
     try {
+      console.log(`BaseImageEditorAdapter: Starting destruction of ${this.adapterType} adapter`);
+
+      // 调用子类的销毁方法
       this._doDestroy();
-      this.eventListeners.clear();
+
+      // 安全清理基类属性
+      this._safeCleanup();
+
+      console.log(`BaseImageEditorAdapter: ${this.adapterType} adapter destroyed successfully`);
+
+    } catch (error) {
+      console.error(`Failed to destroy ${this.adapterType} adapter:`, error);
+
+      // 即使出错也要进行基本清理
+      this._emergencyCleanup();
+    }
+  }
+
+  /**
+   * 安全清理基类属性
+   * @private
+   */
+  _safeCleanup() {
+    try {
+      // 清理事件监听器
+      if (this.eventListeners && typeof this.eventListeners.clear === 'function') {
+        this.eventListeners.clear();
+      }
+      this.eventListeners = null;
+
+      // 清理图像数据
+      this.currentImageData = null;
+
+      // 标记为未初始化
+      this.isInitialized = false;
+
+      // 清理容器引用
+      this.container = null;
+
+    } catch (error) {
+      console.warn(`Safe cleanup failed for ${this.adapterType}:`, error);
+    }
+  }
+
+  /**
+   * 紧急清理（当正常清理失败时）
+   * @private
+   */
+  _emergencyCleanup() {
+    try {
+      console.warn(`Performing emergency cleanup for ${this.adapterType} adapter`);
+
+      // 强制清理所有属性
+      this.eventListeners = null;
       this.currentImageData = null;
       this.isInitialized = false;
       this.container = null;
+
     } catch (error) {
-      console.error(`Failed to destroy ${this.adapterType} adapter:`, error);
+      console.error(`Emergency cleanup failed for ${this.adapterType}:`, error);
+    }
+  }
+
+  /**
+   * 安全清理Map或Set对象
+   * @param {Map|Set} collection - 要清理的集合
+   * @param {string} name - 集合名称（用于日志）
+   * @protected
+   */
+  _safeCollectionCleanup(collection, name = 'collection') {
+    if (!collection) {
+      return;
+    }
+
+    try {
+      if (typeof collection.clear === 'function') {
+        collection.clear();
+        console.log(`${this.adapterType}: ${name} cleared successfully`);
+      } else {
+        console.warn(`${this.adapterType}: ${name} does not have clear method`);
+      }
+    } catch (error) {
+      console.warn(`${this.adapterType}: Failed to clear ${name}:`, error);
+    }
+  }
+
+  /**
+   * 安全移除DOM元素
+   * @param {HTMLElement} element - 要移除的元素
+   * @param {string} name - 元素名称（用于日志）
+   * @protected
+   */
+  _safeDOMCleanup(element, name = 'element') {
+    if (!element) {
+      return;
+    }
+
+    try {
+      if (element.parentNode) {
+        element.parentNode.removeChild(element);
+        console.log(`${this.adapterType}: ${name} removed from DOM`);
+      }
+    } catch (error) {
+      console.warn(`${this.adapterType}: Failed to remove ${name} from DOM:`, error);
+    }
+  }
+
+  /**
+   * 安全清理数组
+   * @param {Array} array - 要清理的数组
+   * @param {string} name - 数组名称（用于日志）
+   * @protected
+   */
+  _safeArrayCleanup(array, name = 'array') {
+    if (!Array.isArray(array)) {
+      return;
+    }
+
+    try {
+      array.length = 0; // 清空数组
+      console.log(`${this.adapterType}: ${name} cleared successfully`);
+    } catch (error) {
+      console.warn(`${this.adapterType}: Failed to clear ${name}:`, error);
     }
   }
 

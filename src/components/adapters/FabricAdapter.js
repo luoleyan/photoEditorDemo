@@ -2,6 +2,7 @@ import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
 import PerformanceOptimizer from '@/utils/PerformanceOptimizer.js';
 import { memoryManager } from '@/utils/MemoryManager.js';
 import { mobileAdapter } from '@/utils/MobileAdapter.js';
+import { fabric } from 'fabric';
 
 /**
  * Fabric.js适配器实现
@@ -29,10 +30,9 @@ class FabricAdapter extends BaseImageEditorAdapter {
     this.isMobile = mobileAdapter.getDeviceInfo().isMobile;
     this.touchHandler = null;
 
-    // 注册内存清理回调
-    memoryManager.addCleanupCallback(() => {
-      this._performMemoryCleanup();
-    });
+    // 注册内存清理回调 - 保存引用以便后续移除
+    this._memoryCleanupCallback = this._performMemoryCleanup.bind(this);
+    memoryManager.addCleanupCallback(this._memoryCleanupCallback);
   }
 
   /**
@@ -61,17 +61,19 @@ class FabricAdapter extends BaseImageEditorAdapter {
   async _doInitialize() {
     return this._safeExecute(async () => {
       // 检查Fabric.js是否已加载
-      if (typeof window.fabric === 'undefined') {
+      if (typeof fabric === 'undefined' || !fabric.Canvas) {
         throw new Error('Fabric.js library is not loaded');
       }
 
       // 创建canvas元素
       const canvasElement = document.createElement('canvas');
       canvasElement.id = `fabric-canvas-${Date.now()}`;
+      // 添加willReadFrequently属性以优化getImageData性能
+      const context = canvasElement.getContext('2d', { willReadFrequently: true });
       this.container.appendChild(canvasElement);
 
       // 初始化Fabric.js Canvas
-      this.canvas = new window.fabric.Canvas(canvasElement, {
+      this.canvas = new fabric.Canvas(canvasElement, {
         width: this.options.width,
         height: this.options.height,
         backgroundColor: this.options.backgroundColor,
@@ -101,8 +103,16 @@ class FabricAdapter extends BaseImageEditorAdapter {
     // 清理内存
     this._performMemoryCleanup();
 
-    // 移除内存管理器回调
-    memoryManager.removeCleanupCallback(this._performMemoryCleanup.bind(this));
+    // 移除内存管理器回调 - 使用保存的引用
+    try {
+      if (this._memoryCleanupCallback) {
+        memoryManager.removeCleanupCallback(this._memoryCleanupCallback);
+        this._memoryCleanupCallback = null;
+        console.log('FabricAdapter: Memory cleanup callback removed successfully');
+      }
+    } catch (error) {
+      console.warn('FabricAdapter: Failed to remove cleanup callback:', error);
+    }
 
     if (this.canvas) {
       // 释放Canvas内存
@@ -112,7 +122,14 @@ class FabricAdapter extends BaseImageEditorAdapter {
     }
 
     if (this.currentImage) {
-      memoryManager.deallocate(`fabric-image-${this.adapterType}`);
+      // 清理所有相关的图像内存分配
+      const allocatedObjects = memoryManager.getAllocatedObjects();
+      for (const [id, allocation] of allocatedObjects) {
+        if (id.startsWith(`fabric-image-${this.adapterType}`) && allocation.object === this.currentImage) {
+          memoryManager.deallocate(id);
+          break;
+        }
+      }
       this.currentImage = null;
     }
 
@@ -139,7 +156,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
       });
 
       return new Promise((resolve, reject) => {
-        window.fabric.Image.fromURL(optimizedImage.src, (img) => {
+        fabric.Image.fromURL(optimizedImage.src, (img) => {
           if (!img) {
             reject(new Error('Failed to load image'));
             return;
@@ -189,7 +206,8 @@ class FabricAdapter extends BaseImageEditorAdapter {
 
           // 注册内存使用
           const estimatedSize = imgWidth * imgHeight * 4; // RGBA
-          memoryManager.allocate(`fabric-image-${this.adapterType}`, img, estimatedSize);
+          const imageId = `fabric-image-${this.adapterType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          memoryManager.allocate(imageId, img, estimatedSize);
 
           // 更新性能指标
           this._updatePerformanceMetrics();
@@ -244,7 +262,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
     }
 
     // 创建裁剪矩形
-    const clipPath = new window.fabric.Rect({
+    const clipPath = new fabric.Rect({
       left: x,
       top: y,
       width: width,
@@ -323,7 +341,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
 
     // 添加新的亮度滤镜
     if (value !== 0) {
-      const brightnessFilter = new window.fabric.Image.filters.Brightness({
+      const brightnessFilter = new fabric.Image.filters.Brightness({
         brightness: value
       });
       this.currentImage.filters.push(brightnessFilter);
@@ -350,7 +368,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
 
     // 添加新的对比度滤镜
     if (value !== 0) {
-      const contrastFilter = new window.fabric.Image.filters.Contrast({
+      const contrastFilter = new fabric.Image.filters.Contrast({
         contrast: value
       });
       this.currentImage.filters.push(contrastFilter);
@@ -380,21 +398,21 @@ class FabricAdapter extends BaseImageEditorAdapter {
     let filter = null;
     switch (filterType.toLowerCase()) {
       case 'grayscale':
-        filter = new window.fabric.Image.filters.Grayscale();
+        filter = new fabric.Image.filters.Grayscale();
         break;
       case 'sepia':
-        filter = new window.fabric.Image.filters.Sepia();
+        filter = new fabric.Image.filters.Sepia();
         break;
       case 'invert':
-        filter = new window.fabric.Image.filters.Invert();
+        filter = new fabric.Image.filters.Invert();
         break;
       case 'blur':
-        filter = new window.fabric.Image.filters.Blur({
+        filter = new fabric.Image.filters.Blur({
           blur: options.blur || 0.1
         });
         break;
       case 'noise':
-        filter = new window.fabric.Image.filters.Noise({
+        filter = new fabric.Image.filters.Noise({
           noise: options.noise || 100
         });
         break;
@@ -652,8 +670,8 @@ class FabricAdapter extends BaseImageEditorAdapter {
     this.canvas.fireMiddleClick = false;
 
     // 启用对象缓存
-    window.fabric.Object.prototype.objectCaching = !this.isMobile; // 移动端禁用缓存以节省内存
-    window.fabric.Object.prototype.statefullCache = !this.isMobile;
+    fabric.Object.prototype.objectCaching = !this.isMobile; // 移动端禁用缓存以节省内存
+    fabric.Object.prototype.statefullCache = !this.isMobile;
   }
 
   /**
@@ -792,38 +810,206 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   _performMemoryCleanup() {
     try {
+      // 检查适配器是否已被销毁
+      if (!this.stateHistory || !this.canvas) {
+        console.log('FabricAdapter: Adapter already destroyed, skipping memory cleanup');
+        return;
+      }
+
       // 清理性能优化器缓存
-      if (this.performanceOptimizer) {
-        this.performanceOptimizer.cleanupMemory();
+      if (this.performanceOptimizer && typeof this.performanceOptimizer.cleanupMemory === 'function') {
+        try {
+          this.performanceOptimizer.cleanupMemory();
+        } catch (error) {
+          console.warn('FabricAdapter: Failed to cleanup performance optimizer:', error);
+        }
       }
 
-      // 清理状态历史
-      if (this.stateHistory.size > 10) {
-        const entries = Array.from(this.stateHistory.entries());
-        const toDelete = entries.slice(0, this.stateHistory.size - 5);
-        toDelete.forEach(([key]) => {
-          this.stateHistory.delete(key);
-        });
+      // 安全清理状态历史
+      if (this.stateHistory && typeof this.stateHistory.size === 'number' && this.stateHistory.size > 10) {
+        try {
+          const entries = Array.from(this.stateHistory.entries());
+          const toDelete = entries.slice(0, this.stateHistory.size - 5);
+          toDelete.forEach(([key]) => {
+            if (this.stateHistory && typeof this.stateHistory.delete === 'function') {
+              this.stateHistory.delete(key);
+            }
+          });
+          console.log(`FabricAdapter: Cleaned up ${toDelete.length} old state entries`);
+        } catch (error) {
+          console.warn('FabricAdapter: Failed to cleanup state history:', error);
+        }
       }
 
-      // 清理Canvas缓存
-      if (this.canvas) {
-        // 清理未使用的对象
-        const objects = this.canvas.getObjects();
-        objects.forEach(obj => {
-          if (obj !== this.currentImage && obj.opacity === 0) {
-            this.canvas.remove(obj);
+      // 安全清理Canvas缓存
+      if (this.canvas && typeof this.canvas.getObjects === 'function') {
+        try {
+          // 清理未使用的对象
+          const objects = this.canvas.getObjects();
+          let removedCount = 0;
+          objects.forEach(obj => {
+            if (obj !== this.currentImage && obj.opacity === 0) {
+              this.canvas.remove(obj);
+              removedCount++;
+            }
+          });
+
+          // 强制重新渲染以清理缓存
+          if (typeof this.canvas.renderAll === 'function') {
+            this.canvas.renderAll();
           }
-        });
 
-        // 强制重新渲染以清理缓存
-        this.canvas.renderAll();
+          if (removedCount > 0) {
+            console.log(`FabricAdapter: Removed ${removedCount} unused canvas objects`);
+          }
+        } catch (error) {
+          console.warn('FabricAdapter: Failed to cleanup canvas cache:', error);
+        }
       }
 
-      console.log('FabricAdapter 内存清理完成');
+      console.log('FabricAdapter: Memory cleanup completed successfully');
     } catch (error) {
-      console.error('FabricAdapter 内存清理失败:', error);
+      console.error('FabricAdapter: Critical error during memory cleanup:', error);
+      // 即使出错也不抛出异常，避免影响其他清理操作
     }
+  }
+
+  // ========== 文本操作方法 ==========
+
+  /**
+   * 添加文本对象
+   * @param {string} content - 文本内容
+   * @param {number} x - X坐标
+   * @param {number} y - Y坐标
+   * @param {Object} options - 文本选项
+   * @returns {Promise<string>} 文本对象ID
+   */
+  async addText(content, x, y, options = {}) {
+    return this._safeExecute(async () => {
+      if (!this.canvas) {
+        throw new Error('Canvas not initialized');
+      }
+
+      // 创建文本对象
+      const textObject = new fabric.Text(content, {
+        left: x,
+        top: y,
+        fontFamily: options.fontFamily || 'Arial',
+        fontSize: options.fontSize || 24,
+        fill: options.fill || options.color || '#000000',
+        textAlign: options.textAlign || 'left',
+        fontWeight: options.fontWeight || 'normal',
+        fontStyle: options.fontStyle || 'normal',
+        textDecoration: options.textDecoration || 'none',
+        angle: options.angle || options.rotation || 0,
+        scaleX: options.scaleX || options.scale || 1,
+        scaleY: options.scaleY || options.scale || 1,
+        shadow: options.shadow || null,
+        stroke: options.stroke || null,
+        strokeWidth: options.strokeWidth || 0,
+        selectable: true,
+        moveable: true,
+        editable: true
+      });
+
+      // 生成唯一ID
+      const textId = `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      textObject.set('id', textId);
+
+      // 添加到画布
+      this.canvas.add(textObject);
+      this.canvas.setActiveObject(textObject);
+      this.canvas.renderAll();
+
+      // 更新性能指标
+      this._updatePerformanceMetrics();
+
+      return textId;
+    });
+  }
+
+  /**
+   * 移除文本对象
+   * @param {string} textId - 文本对象ID
+   * @returns {Promise<void>}
+   */
+  async removeText(textId) {
+    return this._safeExecute(async () => {
+      if (!this.canvas) {
+        throw new Error('Canvas not initialized');
+      }
+
+      const textObject = this.canvas.getObjects().find(obj => obj.id === textId);
+      if (textObject) {
+        this.canvas.remove(textObject);
+        this.canvas.renderAll();
+        this._updatePerformanceMetrics();
+      }
+    });
+  }
+
+  /**
+   * 更新文本对象
+   * @param {string} textId - 文本对象ID
+   * @param {Object} options - 更新选项
+   * @returns {Promise<void>}
+   */
+  async updateText(textId, options = {}) {
+    return this._safeExecute(async () => {
+      if (!this.canvas) {
+        throw new Error('Canvas not initialized');
+      }
+
+      const textObject = this.canvas.getObjects().find(obj => obj.id === textId);
+      if (textObject) {
+        // 更新文本属性
+        if (options.content !== undefined) textObject.set('text', options.content);
+        if (options.fontFamily !== undefined) textObject.set('fontFamily', options.fontFamily);
+        if (options.fontSize !== undefined) textObject.set('fontSize', options.fontSize);
+        if (options.fill !== undefined || options.color !== undefined) {
+          textObject.set('fill', options.fill || options.color);
+        }
+        if (options.textAlign !== undefined) textObject.set('textAlign', options.textAlign);
+        if (options.fontWeight !== undefined) textObject.set('fontWeight', options.fontWeight);
+        if (options.fontStyle !== undefined) textObject.set('fontStyle', options.fontStyle);
+        if (options.textDecoration !== undefined) textObject.set('textDecoration', options.textDecoration);
+        if (options.angle !== undefined || options.rotation !== undefined) {
+          textObject.set('angle', options.angle || options.rotation);
+        }
+        if (options.scaleX !== undefined || options.scale !== undefined) {
+          textObject.set('scaleX', options.scaleX || options.scale);
+        }
+        if (options.scaleY !== undefined || options.scale !== undefined) {
+          textObject.set('scaleY', options.scaleY || options.scale);
+        }
+        if (options.shadow !== undefined) textObject.set('shadow', options.shadow);
+        if (options.stroke !== undefined) textObject.set('stroke', options.stroke);
+        if (options.strokeWidth !== undefined) textObject.set('strokeWidth', options.strokeWidth);
+
+        textObject.setCoords();
+        this.canvas.renderAll();
+        this._updatePerformanceMetrics();
+      }
+    });
+  }
+
+  /**
+   * 移除对象（通用方法）
+   * @param {string} objectId - 对象ID
+   * @returns {Promise<void>}
+   */
+  async removeObject(objectId) {
+    return this.removeText(objectId);
+  }
+
+  /**
+   * 更新对象（通用方法）
+   * @param {string} objectId - 对象ID
+   * @param {Object} options - 更新选项
+   * @returns {Promise<void>}
+   */
+  async updateObject(objectId, options = {}) {
+    return this.updateText(objectId, options);
   }
 }
 

@@ -39,9 +39,9 @@
         class="history-list"
         ref="historyList"
       >
-        <div 
-          v-for="(item, index) in filteredItems" 
-          :key="item.id"
+        <div
+          v-for="(item, index) in filteredItems"
+          :key="getItemKey(item, index)"
           class="history-item"
           :class="{ 
             'active': isItemActive(item), 
@@ -131,9 +131,9 @@
     <div v-if="showBranches && branches.length > 0" class="branches-section">
       <h4 class="branches-title">历史分支</h4>
       <div class="branches-list">
-        <div 
-          v-for="branch in branches" 
-          :key="branch.id"
+        <div
+          v-for="(branch, index) in branches"
+          :key="getBranchKey(branch, index)"
           class="branch-item"
           :class="{ 'active': branch.id === activeBranchId }"
           @click="handleBranchClick(branch)"
@@ -321,7 +321,12 @@ export default {
   },
   
   mounted() {
-    this.scrollToActiveItem();
+    // 延迟执行滚动，确保页面已完全加载且不影响初始页面位置
+    this.$nextTick(() => {
+      setTimeout(() => {
+        this.scrollToActiveItem();
+      }, 100); // 100ms延迟，避免影响页面初始滚动位置
+    });
   },
   
   methods: {
@@ -454,18 +459,39 @@ export default {
     },
     
     /**
-     * 滚动到活动项
+     * 滚动到活动项（仅在组件内部滚动，不影响页面滚动）
      */
     scrollToActiveItem() {
       if (this.activeIndex < 0 || !this.$refs.historyList) {
         return;
       }
-      
+
       const historyItems = this.$refs.historyList.querySelectorAll('.history-item');
       if (historyItems.length > this.activeIndex) {
         const activeItem = historyItems[this.activeIndex];
-        if (activeItem) {
-          activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const container = this.$refs.historyList;
+
+        if (activeItem && container) {
+          // 计算相对于容器的位置
+          const containerRect = container.getBoundingClientRect();
+          const itemRect = activeItem.getBoundingClientRect();
+
+          // 检查项目是否在可视区域内
+          const isVisible = (
+            itemRect.top >= containerRect.top &&
+            itemRect.bottom <= containerRect.bottom
+          );
+
+          // 只有当项目不在可视区域时才滚动
+          if (!isVisible) {
+            const scrollTop = activeItem.offsetTop - container.offsetTop - (container.clientHeight / 2) + (activeItem.clientHeight / 2);
+
+            // 使用平滑滚动，但限制在容器内
+            container.scrollTo({
+              top: Math.max(0, Math.min(scrollTop, container.scrollHeight - container.clientHeight)),
+              behavior: 'smooth'
+            });
+          }
         }
       }
     },
@@ -511,6 +537,73 @@ export default {
       return index < this.activeIndex ? '跳转到此步骤' : '重做到此步骤';
     },
     
+    /**
+     * 获取历史项的安全key值
+     * @param {Object} item - 历史项
+     * @param {number} index - 索引
+     * @returns {string} 安全的key值
+     */
+    getItemKey(item, index) {
+      // 首先验证item是否是有效的历史项对象
+      if (!item || typeof item !== 'object') {
+        console.warn('HistoryPanel: item is not a valid object, using index as key:', item);
+        return `item-invalid-${index}`;
+      }
+
+      // 检查是否是事件对象（常见的错误情况）
+      if (item.constructor && (
+        item.constructor.name === 'PointerEvent' ||
+        item.constructor.name === 'MouseEvent' ||
+        item.constructor.name === 'Event' ||
+        item.type !== undefined // 事件对象通常有type属性
+      )) {
+        console.error('HistoryPanel: 检测到事件对象被传递为历史项，这是一个错误:', item);
+        return `item-event-error-${index}`;
+      }
+
+      // 确保返回原始值（字符串或数字）
+      if (item.id !== null && item.id !== undefined) {
+        // 如果id是对象或数组，转换为字符串
+        if (typeof item.id === 'object') {
+          console.warn('HistoryPanel: item.id is not a primitive value, converting to string:', item.id);
+          try {
+            return `item-${JSON.stringify(item.id)}-${index}`;
+          } catch (error) {
+            console.error('HistoryPanel: 无法序列化item.id，使用fallback:', error);
+            return `item-serialize-error-${index}`;
+          }
+        }
+        // 确保id是字符串
+        return String(item.id);
+      }
+
+      // 如果没有有效的id，使用索引作为fallback
+      console.warn('HistoryPanel: item.id is missing or invalid, using index as key:', item);
+      return `item-fallback-${index}`;
+    },
+
+    /**
+     * 获取分支的安全key值
+     * @param {Object} branch - 分支对象
+     * @param {number} index - 索引
+     * @returns {string} 安全的key值
+     */
+    getBranchKey(branch, index) {
+      // 确保返回原始值（字符串或数字）
+      if (branch && branch.id !== null && branch.id !== undefined) {
+        // 如果id是对象或数组，转换为字符串
+        if (typeof branch.id === 'object') {
+          console.warn('HistoryPanel: branch.id is not a primitive value, converting to string:', branch.id);
+          return `branch-${JSON.stringify(branch.id)}-${index}`;
+        }
+        // 确保id是字符串
+        return String(branch.id);
+      }
+      // 如果没有有效的id，使用索引作为fallback
+      console.warn('HistoryPanel: branch.id is missing or invalid, using index as key:', branch);
+      return `branch-fallback-${index}`;
+    },
+
     /**
      * 格式化时间戳
      */

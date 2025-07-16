@@ -87,12 +87,9 @@ class AdapterFactory {
         break;
 
       case 'tui':
-        if (!window.tui || !window.tui.ImageEditor) {
-          await Promise.all([
-            this._loadScript('https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.min.js'),
-            this._loadStylesheet('https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.min.css')
-          ]);
-        }
+        // TUI Image Editor is imported as npm package in TuiAdapter
+        // No need to load from CDN
+        console.log('TUI Image Editor will be loaded via npm import in TuiAdapter');
         break;
 
       case 'jimp':
@@ -173,6 +170,29 @@ class AdapterFactory {
       link.onerror = (error) => reject(new Error(`Failed to load stylesheet: ${url}`));
       document.head.appendChild(link);
     });
+  }
+
+  /**
+   * 等待TUI库完全加载
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _waitForTuiLibrary() {
+    const maxAttempts = 50; // 最多等待5秒
+    const interval = 100; // 每100ms检查一次
+
+    for (let i = 0; i < maxAttempts; i++) {
+      if (window.tui &&
+          window.tui.ImageEditor &&
+          typeof window.tui.ImageEditor === 'function') {
+        console.log('TUI Image Editor library loaded successfully');
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+
+    throw new Error('TUI Image Editor library failed to load within timeout period');
   }
 }
 

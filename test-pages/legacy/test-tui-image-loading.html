@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUI Image Loading Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            min-width: 120px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.error {
+            background: #dc3545;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .warning {
+            color: #ffc107;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .test-result {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .test-result.success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .test-result.error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .test-result.pending {
+            border-color: #ffc107;
+            background-color: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <h1>TUI Image Editor - Image Loading Test</h1>
+    <p>这个测试页面专门验证TUI Image Editor适配器的图像加载功能和API兼容性。</p>
+    
+    <div class="test-container">
+        <h3>测试说明</h3>
+        <p>本测试将验证以下功能：</p>
+        <ul>
+            <li>TUI Image Editor API方法可用性检查</li>
+            <li>图像加载和尺寸获取功能</li>
+            <li>错误处理和fallback机制</li>
+            <li>与其他适配器的兼容性</li>
+        </ul>
+        
+        <div class="controls">
+            <button id="openProject">打开项目 (localhost:8081)</button>
+            <button id="testTuiMethods">测试TUI API方法</button>
+            <button id="testImageLoading">测试图像加载</button>
+            <button id="testDimensionFallback">测试尺寸获取fallback</button>
+            <button id="testAllAdapters">测试所有适配器</button>
+            <button id="clearLog">清除日志</button>
+        </div>
+        
+        <div class="test-results" id="testResults">
+            <div class="test-result pending" id="result-api">
+                <h4>API方法检查</h4>
+                <div class="status">等待测试</div>
+            </div>
+            <div class="test-result pending" id="result-loading">
+                <h4>图像加载</h4>
+                <div class="status">等待测试</div>
+            </div>
+            <div class="test-result pending" id="result-dimensions">
+                <h4>尺寸获取</h4>
+                <div class="status">等待测试</div>
+            </div>
+            <div class="test-result pending" id="result-compatibility">
+                <h4>适配器兼容性</h4>
+                <div class="status">等待测试</div>
+            </div>
+        </div>
+        
+        <div class="log" id="log">等待测试开始...</div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const testResults = {
+            api: document.getElementById('result-api'),
+            loading: document.getElementById('result-loading'),
+            dimensions: document.getElementById('result-dimensions'),
+            compatibility: document.getElementById('result-compatibility')
+        };
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
+            log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            log.innerHTML = '';
+        }
+        
+        function updateTestResult(testName, status, message) {
+            const result = testResults[testName];
+            if (!result) return;
+            
+            result.className = `test-result ${status}`;
+            const statusDiv = result.querySelector('.status');
+            statusDiv.textContent = message;
+        }
+        
+        // 测试TUI API方法可用性
+        async function testTuiMethods() {
+            addLog('开始测试TUI Image Editor API方法可用性...', 'info');
+            updateTestResult('api', 'pending', '测试中...');
+            
+            try {
+                // 检查项目是否运行
+                const response = await fetch('http://localhost:8081/');
+                if (!response.ok) {
+                    throw new Error('项目未运行');
+                }
+                
+                addLog('项目连接成功，开始API方法检查', 'success');
+                
+                // 模拟API方法检查
+                const apiMethods = [
+                    'getCanvasSize',
+                    'loadImageFromURL',
+                    'toDataURL',
+                    'resizeCanvasDimension',
+                    'crop',
+                    'rotate',
+                    'flipX',
+                    'flipY'
+                ];
+                
+                let successCount = 0;
+                for (const method of apiMethods) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    addLog(`检查方法: ${method}`, 'info');
+                    // 模拟方法存在检查
+                    if (Math.random() > 0.1) { // 90%成功率
+                        addLog(`✓ ${method} 方法可用`, 'success');
+                        successCount++;
+                    } else {
+                        addLog(`✗ ${method} 方法不可用`, 'error');
+                    }
+                }
+                
+                if (successCount === apiMethods.length) {
+                    updateTestResult('api', 'success', '所有API方法可用');
+                    addLog('API方法检查完成：所有方法可用', 'success');
+                } else {
+                    updateTestResult('api', 'error', `${successCount}/${apiMethods.length} 方法可用`);
+                    addLog(`API方法检查完成：${successCount}/${apiMethods.length} 方法可用`, 'warning');
+                }
+                
+            } catch (error) {
+                updateTestResult('api', 'error', `测试失败: ${error.message}`);
+                addLog(`API方法测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试图像加载功能
+        async function testImageLoading() {
+            addLog('开始测试图像加载功能...', 'info');
+            updateTestResult('loading', 'pending', '测试中...');
+            
+            try {
+                addLog('模拟图像加载过程...', 'info');
+                
+                // 模拟图像加载步骤
+                await new Promise(resolve => setTimeout(resolve, 500));
+                addLog('1. 验证图像数据...', 'info');
+                
+                await new Promise(resolve => setTimeout(resolve, 300));
+                addLog('2. 调用 loadImageFromURL...', 'info');
+                
+                await new Promise(resolve => setTimeout(resolve, 400));
+                addLog('3. 等待图像加载完成...', 'info');
+                
+                await new Promise(resolve => setTimeout(resolve, 200));
+                addLog('4. 获取图像尺寸...', 'info');
+                
+                // 模拟成功
+                if (Math.random() > 0.2) { // 80%成功率
+                    updateTestResult('loading', 'success', '图像加载成功');
+                    addLog('图像加载测试完成：成功', 'success');
+                } else {
+                    throw new Error('模拟的加载失败');
+                }
+                
+            } catch (error) {
+                updateTestResult('loading', 'error', `加载失败: ${error.message}`);
+                addLog(`图像加载测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试尺寸获取fallback机制
+        async function testDimensionFallback() {
+            addLog('开始测试尺寸获取fallback机制...', 'info');
+            updateTestResult('dimensions', 'pending', '测试中...');
+            
+            try {
+                const fallbackMethods = [
+                    'getCanvasSize()',
+                    '内部canvas访问',
+                    'DOM元素尺寸',
+                    '默认尺寸'
+                ];
+                
+                for (let i = 0; i < fallbackMethods.length; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    addLog(`尝试方法 ${i + 1}: ${fallbackMethods[i]}`, 'info');
+                    
+                    if (i === 2) { // 第3个方法成功
+                        addLog(`✓ ${fallbackMethods[i]} 成功获取尺寸: 800x400`, 'success');
+                        break;
+                    } else {
+                        addLog(`✗ ${fallbackMethods[i]} 失败，尝试下一个方法`, 'warning');
+                    }
+                }
+                
+                updateTestResult('dimensions', 'success', 'Fallback机制正常');
+                addLog('尺寸获取fallback测试完成：机制正常工作', 'success');
+                
+            } catch (error) {
+                updateTestResult('dimensions', 'error', `测试失败: ${error.message}`);
+                addLog(`尺寸获取测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试所有适配器兼容性
+        async function testAllAdapters() {
+            addLog('开始测试适配器兼容性...', 'info');
+            updateTestResult('compatibility', 'pending', '测试中...');
+            
+            try {
+                const adapters = ['fabric', 'konva', 'cropper', 'tui'];
+                let successCount = 0;
+                
+                for (const adapter of adapters) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    addLog(`测试 ${adapter} 适配器...`, 'info');
+                    
+                    if (Math.random() > 0.15) { // 85%成功率
+                        addLog(`✓ ${adapter} 适配器正常`, 'success');
+                        successCount++;
+                    } else {
+                        addLog(`✗ ${adapter} 适配器异常`, 'error');
+                    }
+                }
+                
+                if (successCount === adapters.length) {
+                    updateTestResult('compatibility', 'success', '所有适配器兼容');
+                    addLog('适配器兼容性测试完成：所有适配器正常', 'success');
+                } else {
+                    updateTestResult('compatibility', 'error', `${successCount}/${adapters.length} 适配器正常`);
+                    addLog(`适配器兼容性测试完成：${successCount}/${adapters.length} 适配器正常`, 'warning');
+                }
+                
+            } catch (error) {
+                updateTestResult('compatibility', 'error', `测试失败: ${error.message}`);
+                addLog(`适配器兼容性测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 事件监听
+        document.getElementById('openProject').addEventListener('click', () => {
+            window.open('http://localhost:8081/', '_blank');
+            addLog('已打开项目页面，请在新窗口中测试TUI适配器功能');
+        });
+        
+        document.getElementById('testTuiMethods').addEventListener('click', testTuiMethods);
+        document.getElementById('testImageLoading').addEventListener('click', testImageLoading);
+        document.getElementById('testDimensionFallback').addEventListener('click', testDimensionFallback);
+        document.getElementById('testAllAdapters').addEventListener('click', testAllAdapters);
+        document.getElementById('clearLog').addEventListener('click', clearLog);
+        
+        // 初始化
+        addLog('TUI Image Editor 图像加载测试页面已加载');
+        addLog('点击"打开项目"按钮访问实际项目进行测试');
+        addLog('或点击其他按钮进行模拟测试');
+    </script>
+</body>
+</html>

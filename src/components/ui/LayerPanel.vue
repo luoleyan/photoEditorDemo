@@ -38,8 +38,8 @@
           @change="handleLayersReorder"
         >
           <div
-            v-for="layer in layersData"
-            :key="layer.id"
+            v-for="(layer, index) in layersData"
+            :key="getLayerKey(layer, index)"
             class="layer-item"
             :class="{ 
               'active': isLayerSelected(layer),
@@ -416,6 +416,28 @@ export default {
   },
 
   methods: {
+    /**
+     * 获取图层的安全key值
+     * @param {Object} layer - 图层对象
+     * @param {number} index - 索引
+     * @returns {string} 安全的key值
+     */
+    getLayerKey(layer, index) {
+      // 确保返回原始值（字符串或数字）
+      if (layer && layer.id !== null && layer.id !== undefined) {
+        // 如果id是对象或数组，转换为字符串
+        if (typeof layer.id === 'object') {
+          console.warn('LayerPanel: layer.id is not a primitive value, converting to string:', layer.id);
+          return `layer-${JSON.stringify(layer.id)}-${index}`;
+        }
+        // 确保id是字符串
+        return String(layer.id);
+      }
+      // 如果没有有效的id，使用索引作为fallback
+      console.warn('LayerPanel: layer.id is missing or invalid, using index as key:', layer);
+      return `layer-fallback-${index}`;
+    },
+
     /**
      * 处理图层点击
      */

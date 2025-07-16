@@ -25,10 +25,9 @@ class JimpAdapter extends BaseImageEditorAdapter {
       memoryUsage: 0
     };
 
-    // 注册内存清理回调
-    memoryManager.addCleanupCallback(() => {
-      this._performMemoryCleanup();
-    });
+    // 注册内存清理回调 - 保存引用以便后续移除
+    this._memoryCleanupCallback = this._performMemoryCleanup.bind(this);
+    memoryManager.addCleanupCallback(this._memoryCleanupCallback);
   }
 
   /**
@@ -84,27 +83,65 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   _doDestroy() {
-    // 清理内存
-    this._performMemoryCleanup();
+    try {
+      console.log('JimpAdapter: Starting destruction process...');
 
-    // 移除内存管理器回调
-    memoryManager.removeCleanupCallback(this._performMemoryCleanup.bind(this));
+      // 清理内存
+      this._performMemoryCleanup();
 
-    if (this.jimpInstance) {
-      // 释放Jimp内存
-      memoryManager.deallocate(`jimp-adapter-${this.adapterType}`);
+      // 移除内存管理器回调 - 使用保存的引用
+      try {
+        if (this._memoryCleanupCallback) {
+          memoryManager.removeCleanupCallback(this._memoryCleanupCallback);
+          this._memoryCleanupCallback = null;
+          console.log('JimpAdapter: Memory cleanup callback removed successfully');
+        }
+      } catch (error) {
+        console.warn('JimpAdapter: Failed to remove cleanup callback:', error);
+      }
+
+      // 清理Jimp实例
+      if (this.jimpInstance) {
+        try {
+          // 释放Jimp内存
+          memoryManager.deallocate(`jimp-adapter-${this.adapterType}`);
+          console.log('JimpAdapter: Jimp instance memory deallocated');
+        } catch (error) {
+          console.warn('JimpAdapter: Failed to deallocate Jimp memory:', error);
+        }
+        this.jimpInstance = null;
+      }
+
+      // 清理Canvas元素
+      this._safeDOMCleanup(this.canvas, 'canvas');
+
+      // 安全地清理所有属性
+      this.canvas = null;
+      this.ctx = null;
+      this.originalImageData = null;
+      this.currentStateId = null;
+
+      // 安全地清理状态历史
+      this._safeCollectionCleanup(this.stateHistory, 'stateHistory');
+      this.stateHistory = null;
+
+      // 安全地清理操作历史
+      this._safeArrayCleanup(this.appliedOperations, 'appliedOperations');
+      this.appliedOperations = null;
+
+      console.log('JimpAdapter: Destruction completed successfully');
+
+    } catch (error) {
+      console.error('JimpAdapter: Error during destruction:', error);
+      // 即使出错也要确保基本清理
       this.jimpInstance = null;
+      this.canvas = null;
+      this.ctx = null;
+      this.originalImageData = null;
+      this.stateHistory = null;
+      this.currentStateId = null;
+      this.appliedOperations = null;
     }
-
-    if (this.canvas && this.canvas.parentNode) {
-      this.canvas.parentNode.removeChild(this.canvas);
-    }
-    this.canvas = null;
-    this.ctx = null;
-    this.originalImageData = null;
-    this.stateHistory.clear();
-    this.currentStateId = null;
-    this.appliedOperations = [];
   }
 
   /**
@@ -823,24 +860,56 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @private
    */
   _performMemoryCleanup() {
-    // 清理状态历史
-    if (this.stateHistory.size > 10) {
-      const entries = Array.from(this.stateHistory.entries());
-      const toDelete = entries.slice(0, this.stateHistory.size - 10);
+    try {
+      // 检查适配器是否已被销毁
+      if (!this.stateHistory || !this.appliedOperations) {
+        console.log('JimpAdapter: Adapter already destroyed, skipping memory cleanup');
+        return;
+      }
 
-      toDelete.forEach(([stateId]) => {
-        this.stateHistory.delete(stateId);
-      });
-    }
+      // 安全清理状态历史
+      if (this.stateHistory && typeof this.stateHistory.size === 'number' && this.stateHistory.size > 10) {
+        try {
+          const entries = Array.from(this.stateHistory.entries());
+          const toDelete = entries.slice(0, this.stateHistory.size - 10);
 
-    // 清理操作历史
-    if (this.appliedOperations.length > 50) {
-      this.appliedOperations = this.appliedOperations.slice(-30);
-    }
+          toDelete.forEach(([stateId]) => {
+            if (this.stateHistory && typeof this.stateHistory.delete === 'function') {
+              this.stateHistory.delete(stateId);
+            }
+          });
 
-    // 强制垃圾回收（如果可用）
-    if (window.gc) {
-      window.gc();
+          console.log(`JimpAdapter: Cleaned up ${toDelete.length} old state entries`);
+        } catch (error) {
+          console.warn('JimpAdapter: Failed to cleanup state history:', error);
+        }
+      }
+
+      // 安全清理操作历史
+      if (Array.isArray(this.appliedOperations) && this.appliedOperations.length > 50) {
+        try {
+          const originalLength = this.appliedOperations.length;
+          this.appliedOperations = this.appliedOperations.slice(-30);
+          console.log(`JimpAdapter: Cleaned up ${originalLength - this.appliedOperations.length} old operations`);
+        } catch (error) {
+          console.warn('JimpAdapter: Failed to cleanup operations history:', error);
+        }
+      }
+
+      // 强制垃圾回收（如果可用）
+      if (window.gc) {
+        try {
+          window.gc();
+        } catch (error) {
+          console.warn('JimpAdapter: Failed to trigger garbage collection:', error);
+        }
+      }
+
+      console.log('JimpAdapter: Memory cleanup completed successfully');
+
+    } catch (error) {
+      console.error('JimpAdapter: Critical error during memory cleanup:', error);
+      // 即使出错也不抛出异常，避免影响其他清理操作
     }
   }
 }

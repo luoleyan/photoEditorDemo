@@ -38,10 +38,11 @@
           </label>
           
           <label>
-            <input 
-              type="checkbox" 
-              v-model="showGuides"
+            <input
+              type="checkbox"
+              v-model="localShowGuides"
               :disabled="disabled"
+              @change="handleShowGuidesChange"
             />
             参考线
           </label>
@@ -119,7 +120,7 @@
         </div>
         
         <!-- 参考线 -->
-        <div v-if="showGuides" class="crop-guides">
+        <div v-if="localShowGuides" class="crop-guides">
           <div class="guide-line guide-line-v" style="left: 50%"></div>
           <div class="guide-line guide-line-h" style="top: 50%"></div>
         </div>
@@ -367,7 +368,10 @@ export default {
       ],
       
       // 活动预设
-      activePreset: null
+      activePreset: null,
+
+      // 本地状态（避免直接变更props）
+      localShowGuides: false
     };
   },
   
@@ -419,6 +423,14 @@ export default {
           this.cropArea = { ...newArea };
         }
       }
+    },
+
+    // 监听showGuides prop变化，同步到本地数据
+    showGuides: {
+      immediate: true,
+      handler(newValue) {
+        this.localShowGuides = newValue;
+      }
     }
   },
   
@@ -446,6 +458,14 @@ export default {
   },
 
   methods: {
+    /**
+     * 处理显示参考线变化
+     */
+    handleShowGuidesChange() {
+      // 通知父组件参考线显示状态变化
+      this.$emit('show-guides-change', this.localShowGuides);
+    },
+
     /**
      * 更新容器尺寸
      */

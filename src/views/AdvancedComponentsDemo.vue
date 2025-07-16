@@ -105,7 +105,7 @@
         <div class="history-controls">
           <h3>控制选项</h3>
           <div class="control-group">
-            <button @click="addHistoryItem">添加历史项</button>
+            <button @click="addHistoryItem()">添加历史项</button>
             <button @click="toggleBranches">{{ showBranches ? '隐藏分支' : '显示分支' }}</button>
           </div>
           
@@ -593,6 +593,22 @@ export default {
     }
   },
 
+  mounted() {
+    // 确保页面加载时保持在顶部
+    this.$nextTick(() => {
+      // 保存当前滚动位置
+      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+      // 如果页面不在顶部，平滑滚动到顶部
+      if (currentScrollTop > 0) {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+    });
+  },
+
   methods: {
     // ========== 图像预览相关方法 ==========
 
@@ -690,8 +706,28 @@ export default {
      * 添加历史记录项
      */
     addHistoryItem(id = null, name = null, description = null) {
+      // 验证参数类型，防止传入事件对象
+      if (typeof id === 'object' && id !== null && !(id instanceof String)) {
+        console.warn('addHistoryItem: 检测到非字符串id参数，可能是事件对象:', id);
+        id = null; // 重置为null，使用默认生成逻辑
+      }
+
+      // 生成唯一ID，即使基础id相同也要确保唯一性
+      let uniqueId;
+      if (id) {
+        // 检查是否已存在相同的id，如果存在则添加时间戳后缀
+        const existingIds = this.historyItems.map(item => item.id);
+        if (existingIds.includes(id)) {
+          uniqueId = `${id}-${Date.now()}`;
+        } else {
+          uniqueId = id;
+        }
+      } else {
+        uniqueId = `item-${Date.now()}`;
+      }
+
       const newItem = {
-        id: id || `item-${Date.now()}`,
+        id: uniqueId,
         name: name || `操作 ${this.historyItems.length}`,
         description: description || '新的编辑操作',
         icon: 'edit',

@@ -106,8 +106,14 @@ class MemoryManager {
    * @param {number} estimatedSize - 估算大小（字节）
    */
   allocate(id, object, estimatedSize = 0) {
+    // 如果对象已存在，生成唯一ID避免重复分配警告
     if (this.allocatedObjects.has(id)) {
-      console.warn(`对象 ${id} 已存在，将被替换`);
+      const existingAllocation = this.allocatedObjects.get(id);
+      // 如果是相同对象，直接返回现有ID
+      if (existingAllocation.object === object) {
+        return id;
+      }
+      // 如果是不同对象，先释放旧对象，然后分配新对象
       this.deallocate(id);
     }
 
@@ -146,6 +152,14 @@ class MemoryManager {
     this._cleanupObject(allocation.object);
 
     return true;
+  }
+
+  /**
+   * 获取所有已分配的对象
+   * @returns {Map} 已分配对象的Map
+   */
+  getAllocatedObjects() {
+    return this.allocatedObjects;
   }
 
   /**
@@ -269,30 +283,77 @@ class MemoryManager {
    */
   _performCleanup() {
     const beforeCleanup = this.memoryUsage;
-    
+    const startTime = Date.now();
+
+    console.log(`MemoryManager: Starting cleanup cycle with ${this.cleanupCallbacks.size} callbacks`);
+
     // 执行注册的清理回调
-    this.cleanupCallbacks.forEach(callback => {
+    const failedCallbacks = [];
+    let successfulCallbacks = 0;
+
+    this.cleanupCallbacks.forEach((callback, index) => {
       try {
+        const callbackStartTime = Date.now();
         callback();
+        const callbackDuration = Date.now() - callbackStartTime;
+
+        if (callbackDuration > 1000) {
+          console.warn(`MemoryManager: Cleanup callback took ${callbackDuration}ms (slow)`);
+        }
+
+        successfulCallbacks++;
       } catch (error) {
-        console.error('清理回调执行失败:', error);
+        console.error('MemoryManager: Cleanup callback failed:', error);
+        failedCallbacks.push({ callback, error, index });
+
+        // 如果回调持续失败，考虑移除它
+        if (!callback._failureCount) {
+          callback._failureCount = 0;
+        }
+        callback._failureCount++;
+
+        if (callback._failureCount >= 5) {
+          console.warn('MemoryManager: Removing persistently failing callback after 5 failures');
+          this.cleanupCallbacks.delete(callback);
+        }
       }
     });
 
     // 清理过期对象
-    this._cleanupExpiredObjects();
+    try {
+      this._cleanupExpiredObjects();
+    } catch (error) {
+      console.error('MemoryManager: Failed to cleanup expired objects:', error);
+    }
 
     // 强制垃圾回收（如果可用）
     if (window.gc) {
-      window.gc();
+      try {
+        window.gc();
+      } catch (error) {
+        console.warn('MemoryManager: Failed to trigger garbage collection:', error);
+      }
     }
 
     const afterCleanup = this.memoryUsage;
     const freed = beforeCleanup - afterCleanup;
-    
+    const duration = Date.now() - startTime;
+
+    console.log(`MemoryManager: Cleanup completed in ${duration}ms`);
+    console.log(`MemoryManager: Callbacks - ${successfulCallbacks} successful, ${failedCallbacks.length} failed`);
+
     if (freed > 0) {
-      console.log(`内存清理完成，释放了 ${this._formatBytes(freed)}`);
+      console.log(`MemoryManager: Released ${this._formatBytes(freed)} of memory`);
     }
+
+    // 记录清理统计
+    this._recordCleanupStats({
+      duration,
+      memoryFreed: freed,
+      successfulCallbacks,
+      failedCallbacks: failedCallbacks.length,
+      timestamp: Date.now()
+    });
   }
 
   /**
@@ -335,8 +396,60 @@ class MemoryManager {
   _handleVisibilityChange() {
     if (document.hidden) {
       // 页面隐藏时执行清理
+      console.log('MemoryManager: Page hidden, performing cleanup');
       this._performCleanup();
     }
+  }
+
+  /**
+   * 记录清理统计信息
+   * @param {Object} stats - 清理统计
+   * @private
+   */
+  _recordCleanupStats(stats) {
+    if (!this.cleanupStats) {
+      this.cleanupStats = [];
+    }
+
+    this.cleanupStats.push(stats);
+
+    // 只保留最近50次清理记录
+    if (this.cleanupStats.length > 50) {
+      this.cleanupStats = this.cleanupStats.slice(-50);
+    }
+  }
+
+  /**
+   * 获取清理统计信息
+   * @returns {Array} 清理统计数组
+   */
+  getCleanupStats() {
+    return this.cleanupStats || [];
+  }
+
+  /**
+   * 获取清理性能摘要
+   * @returns {Object} 性能摘要
+   */
+  getCleanupPerformanceSummary() {
+    const stats = this.getCleanupStats();
+    if (stats.length === 0) {
+      return { message: 'No cleanup statistics available' };
+    }
+
+    const totalCleanups = stats.length;
+    const avgDuration = stats.reduce((sum, s) => sum + s.duration, 0) / totalCleanups;
+    const totalMemoryFreed = stats.reduce((sum, s) => sum + s.memoryFreed, 0);
+    const totalFailedCallbacks = stats.reduce((sum, s) => sum + s.failedCallbacks, 0);
+    const totalSuccessfulCallbacks = stats.reduce((sum, s) => sum + s.successfulCallbacks, 0);
+
+    return {
+      totalCleanups,
+      avgDuration: Math.round(avgDuration),
+      totalMemoryFreed: this._formatBytes(totalMemoryFreed),
+      callbackSuccessRate: totalSuccessfulCallbacks / (totalSuccessfulCallbacks + totalFailedCallbacks) * 100,
+      lastCleanup: new Date(stats[stats.length - 1].timestamp).toLocaleString()
+    };
   }
 
   /**

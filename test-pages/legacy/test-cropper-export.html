@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CropperAdapter Export Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>CropperAdapter Export Test</h1>
+    <p>这个测试页面用于验证CropperAdapter的导出功能修复。</p>
+    
+    <div class="test-container">
+        <h3>测试步骤：</h3>
+        <ol>
+            <li>点击"加载测试图像"按钮</li>
+            <li>等待图像加载完成</li>
+            <li>点击"测试导出"按钮</li>
+            <li>检查控制台和日志输出</li>
+        </ol>
+        
+        <div class="controls">
+            <button id="loadImage">加载测试图像</button>
+            <button id="testExport" disabled>测试导出</button>
+            <button id="clearLog">清除日志</button>
+        </div>
+        
+        <div id="container" style="width: 400px; height: 300px; border: 1px solid #ccc; margin: 20px 0;"></div>
+        
+        <div class="log" id="log">等待测试开始...</div>
+    </div>
+
+    <script>
+        // 简化的测试环境
+        const log = document.getElementById('log');
+        const container = document.getElementById('container');
+        const loadImageBtn = document.getElementById('loadImage');
+        const testExportBtn = document.getElementById('testExport');
+        const clearLogBtn = document.getElementById('clearLog');
+        
+        let adapter = null;
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            log.innerHTML = '';
+        }
+        
+        // 创建测试图像
+        function createTestImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 150;
+            const ctx = canvas.getContext('2d');
+            
+            // 绘制一个简单的测试图案
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(0, 0, 200, 150);
+            ctx.fillStyle = '#FFF';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Test Image', 100, 80);
+            
+            return canvas.toDataURL();
+        }
+        
+        // 模拟CropperAdapter的核心功能
+        class MockCropperAdapter {
+            constructor() {
+                this.cropper = null;
+                this.imageElement = null;
+                this.originalImageData = null;
+                this.isCropping = false;
+            }
+            
+            async initialize(container) {
+                this.container = container;
+                this.imageElement = document.createElement('img');
+                this.imageElement.style.maxWidth = '100%';
+                this.imageElement.style.height = 'auto';
+                container.appendChild(this.imageElement);
+                addLog('适配器初始化完成', 'success');
+            }
+            
+            async loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    this.imageElement.onload = () => {
+                        // 模拟cropper初始化
+                        this.originalImageData = {
+                            src: src,
+                            width: this.imageElement.naturalWidth,
+                            height: this.imageElement.naturalHeight
+                        };
+                        this.isCropping = true;
+                        addLog(`图像加载成功: ${this.originalImageData.width}x${this.originalImageData.height}`, 'success');
+                        resolve();
+                    };
+                    
+                    this.imageElement.onerror = () => {
+                        addLog('图像加载失败', 'error');
+                        reject(new Error('Failed to load image'));
+                    };
+                    
+                    this.imageElement.src = src;
+                });
+            }
+            
+            // 模拟有问题的getCroppedCanvas方法
+            getCroppedCanvas() {
+                // 随机返回null来模拟问题
+                if (Math.random() < 0.5) {
+                    addLog('getCroppedCanvas返回null（模拟问题）', 'warning');
+                    return null;
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 150;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(this.imageElement, 0, 0);
+                return canvas;
+            }
+            
+            // 修复后的导出方法
+            async toDataURL(type = 'image/png', quality = 0.9) {
+                if (!this.isCropping || !this.originalImageData) {
+                    throw new Error('Cropper is not ready or no image loaded');
+                }
+                
+                const canvas = this.getCroppedCanvas();
+                if (!canvas) {
+                    addLog('getCroppedCanvas返回null，使用fallback方法', 'warning');
+                    return this._fallbackToDataURL(type, quality);
+                }
+                
+                addLog('使用正常方法导出', 'success');
+                return canvas.toDataURL(type, quality);
+            }
+            
+            async _fallbackToDataURL(type = 'image/png', quality = 0.9) {
+                if (!this.originalImageData) {
+                    throw new Error('No original image data available');
+                }
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    
+                    img.onload = () => {
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                        addLog('fallback方法导出成功', 'success');
+                        resolve(canvas.toDataURL(type, quality));
+                    };
+                    
+                    img.onerror = () => reject(new Error('Failed to load image for fallback export'));
+                    img.src = this.originalImageData.src;
+                });
+            }
+        }
+        
+        // 事件处理
+        loadImageBtn.addEventListener('click', async () => {
+            try {
+                addLog('开始加载测试图像...');
+                
+                if (!adapter) {
+                    adapter = new MockCropperAdapter();
+                    await adapter.initialize(container);
+                }
+                
+                const testImageSrc = createTestImage();
+                await adapter.loadImage(testImageSrc);
+                
+                testExportBtn.disabled = false;
+                addLog('测试图像加载完成，可以进行导出测试', 'success');
+                
+            } catch (error) {
+                addLog(`加载失败: ${error.message}`, 'error');
+            }
+        });
+        
+        testExportBtn.addEventListener('click', async () => {
+            try {
+                addLog('开始导出测试...');
+                
+                for (let i = 1; i <= 5; i++) {
+                    addLog(`第${i}次导出测试`);
+                    const dataURL = await adapter.toDataURL();
+                    addLog(`第${i}次导出成功，数据长度: ${dataURL.length}`, 'success');
+                }
+                
+                addLog('所有导出测试完成！', 'success');
+                
+            } catch (error) {
+                addLog(`导出失败: ${error.message}`, 'error');
+            }
+        });
+        
+        clearLogBtn.addEventListener('click', clearLog);
+        
+        addLog('测试页面加载完成，点击"加载测试图像"开始测试');
+    </script>
+</body>
+</html>
