@@ -12,8 +12,11 @@
 test-pages/
 ├── index.html                          # 主测试套件界面
 ├── README.md                           # 本文件
+├── performance/                        # 性能测试
+│   └── test-performance-fix.html       # 集成演示性能修复验证
 ├── ui-behavior/                        # UI行为测试
-│   └── test-scroll-behavior.html       # 滚动行为修复测试
+│   ├── test-scroll-behavior.html       # 滚动行为修复测试
+│   └── test-brush-tool-fix.html        # 画笔工具修复测试
 ├── vue-warnings/                       # Vue.js警告测试
 │   ├── test-vue-key-warnings.html      # Vue Key警告修复测试
 │   └── test-duplicate-key-fix.html     # 重复Key修复测试
@@ -21,7 +24,13 @@ test-pages/
 │   ├── test-prop-validation-fix.html   # Prop验证错误修复测试
 │   └── test-prop-mutation-fix.html     # Prop变更警告修复测试
 ├── adapter-integration/                # 适配器集成测试
-│   └── test-fabric-adapter-fix.html    # Fabric.js适配器修复测试
+│   ├── test-fabric-adapter-fix.html    # Fabric.js适配器修复测试
+│   └── test-adapter-fix.html           # 通用适配器修复测试
+├── tools/                              # 测试工具
+│   └── test-suite.html                 # 综合测试套件
+├── verification/                       # 验证脚本
+│   ├── verify-fix.js                   # 通用修复验证脚本
+│   └── verify-performance-fix.js       # 性能修复验证脚本
 └── legacy/                             # 遗留测试页面
     ├── test-adapter-destruction.html   # 适配器销毁测试
     ├── test-adapter-switching.html     # 适配器切换测试
@@ -33,11 +42,18 @@ test-pages/
 
 ## 🔍 测试分类说明
 
+### 性能测试 (`performance/`)
+测试应用性能相关问题，包括页面卡死、无限循环、内存泄漏等。
+
+**包含测试**:
+- **集成演示性能修复验证**: 验证低优先级组件演示页面的性能问题修复
+
 ### UI行为测试 (`ui-behavior/`)
 测试用户界面行为相关的问题，如滚动、布局、交互等。
 
 **包含测试**:
 - **滚动行为修复测试**: 验证HistoryPanel组件的自动滚动问题修复
+- **画笔工具修复测试**: 验证BrushTool组件的功能修复
 
 ### Vue.js警告测试 (`vue-warnings/`)
 测试Vue.js框架相关的警告和错误，如key警告、重复key等。
@@ -58,6 +74,20 @@ test-pages/
 
 **包含测试**:
 - **Fabric.js适配器修复测试**: 验证Fabric.js库导入和适配器初始化的修复
+- **通用适配器修复测试**: 验证适配器通用功能修复
+
+### 测试工具 (`tools/`)
+提供综合测试和调试工具。
+
+**包含工具**:
+- **综合测试套件**: 集成多个测试功能的综合工具
+
+### 验证脚本 (`verification/`)
+自动化验证脚本，用于快速检测修复效果。
+
+**包含脚本**:
+- **通用修复验证脚本**: 验证常见问题的修复效果
+- **性能修复验证脚本**: 专门验证性能问题的修复
 
 ### 遗留测试页面 (`legacy/`)
 包含项目历史中创建的其他测试页面，用于特定功能或问题的验证。

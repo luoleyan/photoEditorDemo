@@ -478,7 +478,10 @@ export default {
         { position: 's', class: 's-handle' },
         { position: 'sw', class: 'sw-handle' },
         { position: 'w', class: 'w-handle' }
-      ]
+      ],
+
+      // 防抖相关
+      shapesChangeTimeout: null
     };
   },
 
@@ -513,7 +516,14 @@ export default {
     shapes: {
       deep: true,
       handler(newShapes) {
-        this.$emit('shapes-change', newShapes);
+        // 防抖处理，避免频繁触发事件
+        if (this.shapesChangeTimeout) {
+          clearTimeout(this.shapesChangeTimeout);
+        }
+
+        this.shapesChangeTimeout = setTimeout(() => {
+          this.$emit('shapes-change', newShapes);
+        }, 50); // 50ms防抖延迟
       }
     },
 
@@ -543,6 +553,12 @@ export default {
   },
 
   beforeDestroy() {
+    // 清理防抖定时器
+    if (this.shapesChangeTimeout) {
+      clearTimeout(this.shapesChangeTimeout);
+      this.shapesChangeTimeout = null;
+    }
+
     // 移除事件监听器
     document.removeEventListener('mousemove', this.handleMouseMove);
     document.removeEventListener('mouseup', this.handleMouseUp);

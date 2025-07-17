@@ -2,7 +2,24 @@
 
 欢迎来到 PhotoEditor Demo 项目的文档中心！这里包含了项目的完整文档，按照不同的用途和受众进行了分类组织。
 
-## 📚 文档导航
+## 📁 新增文档分类
+
+### 📖 指南文档 (`guides/`)
+- [性能测试指南](guides/performance-test-guide.md) - 深度性能修复测试指南
+
+### 🚀 性能文档 (`performance/`)
+- [性能修复报告](performance/PERFORMANCE_FIX_REPORT.md) - 详细的性能问题修复记录
+
+### 🔧 修复文档 (`fixes/`)
+- [画笔工具修复总结](fixes/BRUSH_TOOL_FIX_SUMMARY.md) - BrushTool组件修复详情
+- [适配器错误修复报告](fixes/ADAPTER_ERRORS_FIX_REPORT.md) - 适配器相关错误修复
+
+### 📋 日志文档 (`logs/`)
+- [代码质量报告](logs/CODE_QUALITY_REPORT.md) - 代码质量分析和改进
+- [测试重组报告](logs/TEST_REORGANIZATION_REPORT.md) - 测试结构重组记录
+- [提交信息](logs/COMMIT_MESSAGE.md) - 标准化提交信息
+
+## 📚 原有文档导航
 
 ### 👥 用户指南
 适合最终用户和想要快速上手的开发者

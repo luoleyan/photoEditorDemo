@@ -162,7 +162,11 @@ export default {
       canvasContainerHeight: 0,
       
       // 调整大小观察器
-      resizeObserver: null
+      resizeObserver: null,
+
+      // 防抖相关
+      resizeTimeout: null,
+      isUpdatingDimensions: false
     };
   },
   
@@ -224,19 +228,29 @@ export default {
     setupResizeObserver() {
       if (window.ResizeObserver) {
         this.resizeObserver = new ResizeObserver(entries => {
-          for (const entry of entries) {
-            if (entry.target === this.$refs.container) {
-              this.updateDimensions();
-            } else if (entry.target === this.$refs.canvasContainer) {
-              this.updateCanvasDimensions();
+          // 防抖处理，避免频繁调用
+          if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+          }
+
+          this.resizeTimeout = setTimeout(() => {
+            for (const entry of entries) {
+              if (entry.target === this.$refs.container) {
+                this.updateDimensions();
+              } else if (entry.target === this.$refs.canvasContainer) {
+                this.updateCanvasDimensions();
+              }
             }
+          }, 50); // 50ms防抖延迟
+        });
+
+        this.resizeObserver.observe(this.$refs.container);
+        // 延迟观察画布容器，避免初始化时的冲突
+        this.$nextTick(() => {
+          if (this.$refs.canvasContainer) {
+            this.resizeObserver.observe(this.$refs.canvasContainer);
           }
         });
-        
-        this.resizeObserver.observe(this.$refs.container);
-        if (this.$refs.canvasContainer) {
-          this.resizeObserver.observe(this.$refs.canvasContainer);
-        }
       }
     },
     
@@ -244,41 +258,62 @@ export default {
      * 更新容器尺寸
      */
     updateDimensions() {
-      if (!this.$refs.container) return;
-      
-      const rect = this.$refs.container.getBoundingClientRect();
-      this.containerWidth = rect.width;
-      this.containerHeight = rect.height;
-      
-      // 更新设备类型
-      this.updateDeviceType();
-      
-      // 更新画布容器尺寸
-      this.updateCanvasDimensions();
-      
-      // 触发尺寸变化事件
-      this.$emit('dimensions-change', {
-        containerWidth: this.containerWidth,
-        containerHeight: this.containerHeight,
-        availableWidth: this.availableWidth,
-        availableHeight: this.availableHeight,
-        canvasWidth: this.canvasContainerWidth,
-        canvasHeight: this.canvasContainerHeight,
-        isMobile: this.isMobile,
-        isTablet: this.isTablet,
-        isDesktop: this.isDesktop
-      });
+      if (!this.$refs.container || this.isUpdatingDimensions) return;
+
+      this.isUpdatingDimensions = true;
+
+      try {
+        const rect = this.$refs.container.getBoundingClientRect();
+        const newWidth = rect.width;
+        const newHeight = rect.height;
+
+        // 只在尺寸真正变化时更新
+        if (newWidth !== this.containerWidth || newHeight !== this.containerHeight) {
+          this.containerWidth = newWidth;
+          this.containerHeight = newHeight;
+
+          // 更新设备类型
+          this.updateDeviceType();
+
+          // 触发尺寸变化事件
+          this.$emit('dimensions-change', {
+            containerWidth: this.containerWidth,
+            containerHeight: this.containerHeight,
+            availableWidth: this.availableWidth,
+            availableHeight: this.availableHeight,
+            canvasWidth: this.canvasContainerWidth,
+            canvasHeight: this.canvasContainerHeight,
+            isMobile: this.isMobile,
+            isTablet: this.isTablet,
+            isDesktop: this.isDesktop
+          });
+        }
+      } catch (error) {
+        console.error('更新容器尺寸失败:', error);
+      } finally {
+        this.isUpdatingDimensions = false;
+      }
     },
     
     /**
      * 更新画布容器尺寸
      */
     updateCanvasDimensions() {
-      if (!this.$refs.canvasContainer) return;
-      
-      const rect = this.$refs.canvasContainer.getBoundingClientRect();
-      this.canvasContainerWidth = rect.width;
-      this.canvasContainerHeight = rect.height;
+      if (!this.$refs.canvasContainer || this.isUpdatingDimensions) return;
+
+      try {
+        const rect = this.$refs.canvasContainer.getBoundingClientRect();
+        const newWidth = rect.width;
+        const newHeight = rect.height;
+
+        // 只在尺寸真正变化时更新
+        if (newWidth !== this.canvasContainerWidth || newHeight !== this.canvasContainerHeight) {
+          this.canvasContainerWidth = newWidth;
+          this.canvasContainerHeight = newHeight;
+        }
+      } catch (error) {
+        console.error('更新画布容器尺寸失败:', error);
+      }
     },
     
     /**

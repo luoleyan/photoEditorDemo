@@ -327,7 +327,10 @@ export default {
           { value: 'color-burn', name: '颜色加深' },
           { value: 'darken', name: '变暗' },
           { value: 'lighten', name: '变亮' }
-        ]
+        ],
+
+        // 防抖相关
+        strokesChangeTimeout: null
       };
     },
 
@@ -381,7 +384,14 @@ export default {
       strokes: {
         deep: true,
         handler(newStrokes) {
-          this.$emit('strokes-change', newStrokes);
+          // 防抖处理，避免频繁触发事件
+          if (this.strokesChangeTimeout) {
+            clearTimeout(this.strokesChangeTimeout);
+          }
+
+          this.strokesChangeTimeout = setTimeout(() => {
+            this.$emit('strokes-change', newStrokes);
+          }, 50); // 50ms防抖延迟
         }
       },
 
@@ -421,6 +431,12 @@ export default {
     },
 
     beforeDestroy() {
+      // 清理防抖定时器
+      if (this.strokesChangeTimeout) {
+        clearTimeout(this.strokesChangeTimeout);
+        this.strokesChangeTimeout = null;
+      }
+
       // 移除事件监听器
       document.removeEventListener('mousemove', this.handleMouseMove);
       document.removeEventListener('mouseup', this.handleMouseUp);
