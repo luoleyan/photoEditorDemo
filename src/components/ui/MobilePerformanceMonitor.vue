@@ -12,22 +12,30 @@
         <div class="performance-metrics">
           <div class="metric-item">
             <span class="metric-label">FPS</span>
-            <span class="metric-value" :class="getFPSClass()">{{ currentFPS }}</span>
+            <span class="metric-value" :class="getFPSClass()">{{
+              currentFPS
+            }}</span>
           </div>
 
           <div class="metric-item">
             <span class="metric-label">内存</span>
-            <span class="metric-value" :class="getMemoryClass()">{{ formatMemory(memoryUsage) }}</span>
+            <span class="metric-value" :class="getMemoryClass()">{{
+              formatMemory(memoryUsage)
+            }}</span>
           </div>
 
           <div class="metric-item">
             <span class="metric-label">电池</span>
-            <span class="metric-value" :class="getBatteryClass()">{{ batteryLevel }}%</span>
+            <span class="metric-value" :class="getBatteryClass()"
+              >{{ batteryLevel }}%</span
+            >
           </div>
 
           <div class="metric-item">
             <span class="metric-label">网络</span>
-            <span class="metric-value" :class="getNetworkClass()">{{ networkType }}</span>
+            <span class="metric-value" :class="getNetworkClass()">{{
+              networkType
+            }}</span>
           </div>
         </div>
 
@@ -37,10 +45,17 @@
         </div>
 
         <!-- 优化建议 -->
-        <div v-if="optimizationSuggestions.length > 0" class="optimization-suggestions">
+        <div
+          v-if="optimizationSuggestions.length > 0"
+          class="optimization-suggestions"
+        >
           <h5>优化建议</h5>
           <ul>
-            <li v-for="suggestion in optimizationSuggestions" :key="suggestion.id" class="suggestion-item">
+            <li
+              v-for="suggestion in optimizationSuggestions"
+              :key="suggestion.id"
+              class="suggestion-item"
+            >
               <span class="suggestion-icon">{{ suggestion.icon }}</span>
               <span class="suggestion-text">{{ suggestion.text }}</span>
               <button
@@ -56,9 +71,7 @@
 
         <!-- 快速操作 -->
         <div class="quick-actions">
-          <button class="action-button" @click="clearCache">
-            🗑️ 清理缓存
-          </button>
+          <button class="action-button" @click="clearCache">🗑️ 清理缓存</button>
           <button class="action-button" @click="optimizeMemory">
             🧹 内存优化
           </button>
@@ -83,65 +96,65 @@
 </template>
 
 <script>
-import { memoryManager } from '@/utils/MemoryManager.js';
+import { memoryManager } from "@/utils/MemoryManager.js";
 
 export default {
-  name: 'MobilePerformanceMonitor',
-  
+  name: "MobilePerformanceMonitor",
+
   data() {
     return {
       showMonitor: false,
-      
+
       // 性能指标
       currentFPS: 60,
       memoryUsage: 0,
       batteryLevel: 100,
-      networkType: 'wifi',
-      
+      networkType: "wifi",
+
       // 性能历史数据
       performanceHistory: {
         fps: [],
         memory: [],
-        battery: []
+        battery: [],
       },
-      
+
       // 监控状态
       isMonitoring: false,
       monitoringInterval: null,
-      
+
       // 优化建议
       optimizationSuggestions: [],
-      
+
       // 性能警告
       showPerformanceWarning: false,
       performanceWarning: null,
-      
+
       // 设备信息
       deviceInfo: {
         hardwareConcurrency: navigator.hardwareConcurrency || 4,
         deviceMemory: navigator.deviceMemory || 4,
-        connection: null
+        connection: null,
       },
-      
+
       // 阈值设置
       thresholds: {
         lowFPS: 30,
         highMemory: 0.8,
         lowBattery: 0.2,
-        slowNetwork: '2g'
-      }
+        slowNetwork: "2g",
+      },
     };
   },
-  
+
   mounted() {
     this.initializeMonitoring();
     this.detectDeviceCapabilities();
   },
-  
+
   beforeDestroy() {
     this.stopMonitoring();
   },
-  
+
   methods: {
     /**
      * 初始化性能监控
@@ -150,19 +163,19 @@ export default {
       // 检测设备信息
       if (navigator.connection) {
         this.deviceInfo.connection = navigator.connection;
-        this.networkType = navigator.connection.effectiveType || 'unknown';
-        
-        navigator.connection.addEventListener('change', () => {
-          this.networkType = navigator.connection.effectiveType || 'unknown';
+        this.networkType = navigator.connection.effectiveType || "unknown";
+
+        navigator.connection.addEventListener("change", () => {
+          this.networkType = navigator.connection.effectiveType || "unknown";
         });
       }
 
       // 检测电池状态
       if (navigator.getBattery) {
-        navigator.getBattery().then(battery => {
+        navigator.getBattery().then((battery) => {
           this.batteryLevel = Math.round(battery.level * 100);
-          
-          battery.addEventListener('levelchange', () => {
+
+          battery.addEventListener("levelchange", () => {
             this.batteryLevel = Math.round(battery.level * 100);
           });
         });
@@ -203,10 +216,10 @@ export default {
     updatePerformanceMetrics() {
       // 更新FPS
       this.updateFPS();
-      
+
       // 更新内存使用
       this.updateMemoryUsage();
-      
+
       // 记录历史数据
       this.recordPerformanceHistory();
     },
@@ -217,22 +230,24 @@ export default {
     updateFPS() {
       let lastTime = performance.now();
       let frameCount = 0;
-      
+
       const measureFPS = () => {
         frameCount++;
         const currentTime = performance.now();
-        
+
         if (currentTime - lastTime >= 1000) {
-          this.currentFPS = Math.round(frameCount * 1000 / (currentTime - lastTime));
+          this.currentFPS = Math.round(
+            (frameCount * 1000) / (currentTime - lastTime)
+          );
           frameCount = 0;
           lastTime = currentTime;
         }
-        
+
         if (this.isMonitoring) {
           requestAnimationFrame(measureFPS);
         }
       };
-      
+
       requestAnimationFrame(measureFPS);
     },
 
@@ -252,13 +267,19 @@ export default {
      */
     recordPerformanceHistory() {
       const timestamp = Date.now();
-      
+
       this.performanceHistory.fps.push({ value: this.currentFPS, timestamp });
-      this.performanceHistory.memory.push({ value: this.memoryUsage, timestamp });
-      this.performanceHistory.battery.push({ value: this.batteryLevel, timestamp });
-      
+      this.performanceHistory.memory.push({
+        value: this.memoryUsage,
+        timestamp,
+      });
+      this.performanceHistory.battery.push({
+        value: this.batteryLevel,
+        timestamp,
+      });
+
       // 保持最近60个数据点
-      Object.keys(this.performanceHistory).forEach(key => {
+      Object.keys(this.performanceHistory).forEach((key) => {
         if (this.performanceHistory[key].length > 60) {
           this.performanceHistory[key].shift();
         }
@@ -270,56 +291,57 @@ export default {
      */
     checkPerformanceThresholds() {
       const suggestions = [];
-      
+
       // 检查FPS
       if (this.currentFPS < this.thresholds.lowFPS) {
         suggestions.push({
-          id: 'low-fps',
-          icon: '🐌',
+          id: "low-fps",
+          icon: "🐌",
           text: `帧率较低 (${this.currentFPS}fps)，建议降低图像质量`,
-          action: 'reduceQuality'
+          action: "reduceQuality",
         });
       }
-      
+
       // 检查内存
-      const memoryRatio = this.memoryUsage / (this.deviceInfo.deviceMemory * 1024 * 1024 * 1024);
+      const memoryRatio =
+        this.memoryUsage / (this.deviceInfo.deviceMemory * 1024 * 1024 * 1024);
       if (memoryRatio > this.thresholds.highMemory) {
         suggestions.push({
-          id: 'high-memory',
-          icon: '💾',
-          text: '内存使用过高，建议清理缓存',
-          action: 'clearCache'
+          id: "high-memory",
+          icon: "💾",
+          text: "内存使用过高，建议清理缓存",
+          action: "clearCache",
         });
       }
-      
+
       // 检查电池
       if (this.batteryLevel < this.thresholds.lowBattery * 100) {
         suggestions.push({
-          id: 'low-battery',
-          icon: '🔋',
-          text: '电量较低，建议启用省电模式',
-          action: 'enablePowerSaving'
+          id: "low-battery",
+          icon: "🔋",
+          text: "电量较低，建议启用省电模式",
+          action: "enablePowerSaving",
         });
       }
-      
+
       // 检查网络
-      if (this.networkType === '2g' || this.networkType === 'slow-2g') {
+      if (this.networkType === "2g" || this.networkType === "slow-2g") {
         suggestions.push({
-          id: 'slow-network',
-          icon: '📶',
-          text: '网络较慢，建议使用离线模式',
-          action: 'enableOfflineMode'
+          id: "slow-network",
+          icon: "📶",
+          text: "网络较慢，建议使用离线模式",
+          action: "enableOfflineMode",
         });
       }
-      
+
       this.optimizationSuggestions = suggestions;
-      
+
       // 显示严重性能警告
       if (suggestions.length > 2) {
         this.showPerformanceWarning = true;
         this.performanceWarning = {
-          message: '检测到多个性能问题，建议进行优化',
-          action: '立即优化'
+          message: "检测到多个性能问题，建议进行优化",
+          action: "立即优化",
         };
       }
     },
@@ -330,20 +352,36 @@ export default {
     updatePerformanceChart() {
       const canvas = this.$refs.performanceChart;
       if (!canvas) return;
-      
-      const ctx = canvas.getContext('2d');
+
+      const ctx = canvas.getContext("2d");
       const width = canvas.width;
       const height = canvas.height;
-      
+
       // 清除画布
       ctx.clearRect(0, 0, width, height);
-      
+
       // 绘制FPS曲线
-      this.drawPerformanceLine(ctx, this.performanceHistory.fps, '#4CAF50', width, height, 0, 60);
-      
+      this.drawPerformanceLine(
+        ctx,
+        this.performanceHistory.fps,
+        "#4CAF50",
+        width,
+        height,
+        0,
+        60
+      );
+
       // 绘制内存使用曲线
       const maxMemory = this.deviceInfo.deviceMemory * 1024 * 1024 * 1024;
-      this.drawPerformanceLine(ctx, this.performanceHistory.memory, '#FF9800', width, height, 0, maxMemory);
+      this.drawPerformanceLine(
+        ctx,
+        this.performanceHistory.memory,
+        "#FF9800",
+        width,
+        height,
+        0,
+        maxMemory
+      );
     },
 
     /**
@@ -358,22 +396,22 @@ export default {
      */
     drawPerformanceLine(ctx, data, color, width, height, min, max) {
       if (data.length < 2) return;
-      
+
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      
+
       data.forEach((point, index) => {
         const x = (index / (data.length - 1)) * width;
         const y = height - ((point.value - min) / (max - min)) * height;
-        
+
         if (index === 0) {
           ctx.moveTo(x, y);
         } else {
           ctx.lineTo(x, y);
         }
       });
-      
+
       ctx.stroke();
     },
 
@@ -383,22 +421,24 @@ export default {
      */
     applySuggestion(suggestion) {
       switch (suggestion.action) {
-        case 'reduceQuality':
-          this.$emit('reduce-quality');
+        case "reduceQuality":
+          this.$emit("reduce-quality");
           break;
-        case 'clearCache':
+        case "clearCache":
           this.clearCache();
           break;
-        case 'enablePowerSaving':
+        case "enablePowerSaving":
           this.enablePowerSaving();
           break;
-        case 'enableOfflineMode':
-          this.$emit('enable-offline-mode');
+        case "enableOfflineMode":
+          this.$emit("enable-offline-mode");
           break;
       }
-      
+
       // 移除已应用的建议
-      this.optimizationSuggestions = this.optimizationSuggestions.filter(s => s.id !== suggestion.id);
+      this.optimizationSuggestions = this.optimizationSuggestions.filter(
+        (s) => s.id !== suggestion.id
+      );
     },
 
     /**
@@ -406,7 +446,7 @@ export default {
      */
     clearCache() {
       memoryManager.forceCleanup();
-      this.$emit('cache-cleared');
+      this.$emit("cache-cleared");
     },
 
     /**
@@ -418,14 +458,14 @@ export default {
       if (window.gc) {
         window.gc();
       }
-      this.$emit('memory-optimized');
+      this.$emit("memory-optimized");
     },
 
     /**
      * 启用省电模式
      */
     enablePowerSaving() {
-      this.$emit('enable-power-saving');
+      this.$emit("enable-power-saving");
     },
 
     /**
@@ -433,11 +473,12 @@ export default {
      */
     detectDeviceCapabilities() {
       // 检测是否为低端设备
-      const isLowEndDevice = this.deviceInfo.hardwareConcurrency <= 2 || 
-                            this.deviceInfo.deviceMemory <= 2;
-      
+      const isLowEndDevice =
+        this.deviceInfo.hardwareConcurrency <= 2 ||
+        this.deviceInfo.deviceMemory <= 2;
+
       if (isLowEndDevice) {
-        this.$emit('low-end-device-detected');
+        this.$emit("low-end-device-detected");
       }
     },
 
@@ -466,20 +507,29 @@ export default {
     // ========== 样式类方法 ==========
 
     getFPSClass() {
-      return this.currentFPS < this.thresholds.lowFPS ? 'metric-warning' : 'metric-good';
+      return this.currentFPS < this.thresholds.lowFPS
+        ? "metric-warning"
+        : "metric-good";
     },
 
     getMemoryClass() {
-      const ratio = this.memoryUsage / (this.deviceInfo.deviceMemory * 1024 * 1024 * 1024);
-      return ratio > this.thresholds.highMemory ? 'metric-warning' : 'metric-good';
+      const ratio =
+        this.memoryUsage / (this.deviceInfo.deviceMemory * 1024 * 1024 * 1024);
+      return ratio > this.thresholds.highMemory
+        ? "metric-warning"
+        : "metric-good";
     },
 
     getBatteryClass() {
-      return this.batteryLevel < this.thresholds.lowBattery * 100 ? 'metric-warning' : 'metric-good';
+      return this.batteryLevel < this.thresholds.lowBattery * 100
+        ? "metric-warning"
+        : "metric-good";
     },
 
     getNetworkClass() {
-      return this.networkType === '2g' || this.networkType === 'slow-2g' ? 'metric-warning' : 'metric-good';
+      return this.networkType === "2g" || this.networkType === "slow-2g"
+        ? "metric-warning"
+        : "metric-good";
     },
 
     /**
@@ -490,8 +540,8 @@ export default {
     formatMemory(bytes) {
       const mb = bytes / (1024 * 1024);
       return mb < 1024 ? `${mb.toFixed(1)}MB` : `${(mb / 1024).toFixed(1)}GB`;
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -569,11 +619,11 @@ export default {
 }
 
 .metric-good {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .metric-warning {
-  color: #FF5722;
+  color: #ff5722;
 }
 
 .performance-chart {
@@ -650,7 +700,7 @@ export default {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #FF5722;
+  background: #ff5722;
   color: white;
   padding: 12px 16px;
   border-radius: 8px;
@@ -682,11 +732,11 @@ export default {
     left: 10px;
     width: auto;
   }
-  
+
   .performance-metrics {
     grid-template-columns: 1fr;
   }
-  
+
   .quick-actions {
     flex-direction: column;
   }

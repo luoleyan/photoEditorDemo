@@ -11,7 +11,7 @@
       <div class="demo-description">
         <p>支持图层排序、可见性控制、混合模式选择和图层操作</p>
       </div>
-      
+
       <div class="layer-demo-container">
         <div class="layer-wrapper">
           <layer-panel
@@ -30,7 +30,7 @@
             @layers-reorder="handleLayersReorder"
           />
         </div>
-        
+
         <div class="layer-controls">
           <h3>控制选项</h3>
           <div class="control-group">
@@ -38,7 +38,7 @@
             <button @click="toggleAllVisibility">切换全部可见性</button>
             <button @click="resetLayers">重置图层</button>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="layerVariant">
@@ -47,7 +47,7 @@
               <option value="minimal">简约</option>
             </select>
           </div>
-          
+
           <div class="layer-preview">
             <h4>当前状态</h4>
             <p>图层数量: {{ layers.length }}</p>
@@ -65,7 +65,7 @@
       <div class="demo-description">
         <p>支持自由裁剪、比例裁剪、网格线和参考线</p>
       </div>
-      
+
       <div class="crop-demo-container">
         <div class="crop-wrapper">
           <crop-tool
@@ -80,38 +80,38 @@
             @show-guides-change="handleShowGuidesChange"
           />
         </div>
-        
+
         <div class="crop-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <label>选择图像:</label>
             <div class="image-selector">
-              <div 
-                v-for="(image, index) in cropImages" 
+              <div
+                v-for="(image, index) in cropImages"
                 :key="index"
                 class="image-option"
-                :class="{ 'active': cropImageSrc === image.src }"
+                :class="{ active: cropImageSrc === image.src }"
                 @click="selectCropImage(image.src)"
               >
                 <img :src="image.src" :alt="image.name" />
               </div>
             </div>
           </div>
-          
+
           <div class="control-group">
             <label>
               <input type="checkbox" v-model="showCropGrid" />
               显示网格线
             </label>
           </div>
-          
+
           <div class="control-group">
             <label>
               <input type="checkbox" v-model="showCropGuides" />
               显示参考线
             </label>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="cropVariant">
@@ -120,7 +120,7 @@
               <option value="compact">紧凑</option>
             </select>
           </div>
-          
+
           <div class="crop-info">
             <h4>裁剪信息</h4>
             <div v-if="currentCropArea">
@@ -141,7 +141,7 @@
       <div class="demo-description">
         <p>支持文本添加、字体选择、样式设置和文本效果</p>
       </div>
-      
+
       <div class="text-demo-container">
         <div class="text-wrapper">
           <text-tool
@@ -164,29 +164,29 @@
             <p>正在初始化文本适配器...</p>
           </div>
         </div>
-        
+
         <div class="text-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <label>背景图像:</label>
             <div class="image-selector">
-              <div 
-                v-for="(image, index) in textBackgroundImages" 
+              <div
+                v-for="(image, index) in textBackgroundImages"
                 :key="index"
                 class="image-option"
-                :class="{ 'active': textBackgroundImage === image.src }"
+                :class="{ active: textBackgroundImage === image.src }"
                 @click="selectTextBackground(image.src)"
               >
                 <img :src="image.src" :alt="image.name" />
               </div>
             </div>
           </div>
-          
+
           <div class="control-group">
             <button @click="addSampleText">添加示例文本</button>
             <button @click="clearAllText">清空所有文本</button>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="textVariant">
@@ -195,11 +195,11 @@
               <option value="compact">紧凑</option>
             </select>
           </div>
-          
+
           <div class="text-info">
             <h4>文本信息</h4>
             <p>文本数量: {{ textElements.length }}</p>
-            <p>选中文本: {{ selectedTextId ? '是' : '否' }}</p>
+            <p>选中文本: {{ selectedTextId ? "是" : "否" }}</p>
             <div v-if="selectedText">
               <p>字体: {{ selectedText.fontFamily }}</p>
               <p>大小: {{ selectedText.fontSize }}px</p>
@@ -216,7 +216,7 @@
       <div class="demo-description">
         <p>展示三个中优先级组件的集成效果，模拟专业图像编辑工作流</p>
       </div>
-      
+
       <div class="integrated-demo-container">
         <div class="integrated-editor">
           <editor-container
@@ -231,23 +231,23 @@
                   <h3>专业编辑器</h3>
                 </div>
                 <div class="toolbar-section">
-                  <button 
+                  <button
                     class="mode-button"
-                    :class="{ 'active': currentMode === 'layer' }"
+                    :class="{ active: currentMode === 'layer' }"
                     @click="setMode('layer')"
                   >
                     图层模式
                   </button>
-                  <button 
+                  <button
                     class="mode-button"
-                    :class="{ 'active': currentMode === 'crop' }"
+                    :class="{ active: currentMode === 'crop' }"
                     @click="setMode('crop')"
                   >
                     裁剪模式
                   </button>
-                  <button 
+                  <button
                     class="mode-button"
-                    :class="{ 'active': currentMode === 'text' }"
+                    :class="{ active: currentMode === 'text' }"
                     @click="setMode('text')"
                   >
                     文本模式
@@ -267,7 +267,7 @@
                 @layer-add="handleIntegratedLayerAdd"
                 @layer-delete="handleIntegratedLayerDelete"
               />
-              
+
               <div v-else class="mode-info">
                 <h4>{{ getModeTitle() }}</h4>
                 <p>{{ getModeDescription() }}</p>
@@ -283,9 +283,11 @@
                 @crop-change="handleIntegratedCropChange"
                 @apply="handleIntegratedCropApply"
               />
-              
+
               <text-tool
-                v-else-if="currentMode === 'text' && adapterInitialized && textAdapter"
+                v-else-if="
+                  currentMode === 'text' && adapterInitialized && textAdapter
+                "
                 :adapter="textAdapter"
                 :adapter-type="adapterType"
                 :background-image="integratedImageSrc"
@@ -298,7 +300,7 @@
               <div v-else-if="currentMode === 'text'" class="adapter-loading">
                 <p>正在初始化文本适配器...</p>
               </div>
-              
+
               <div v-else class="canvas-placeholder">
                 <img :src="integratedImageSrc" alt="编辑图像" />
               </div>
@@ -317,7 +319,10 @@
                 <div v-else-if="currentMode === 'crop'" class="crop-properties">
                   <p>裁剪属性设置</p>
                   <div v-if="integratedCropArea">
-                    <p>裁剪区域: {{ Math.round(integratedCropArea.width) }} × {{ Math.round(integratedCropArea.height) }}</p>
+                    <p>
+                      裁剪区域: {{ Math.round(integratedCropArea.width) }} ×
+                      {{ Math.round(integratedCropArea.height) }}
+                    </p>
                   </div>
                 </div>
                 <div v-else-if="currentMode === 'text'" class="text-properties">
@@ -337,7 +342,7 @@
             </template>
           </editor-container>
         </div>
-        
+
         <div class="integrated-controls">
           <h3>集成控制</h3>
           <div class="control-group">
@@ -347,7 +352,7 @@
               <option value="dark">暗色</option>
             </select>
           </div>
-          
+
           <div class="control-group">
             <button @click="simulateIntegratedLoading">模拟加载</button>
             <button @click="resetIntegratedDemo">重置演示</button>
@@ -359,19 +364,19 @@
 </template>
 
 <script>
-import LayerPanel from '@/components/ui/LayerPanel.vue';
-import CropTool from '@/components/ui/CropTool.vue';
-import TextTool from '@/components/ui/TextTool.vue';
-import EditorContainer from '@/components/ui/EditorContainer.vue';
-import FabricAdapter from '@/components/adapters/FabricAdapter.js';
+import LayerPanel from "@/components/ui/LayerPanel.vue";
+import CropTool from "@/components/ui/CropTool.vue";
+import TextTool from "@/components/ui/TextTool.vue";
+import EditorContainer from "@/components/ui/EditorContainer.vue";
+import FabricAdapter from "@/components/adapters/FabricAdapter.js";
 
 export default {
-  name: 'MidPriorityComponentsDemo',
+  name: "MidPriorityComponentsDemo",
   components: {
     LayerPanel,
     CropTool,
     TextTool,
-    EditorContainer
+    EditorContainer,
   },
 
   data() {
@@ -379,129 +384,129 @@ export default {
       // 图层管理相关
       layers: [
         {
-          id: 'background',
-          name: '背景图层',
-          type: 'image',
+          id: "background",
+          name: "背景图层",
+          type: "image",
           visible: true,
           locked: false,
           opacity: 1,
-          blendMode: 'normal',
-          thumbnail: 'https://picsum.photos/100/100?random=1'
+          blendMode: "normal",
+          thumbnail: "https://picsum.photos/100/100?random=1",
         },
         {
-          id: 'layer1',
-          name: '图层 1',
-          type: 'image',
+          id: "layer1",
+          name: "图层 1",
+          type: "image",
           visible: true,
           locked: false,
           opacity: 0.8,
-          blendMode: 'multiply',
-          thumbnail: 'https://picsum.photos/100/100?random=2'
+          blendMode: "multiply",
+          thumbnail: "https://picsum.photos/100/100?random=2",
         },
         {
-          id: 'layer2',
-          name: '文本图层',
-          type: 'text',
+          id: "layer2",
+          name: "文本图层",
+          type: "text",
           visible: true,
           locked: false,
           opacity: 1,
-          blendMode: 'normal',
-          thumbnail: null
+          blendMode: "normal",
+          thumbnail: null,
         },
         {
-          id: 'layer3',
-          name: '形状图层',
-          type: 'shape',
+          id: "layer3",
+          name: "形状图层",
+          type: "shape",
           visible: false,
           locked: true,
           opacity: 0.6,
-          blendMode: 'overlay',
-          thumbnail: null
-        }
+          blendMode: "overlay",
+          thumbnail: null,
+        },
       ],
-      selectedLayerIds: ['layer1'],
-      layerVariant: 'default',
+      selectedLayerIds: ["layer1"],
+      layerVariant: "default",
 
       // 裁剪工具相关
-      cropImageSrc: 'https://picsum.photos/800/600?random=10',
+      cropImageSrc: "https://picsum.photos/800/600?random=10",
       showCropGrid: true,
       showCropGuides: false,
-      cropVariant: 'default',
+      cropVariant: "default",
       currentCropArea: null,
       cropImages: [
-        { name: '风景1', src: 'https://picsum.photos/800/600?random=10' },
-        { name: '风景2', src: 'https://picsum.photos/800/600?random=11' },
-        { name: '人物', src: 'https://picsum.photos/600/800?random=12' },
-        { name: '建筑', src: 'https://picsum.photos/800/600?random=13' }
+        { name: "风景1", src: "https://picsum.photos/800/600?random=10" },
+        { name: "风景2", src: "https://picsum.photos/800/600?random=11" },
+        { name: "人物", src: "https://picsum.photos/600/800?random=12" },
+        { name: "建筑", src: "https://picsum.photos/800/600?random=13" },
       ],
 
       // 文本工具相关
-      textBackgroundImage: 'https://picsum.photos/800/600?random=20',
+      textBackgroundImage: "https://picsum.photos/800/600?random=20",
       textElements: [
         {
-          id: 'text1',
-          content: '欢迎使用文本工具',
+          id: "text1",
+          content: "欢迎使用文本工具",
           x: 100,
           y: 100,
-          fontFamily: 'Arial',
+          fontFamily: "Arial",
           fontSize: 32,
-          color: '#ffffff',
-          textAlign: 'center',
-          fontWeight: 'bold',
-          fontStyle: 'normal',
-          textDecoration: 'none',
+          color: "#ffffff",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontStyle: "normal",
+          textDecoration: "none",
           rotation: 0,
           scale: 1,
           effects: {
-            shadow: { enabled: true, blur: 4, color: '#000000' },
-            stroke: { enabled: false, width: 2, color: '#ffffff' }
-          }
-        }
+            shadow: { enabled: true, blur: 4, color: "#000000" },
+            stroke: { enabled: false, width: 2, color: "#ffffff" },
+          },
+        },
       ],
-      textVariant: 'default',
-      selectedTextId: '',
+      textVariant: "default",
+      selectedTextId: "",
       textBackgroundImages: [
-        { name: '背景1', src: 'https://picsum.photos/800/600?random=20' },
-        { name: '背景2', src: 'https://picsum.photos/800/600?random=21' },
-        { name: '背景3', src: 'https://picsum.photos/800/600?random=22' },
-        { name: '背景4', src: 'https://picsum.photos/800/600?random=23' }
+        { name: "背景1", src: "https://picsum.photos/800/600?random=20" },
+        { name: "背景2", src: "https://picsum.photos/800/600?random=21" },
+        { name: "背景3", src: "https://picsum.photos/800/600?random=22" },
+        { name: "背景4", src: "https://picsum.photos/800/600?random=23" },
       ],
 
       // 适配器相关
       textAdapter: null,
-      adapterType: 'fabric',
+      adapterType: "fabric",
       adapterInitialized: false,
 
       // 集成演示相关
-      editorTheme: 'light',
+      editorTheme: "light",
       editorLoading: false,
-      currentMode: 'layer',
-      integratedImageSrc: 'https://picsum.photos/800/600?random=30',
+      currentMode: "layer",
+      integratedImageSrc: "https://picsum.photos/800/600?random=30",
       integratedLayers: [
         {
-          id: 'bg',
-          name: '背景',
-          type: 'image',
+          id: "bg",
+          name: "背景",
+          type: "image",
           visible: true,
           locked: false,
           opacity: 1,
-          blendMode: 'normal',
-          thumbnail: 'https://picsum.photos/100/100?random=30'
+          blendMode: "normal",
+          thumbnail: "https://picsum.photos/100/100?random=30",
         },
         {
-          id: 'overlay',
-          name: '叠加层',
-          type: 'image',
+          id: "overlay",
+          name: "叠加层",
+          type: "image",
           visible: true,
           locked: false,
           opacity: 0.7,
-          blendMode: 'overlay',
-          thumbnail: 'https://picsum.photos/100/100?random=31'
-        }
+          blendMode: "overlay",
+          thumbnail: "https://picsum.photos/100/100?random=31",
+        },
       ],
-      integratedSelectedLayerIds: ['bg'],
+      integratedSelectedLayerIds: ["bg"],
       integratedCropArea: null,
-      integratedTextElements: []
+      integratedTextElements: [],
     };
   },
 
@@ -520,18 +525,21 @@ export default {
   computed: {
     // 可见图层数量
     visibleLayersCount() {
-      return this.layers.filter(layer => layer.visible).length;
+      return this.layers.filter((layer) => layer.visible).length;
     },
 
     // 锁定图层数量
     lockedLayersCount() {
-      return this.layers.filter(layer => layer.locked).length;
+      return this.layers.filter((layer) => layer.locked).length;
     },
 
     // 选中的文本
     selectedText() {
-      return this.textElements.find(text => text.id === this.selectedTextId) || null;
-    }
+      return (
+        this.textElements.find((text) => text.id === this.selectedTextId) ||
+        null
+      );
+    },
   },
 
   methods: {
@@ -543,10 +551,10 @@ export default {
     async initializeAdapter() {
       try {
         // 创建一个临时的canvas元素用于适配器
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = 800;
         canvas.height = 600;
-        canvas.style.display = 'none';
+        canvas.style.display = "none";
         document.body.appendChild(canvas);
 
         // 初始化Fabric适配器
@@ -554,13 +562,13 @@ export default {
         await this.textAdapter.initialize(canvas, {
           width: 800,
           height: 600,
-          backgroundColor: 'transparent'
+          backgroundColor: "transparent",
         });
 
         this.adapterInitialized = true;
-        console.log('TextTool adapter initialized successfully');
+        console.log("TextTool adapter initialized successfully");
       } catch (error) {
-        console.error('Failed to initialize adapter:', error);
+        console.error("Failed to initialize adapter:", error);
         // 创建一个mock适配器作为fallback
         this.textAdapter = this.createMockAdapter();
         this.adapterInitialized = true;
@@ -574,38 +582,46 @@ export default {
       return {
         // 文本操作方法
         addText: async (content, x, y, options = {}) => {
-          console.log('Mock adapter: addText called', { content, x, y, options });
+          console.log("Mock adapter: addText called", {
+            content,
+            x,
+            y,
+            options,
+          });
           return `mock-text-${Date.now()}`;
         },
         removeText: async (id) => {
-          console.log('Mock adapter: removeText called', { id });
+          console.log("Mock adapter: removeText called", { id });
           return Promise.resolve();
         },
         updateText: async (id, options = {}) => {
-          console.log('Mock adapter: updateText called', { id, options });
+          console.log("Mock adapter: updateText called", { id, options });
           return Promise.resolve();
         },
         removeObject: async (id) => {
-          console.log('Mock adapter: removeObject called', { id });
+          console.log("Mock adapter: removeObject called", { id });
           return Promise.resolve();
         },
         updateObject: async (id, options = {}) => {
-          console.log('Mock adapter: updateObject called', { id, options });
+          console.log("Mock adapter: updateObject called", { id, options });
           return Promise.resolve();
         },
 
         // 基础适配器方法
         initialize: async (container, options = {}) => {
-          console.log('Mock adapter: initialize called', { container, options });
+          console.log("Mock adapter: initialize called", {
+            container,
+            options,
+          });
           return Promise.resolve();
         },
         destroy: () => {
-          console.log('Mock adapter: destroy called');
+          console.log("Mock adapter: destroy called");
         },
 
         // 图像操作方法
         loadImage: async (imageData) => {
-          console.log('Mock adapter: loadImage called', { imageData });
+          console.log("Mock adapter: loadImage called", { imageData });
           return Promise.resolve();
         },
 
@@ -614,9 +630,9 @@ export default {
           return {
             renderTime: 0,
             operationCount: 0,
-            memoryUsage: 0
+            memoryUsage: 0,
           };
-        }
+        },
       };
     },
 
@@ -633,7 +649,7 @@ export default {
      * 处理图层可见性变化
      */
     handleLayerVisibilityChange(event) {
-      const layer = this.layers.find(l => l.id === event.layerId);
+      const layer = this.layers.find((l) => l.id === event.layerId);
       if (layer) {
         layer.visible = event.visible;
       }
@@ -643,7 +659,7 @@ export default {
      * 处理图层锁定变化
      */
     handleLayerLockChange(event) {
-      const layer = this.layers.find(l => l.id === event.layerId);
+      const layer = this.layers.find((l) => l.id === event.layerId);
       if (layer) {
         layer.locked = event.locked;
       }
@@ -653,7 +669,7 @@ export default {
      * 处理图层不透明度变化
      */
     handleLayerOpacityChange(event) {
-      const layer = this.layers.find(l => l.id === event.layerId);
+      const layer = this.layers.find((l) => l.id === event.layerId);
       if (layer) {
         layer.opacity = event.opacity;
       }
@@ -663,7 +679,7 @@ export default {
      * 处理图层混合模式变化
      */
     handleLayerBlendModeChange(event) {
-      const layer = this.layers.find(l => l.id === event.layerId);
+      const layer = this.layers.find((l) => l.id === event.layerId);
       if (layer) {
         layer.blendMode = event.blendMode;
       }
@@ -673,7 +689,7 @@ export default {
      * 处理图层名称变化
      */
     handleLayerNameChange(event) {
-      const layer = this.layers.find(l => l.id === event.layerId);
+      const layer = this.layers.find((l) => l.id === event.layerId);
       if (layer) {
         layer.name = event.name;
       }
@@ -686,12 +702,12 @@ export default {
       const newLayer = {
         id: `layer-${Date.now()}`,
         name: `新图层 ${this.layers.length + 1}`,
-        type: 'image',
+        type: "image",
         visible: true,
         locked: false,
         opacity: 1,
-        blendMode: 'normal',
-        thumbnail: `https://picsum.photos/100/100?random=${Date.now()}`
+        blendMode: "normal",
+        thumbnail: `https://picsum.photos/100/100?random=${Date.now()}`,
       };
 
       this.layers.unshift(newLayer);
@@ -702,8 +718,8 @@ export default {
      * 处理删除图层
      */
     handleLayerDelete(layerIds) {
-      layerIds.forEach(layerId => {
-        const index = this.layers.findIndex(l => l.id === layerId);
+      layerIds.forEach((layerId) => {
+        const index = this.layers.findIndex((l) => l.id === layerId);
         if (index !== -1) {
           this.layers.splice(index, 1);
         }
@@ -716,15 +732,15 @@ export default {
      * 处理复制图层
      */
     handleLayerDuplicate(layerId) {
-      const layer = this.layers.find(l => l.id === layerId);
+      const layer = this.layers.find((l) => l.id === layerId);
       if (layer) {
         const duplicatedLayer = {
           ...layer,
           id: `${layer.id}-copy-${Date.now()}`,
-          name: `${layer.name} 副本`
+          name: `${layer.name} 副本`,
         };
 
-        const index = this.layers.findIndex(l => l.id === layerId);
+        const index = this.layers.findIndex((l) => l.id === layerId);
         this.layers.splice(index, 0, duplicatedLayer);
         this.selectedLayerIds = [duplicatedLayer.id];
       }
@@ -741,7 +757,7 @@ export default {
      * 添加随机图层
      */
     addRandomLayer() {
-      const types = ['image', 'text', 'shape'];
+      const types = ["image", "text", "shape"];
       const randomType = types[Math.floor(Math.random() * types.length)];
 
       const newLayer = {
@@ -751,8 +767,11 @@ export default {
         visible: true,
         locked: false,
         opacity: Math.random() * 0.5 + 0.5,
-        blendMode: 'normal',
-        thumbnail: randomType === 'image' ? `https://picsum.photos/100/100?random=${Date.now()}` : null
+        blendMode: "normal",
+        thumbnail:
+          randomType === "image"
+            ? `https://picsum.photos/100/100?random=${Date.now()}`
+            : null,
       };
 
       this.layers.unshift(newLayer);
@@ -762,8 +781,8 @@ export default {
      * 切换全部可见性
      */
     toggleAllVisibility() {
-      const allVisible = this.layers.every(layer => layer.visible);
-      this.layers.forEach(layer => {
+      const allVisible = this.layers.every((layer) => layer.visible);
+      this.layers.forEach((layer) => {
         layer.visible = !allVisible;
       });
     },
@@ -774,17 +793,17 @@ export default {
     resetLayers() {
       this.layers = [
         {
-          id: 'background',
-          name: '背景图层',
-          type: 'image',
+          id: "background",
+          name: "背景图层",
+          type: "image",
           visible: true,
           locked: false,
           opacity: 1,
-          blendMode: 'normal',
-          thumbnail: 'https://picsum.photos/100/100?random=1'
-        }
+          blendMode: "normal",
+          thumbnail: "https://picsum.photos/100/100?random=1",
+        },
       ];
-      this.selectedLayerIds = ['background'];
+      this.selectedLayerIds = ["background"];
     },
 
     // ========== 裁剪工具相关方法 ==========
@@ -815,15 +834,19 @@ export default {
      * 处理裁剪应用
      */
     handleCropApply(cropData) {
-      console.log('裁剪应用:', cropData);
-      alert(`裁剪应用成功！\n区域: ${Math.round(cropData.width)} × ${Math.round(cropData.height)}`);
+      console.log("裁剪应用:", cropData);
+      alert(
+        `裁剪应用成功！\n区域: ${Math.round(cropData.width)} × ${Math.round(
+          cropData.height
+        )}`
+      );
     },
 
     /**
      * 处理裁剪取消
      */
     handleCropCancel() {
-      console.log('裁剪取消');
+      console.log("裁剪取消");
       this.currentCropArea = null;
     },
 
@@ -831,7 +854,7 @@ export default {
      * 处理裁剪重置
      */
     handleCropReset() {
-      console.log('裁剪重置');
+      console.log("裁剪重置");
       this.currentCropArea = null;
     },
 
@@ -848,14 +871,14 @@ export default {
      * 处理文本添加
      */
     handleTextAdd(text) {
-      console.log('文本添加:', text);
+      console.log("文本添加:", text);
     },
 
     /**
      * 处理文本删除
      */
     handleTextDelete(text) {
-      console.log('文本删除:', text);
+      console.log("文本删除:", text);
     },
 
     /**
@@ -863,75 +886,71 @@ export default {
      */
     handleTextSelect(text) {
       this.selectedTextId = text.id;
-      console.log('文本选择:', text);
+      console.log("文本选择:", text);
     },
 
     /**
      * 处理文本内容变化
      */
     handleTextContentChange(text) {
-      console.log('文本内容变化:', text);
+      console.log("文本内容变化:", text);
     },
 
     /**
      * 处理文本样式变化
      */
     handleTextStyleChange(text) {
-      console.log('文本样式变化:', text);
+      console.log("文本样式变化:", text);
     },
 
     /**
      * 处理文本移动
      */
     handleTextMove(text) {
-      console.log('文本移动:', text);
+      console.log("文本移动:", text);
     },
 
     /**
      * 处理文本旋转
      */
     handleTextRotate(text) {
-      console.log('文本旋转:', text);
+      console.log("文本旋转:", text);
     },
 
     /**
      * 处理文本调整大小
      */
     handleTextResize(text) {
-      console.log('文本调整大小:', text);
+      console.log("文本调整大小:", text);
     },
 
     /**
      * 添加示例文本
      */
     addSampleText() {
-      const sampleTexts = [
-        '标题文本',
-        '副标题',
-        '正文内容',
-        '水印文字'
-      ];
+      const sampleTexts = ["标题文本", "副标题", "正文内容", "水印文字"];
 
-      const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+      const randomText =
+        sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
 
       const newText = {
         id: `sample-${Date.now()}`,
         content: randomText,
         x: Math.random() * 400 + 100,
         y: Math.random() * 300 + 100,
-        fontFamily: 'Arial',
+        fontFamily: "Arial",
         fontSize: Math.random() * 20 + 20,
         color: `hsl(${Math.random() * 360}, 70%, 50%)`,
-        textAlign: 'left',
-        fontWeight: 'normal',
-        fontStyle: 'normal',
-        textDecoration: 'none',
+        textAlign: "left",
+        fontWeight: "normal",
+        fontStyle: "normal",
+        textDecoration: "none",
         rotation: 0,
         scale: 1,
         effects: {
-          shadow: { enabled: false, blur: 4, color: '#000000' },
-          stroke: { enabled: false, width: 2, color: '#ffffff' }
-        }
+          shadow: { enabled: false, blur: 4, color: "#000000" },
+          stroke: { enabled: false, width: 2, color: "#ffffff" },
+        },
       };
 
       this.textElements.push(newText);
@@ -942,7 +961,7 @@ export default {
      */
     clearAllText() {
       this.textElements = [];
-      this.selectedTextId = '';
+      this.selectedTextId = "";
     },
 
     // ========== 集成演示相关方法 ==========
@@ -959,11 +978,11 @@ export default {
      */
     getModeTitle() {
       const titles = {
-        'layer': '图层管理',
-        'crop': '裁剪工具',
-        'text': '文本编辑'
+        layer: "图层管理",
+        crop: "裁剪工具",
+        text: "文本编辑",
       };
-      return titles[this.currentMode] || '未知模式';
+      return titles[this.currentMode] || "未知模式";
     },
 
     /**
@@ -971,11 +990,11 @@ export default {
      */
     getModeDescription() {
       const descriptions = {
-        'layer': '管理图层的可见性、顺序和属性',
-        'crop': '裁剪和调整图像尺寸',
-        'text': '添加和编辑文本元素'
+        layer: "管理图层的可见性、顺序和属性",
+        crop: "裁剪和调整图像尺寸",
+        text: "添加和编辑文本元素",
       };
-      return descriptions[this.currentMode] || '无描述';
+      return descriptions[this.currentMode] || "无描述";
     },
 
     /**
@@ -989,7 +1008,7 @@ export default {
      * 处理集成图层可见性变化
      */
     handleIntegratedLayerVisibilityChange(event) {
-      const layer = this.integratedLayers.find(l => l.id === event.layerId);
+      const layer = this.integratedLayers.find((l) => l.id === event.layerId);
       if (layer) {
         layer.visible = event.visible;
       }
@@ -1002,12 +1021,12 @@ export default {
       const newLayer = {
         id: `integrated-${Date.now()}`,
         name: `图层 ${this.integratedLayers.length + 1}`,
-        type: 'image',
+        type: "image",
         visible: true,
         locked: false,
         opacity: 1,
-        blendMode: 'normal',
-        thumbnail: `https://picsum.photos/100/100?random=${Date.now()}`
+        blendMode: "normal",
+        thumbnail: `https://picsum.photos/100/100?random=${Date.now()}`,
       };
 
       this.integratedLayers.unshift(newLayer);
@@ -1018,8 +1037,8 @@ export default {
      * 处理集成图层删除
      */
     handleIntegratedLayerDelete(layerIds) {
-      layerIds.forEach(layerId => {
-        const index = this.integratedLayers.findIndex(l => l.id === layerId);
+      layerIds.forEach((layerId) => {
+        const index = this.integratedLayers.findIndex((l) => l.id === layerId);
         if (index !== -1) {
           this.integratedLayers.splice(index, 1);
         }
@@ -1039,22 +1058,22 @@ export default {
      * 处理集成裁剪应用
      */
     handleIntegratedCropApply(cropData) {
-      console.log('集成裁剪应用:', cropData);
-      alert('裁剪应用成功！');
+      console.log("集成裁剪应用:", cropData);
+      alert("裁剪应用成功！");
     },
 
     /**
      * 处理集成文本添加
      */
     handleIntegratedTextAdd(text) {
-      console.log('集成文本添加:', text);
+      console.log("集成文本添加:", text);
     },
 
     /**
      * 处理集成文本删除
      */
     handleIntegratedTextDelete(text) {
-      console.log('集成文本删除:', text);
+      console.log("集成文本删除:", text);
     },
 
     /**
@@ -1072,25 +1091,25 @@ export default {
      * 重置集成演示
      */
     resetIntegratedDemo() {
-      this.currentMode = 'layer';
+      this.currentMode = "layer";
       this.integratedLayers = [
         {
-          id: 'bg',
-          name: '背景',
-          type: 'image',
+          id: "bg",
+          name: "背景",
+          type: "image",
           visible: true,
           locked: false,
           opacity: 1,
-          blendMode: 'normal',
-          thumbnail: 'https://picsum.photos/100/100?random=30'
-        }
+          blendMode: "normal",
+          thumbnail: "https://picsum.photos/100/100?random=30",
+        },
       ];
-      this.integratedSelectedLayerIds = ['bg'];
+      this.integratedSelectedLayerIds = ["bg"];
       this.integratedCropArea = null;
       this.integratedTextElements = [];
       this.editorLoading = false;
-    }
-  }
+    },
+  },
 };
 </script>
 

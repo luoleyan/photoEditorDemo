@@ -1,5 +1,5 @@
-import { fabric } from 'fabric';
-import Konva from 'konva';
+import { fabric } from "fabric";
+import Konva from "konva";
 
 /**
  * 适配器工厂类
@@ -63,38 +63,48 @@ class AdapterFactory {
     }
 
     switch (adapterType) {
-      case 'fabric':
+      case "fabric":
         if (!window.fabric) {
           // 如果npm包没有正确加载，回退到CDN
-          await this._loadScript('https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js');
+          await this._loadScript(
+            "https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"
+          );
         }
         break;
 
-      case 'konva':
+      case "konva":
         if (!window.Konva) {
           // 如果npm包没有正确加载，回退到CDN
-          await this._loadScript('https://unpkg.com/konva@9.2.0/konva.min.js');
+          await this._loadScript("https://unpkg.com/konva@9.2.0/konva.min.js");
         }
         break;
 
-      case 'cropper':
+      case "cropper":
         if (!window.Cropper) {
           await Promise.all([
-            this._loadScript('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js'),
-            this._loadStylesheet('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css')
+            this._loadScript(
+              "https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"
+            ),
+            this._loadStylesheet(
+              "https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css"
+            ),
           ]);
         }
         break;
 
-      case 'tui':
+      case "tui":
         // TUI Image Editor is imported as npm package in TuiAdapter
         // No need to load from CDN
-        console.log('TUI Image Editor will be loaded via npm import in TuiAdapter');
+        console.log(
+          "TUI Image Editor will be loaded via npm import in TuiAdapter"
+        );
         break;
 
-      case 'jimp':
+      case "jimp":
         if (!window.Jimp) {
-          await this._loadScript('https://cdn.jsdelivr.net/npm/jimp@0.22.10/browser/lib/jimp.min.js');
+          await this._loadScript(
+            "https://cdn.jsdelivr.net/npm/jimp@0.22.10/browser/lib/jimp.min.js"
+          );
         }
         break;
 
@@ -113,26 +123,26 @@ class AdapterFactory {
    */
   async _instantiateAdapter(adapterType) {
     switch (adapterType) {
-      case 'fabric':
-        const FabricAdapter = (await import('./FabricAdapter.js')).default;
+      case "fabric":
+        const FabricAdapter = (await import("./FabricAdapter.js")).default;
         return new FabricAdapter();
-        
-      case 'konva':
-        const KonvaAdapter = (await import('./KonvaAdapter.js')).default;
+
+      case "konva":
+        const KonvaAdapter = (await import("./KonvaAdapter.js")).default;
         return new KonvaAdapter();
-        
-      case 'cropper':
-        const CropperAdapter = (await import('./CropperAdapter.js')).default;
+
+      case "cropper":
+        const CropperAdapter = (await import("./CropperAdapter.js")).default;
         return new CropperAdapter();
-        
-      case 'tui':
-        const TuiAdapter = (await import('./TuiAdapter.js')).default;
+
+      case "tui":
+        const TuiAdapter = (await import("./TuiAdapter.js")).default;
         return new TuiAdapter();
-        
-      case 'jimp':
-        const JimpAdapter = (await import('./JimpAdapter.js')).default;
+
+      case "jimp":
+        const JimpAdapter = (await import("./JimpAdapter.js")).default;
         return new JimpAdapter();
-        
+
       default:
         throw new Error(`Unsupported adapter type: ${adapterType}`);
     }
@@ -146,11 +156,12 @@ class AdapterFactory {
    */
   _loadScript(url) {
     return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.src = url;
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = (error) => reject(new Error(`Failed to load script: ${url}`));
+      script.onerror = (error) =>
+        reject(new Error(`Failed to load script: ${url}`));
       document.head.appendChild(script);
     });
   }
@@ -163,11 +174,12 @@ class AdapterFactory {
    */
   _loadStylesheet(url) {
     return new Promise((resolve, reject) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
       link.href = url;
       link.onload = () => resolve();
-      link.onerror = (error) => reject(new Error(`Failed to load stylesheet: ${url}`));
+      link.onerror = (error) =>
+        reject(new Error(`Failed to load stylesheet: ${url}`));
       document.head.appendChild(link);
     });
   }
@@ -182,17 +194,21 @@ class AdapterFactory {
     const interval = 100; // 每100ms检查一次
 
     for (let i = 0; i < maxAttempts; i++) {
-      if (window.tui &&
-          window.tui.ImageEditor &&
-          typeof window.tui.ImageEditor === 'function') {
-        console.log('TUI Image Editor library loaded successfully');
+      if (
+        window.tui &&
+        window.tui.ImageEditor &&
+        typeof window.tui.ImageEditor === "function"
+      ) {
+        console.log("TUI Image Editor library loaded successfully");
         return;
       }
 
-      await new Promise(resolve => setTimeout(resolve, interval));
+      await new Promise((resolve) => setTimeout(resolve, interval));
     }
 
-    throw new Error('TUI Image Editor library failed to load within timeout period');
+    throw new Error(
+      "TUI Image Editor library failed to load within timeout period"
+    );
   }
 }
 

@@ -3,7 +3,7 @@
  * 实现图层合成、蒙版、遮罩等高级功能
  */
 
-import { blendModeEngine } from './BlendModeEngine.js';
+import { blendModeEngine } from "./BlendModeEngine.js";
 
 /**
  * 图层合成引擎类
@@ -21,7 +21,7 @@ export class LayerCompositionEngine {
    */
   setCanvas(canvas) {
     this.canvas = canvas;
-    this.context = canvas.getContext('2d');
+    this.context = canvas.getContext("2d");
   }
 
   /**
@@ -33,19 +33,23 @@ export class LayerCompositionEngine {
     const layerData = {
       id: layer.id || this._generateLayerId(),
       name: layer.name || `Layer ${this.layers.length + 1}`,
-      type: layer.type || 'image',
+      type: layer.type || "image",
       visible: layer.visible !== false,
       locked: layer.locked || false,
       opacity: layer.opacity !== undefined ? layer.opacity : 1,
-      blendMode: layer.blendMode || 'normal',
+      blendMode: layer.blendMode || "normal",
       transform: layer.transform || {
-        x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0
+        x: 0,
+        y: 0,
+        scaleX: 1,
+        scaleY: 1,
+        rotation: 0,
       },
       mask: layer.mask || null,
       clippingMask: layer.clippingMask || false,
       data: layer.data || null, // ImageData, Canvas, or Image
       filters: layer.filters || [],
-      adjustments: layer.adjustments || {}
+      adjustments: layer.adjustments || {},
     };
 
     this.layers.push(layerData);
@@ -58,7 +62,7 @@ export class LayerCompositionEngine {
    * @returns {boolean} 是否成功移除
    */
   removeLayer(layerId) {
-    const index = this.layers.findIndex(layer => layer.id === layerId);
+    const index = this.layers.findIndex((layer) => layer.id === layerId);
     if (index !== -1) {
       this.layers.splice(index, 1);
       return true;
@@ -72,7 +76,7 @@ export class LayerCompositionEngine {
    * @returns {Object|null} 图层对象
    */
   getLayer(layerId) {
-    return this.layers.find(layer => layer.id === layerId) || null;
+    return this.layers.find((layer) => layer.id === layerId) || null;
   }
 
   /**
@@ -97,7 +101,7 @@ export class LayerCompositionEngine {
    * @returns {boolean} 是否成功移动
    */
   moveLayer(layerId, newIndex) {
-    const currentIndex = this.layers.findIndex(layer => layer.id === layerId);
+    const currentIndex = this.layers.findIndex((layer) => layer.id === layerId);
     if (currentIndex !== -1 && newIndex >= 0 && newIndex < this.layers.length) {
       const layer = this.layers.splice(currentIndex, 1)[0];
       this.layers.splice(newIndex, 0, layer);
@@ -113,23 +117,23 @@ export class LayerCompositionEngine {
    */
   compose(options = {}) {
     if (!this.canvas) {
-      throw new Error('Canvas not set');
+      throw new Error("Canvas not set");
     }
 
     const {
       width = this.canvas.width,
       height = this.canvas.height,
-      backgroundColor = 'transparent'
+      backgroundColor = "transparent",
     } = options;
 
     // 创建合成画布
-    const compositeCanvas = document.createElement('canvas');
+    const compositeCanvas = document.createElement("canvas");
     compositeCanvas.width = width;
     compositeCanvas.height = height;
-    const compositeCtx = compositeCanvas.getContext('2d');
+    const compositeCtx = compositeCanvas.getContext("2d");
 
     // 设置背景色
-    if (backgroundColor !== 'transparent') {
+    if (backgroundColor !== "transparent") {
       compositeCtx.fillStyle = backgroundColor;
       compositeCtx.fillRect(0, 0, width, height);
     }
@@ -155,17 +159,17 @@ export class LayerCompositionEngine {
    */
   _compositeLayer(ctx, layer, width, height) {
     // 创建图层画布
-    const layerCanvas = document.createElement('canvas');
+    const layerCanvas = document.createElement("canvas");
     layerCanvas.width = width;
     layerCanvas.height = height;
-    const layerCtx = layerCanvas.getContext('2d');
+    const layerCtx = layerCanvas.getContext("2d");
 
     // 应用变换
     layerCtx.save();
     layerCtx.globalAlpha = layer.opacity;
     layerCtx.translate(layer.transform.x, layer.transform.y);
     layerCtx.scale(layer.transform.scaleX, layer.transform.scaleY);
-    layerCtx.rotate(layer.transform.rotation * Math.PI / 180);
+    layerCtx.rotate((layer.transform.rotation * Math.PI) / 180);
 
     // 绘制图层内容
     this._drawLayerContent(layerCtx, layer);
@@ -188,7 +192,7 @@ export class LayerCompositionEngine {
     }
 
     // 应用混合模式
-    if (layer.blendMode !== 'normal') {
+    if (layer.blendMode !== "normal") {
       this._applyBlendMode(ctx, layerCanvas, layer.blendMode, layer.opacity);
     } else {
       ctx.globalAlpha = layer.opacity;
@@ -212,7 +216,7 @@ export class LayerCompositionEngine {
       ctx.drawImage(data, 0, 0);
     } else if (data instanceof ImageData) {
       ctx.putImageData(data, 0, 0);
-    } else if (typeof data === 'object' && data.type) {
+    } else if (typeof data === "object" && data.type) {
       // 处理矢量对象（文本、形状等）
       this._drawVectorObject(ctx, data);
     }
@@ -226,16 +230,16 @@ export class LayerCompositionEngine {
    */
   _drawVectorObject(ctx, object) {
     switch (object.type) {
-      case 'text':
+      case "text":
         this._drawText(ctx, object);
         break;
-      case 'rectangle':
+      case "rectangle":
         this._drawRectangle(ctx, object);
         break;
-      case 'circle':
+      case "circle":
         this._drawCircle(ctx, object);
         break;
-      case 'path':
+      case "path":
         this._drawPath(ctx, object);
         break;
     }
@@ -248,17 +252,19 @@ export class LayerCompositionEngine {
    * @private
    */
   _drawText(ctx, textObject) {
-    ctx.font = `${textObject.fontSize || 16}px ${textObject.fontFamily || 'Arial'}`;
-    ctx.fillStyle = textObject.fill || '#000000';
-    ctx.textAlign = textObject.textAlign || 'left';
-    ctx.textBaseline = textObject.textBaseline || 'top';
-    
+    ctx.font = `${textObject.fontSize || 16}px ${
+      textObject.fontFamily || "Arial"
+    }`;
+    ctx.fillStyle = textObject.fill || "#000000";
+    ctx.textAlign = textObject.textAlign || "left";
+    ctx.textBaseline = textObject.textBaseline || "top";
+
     if (textObject.stroke) {
       ctx.strokeStyle = textObject.stroke;
       ctx.lineWidth = textObject.strokeWidth || 1;
       ctx.strokeText(textObject.text, textObject.x || 0, textObject.y || 0);
     }
-    
+
     ctx.fillText(textObject.text, textObject.x || 0, textObject.y || 0);
   }
 
@@ -269,13 +275,21 @@ export class LayerCompositionEngine {
    * @private
    */
   _drawRectangle(ctx, rectObject) {
-    const { x = 0, y = 0, width = 100, height = 100, fill, stroke, strokeWidth = 1 } = rectObject;
-    
+    const {
+      x = 0,
+      y = 0,
+      width = 100,
+      height = 100,
+      fill,
+      stroke,
+      strokeWidth = 1,
+    } = rectObject;
+
     if (fill) {
       ctx.fillStyle = fill;
       ctx.fillRect(x, y, width, height);
     }
-    
+
     if (stroke) {
       ctx.strokeStyle = stroke;
       ctx.lineWidth = strokeWidth;
@@ -290,16 +304,23 @@ export class LayerCompositionEngine {
    * @private
    */
   _drawCircle(ctx, circleObject) {
-    const { x = 0, y = 0, radius = 50, fill, stroke, strokeWidth = 1 } = circleObject;
-    
+    const {
+      x = 0,
+      y = 0,
+      radius = 50,
+      fill,
+      stroke,
+      strokeWidth = 1,
+    } = circleObject;
+
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    
+
     if (fill) {
       ctx.fillStyle = fill;
       ctx.fill();
     }
-    
+
     if (stroke) {
       ctx.strokeStyle = stroke;
       ctx.lineWidth = strokeWidth;
@@ -314,14 +335,16 @@ export class LayerCompositionEngine {
    * @private
    */
   _applyMask(canvas, mask) {
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
     // 获取蒙版数据
     let maskData;
     if (mask instanceof HTMLCanvasElement) {
-      maskData = mask.getContext('2d').getImageData(0, 0, mask.width, mask.height).data;
+      maskData = mask
+        .getContext("2d")
+        .getImageData(0, 0, mask.width, mask.height).data;
     } else if (mask instanceof ImageData) {
       maskData = mask.data;
     } else {
@@ -347,11 +370,23 @@ export class LayerCompositionEngine {
    */
   _applyBlendMode(ctx, layerCanvas, blendMode, opacity) {
     // 获取当前画布内容
-    const currentImageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-    const layerImageData = layerCanvas.getContext('2d').getImageData(0, 0, layerCanvas.width, layerCanvas.height);
+    const currentImageData = ctx.getImageData(
+      0,
+      0,
+      ctx.canvas.width,
+      ctx.canvas.height
+    );
+    const layerImageData = layerCanvas
+      .getContext("2d")
+      .getImageData(0, 0, layerCanvas.width, layerCanvas.height);
 
     // 应用混合模式
-    const blendedImageData = blendModeEngine.blend(currentImageData, layerImageData, blendMode, opacity);
+    const blendedImageData = blendModeEngine.blend(
+      currentImageData,
+      layerImageData,
+      blendMode,
+      opacity
+    );
 
     // 绘制混合结果
     ctx.putImageData(blendedImageData, 0, 0);
@@ -366,24 +401,24 @@ export class LayerCompositionEngine {
   _applyLayerFilters(canvas, filters) {
     // 这里可以集成AdvancedFilterEngine
     // 暂时使用简单的CSS滤镜
-    const ctx = canvas.getContext('2d');
-    let filterString = '';
+    const ctx = canvas.getContext("2d");
+    let filterString = "";
 
-    filters.forEach(filter => {
+    filters.forEach((filter) => {
       switch (filter.type) {
-        case 'blur':
+        case "blur":
           filterString += `blur(${filter.value || 0}px) `;
           break;
-        case 'brightness':
+        case "brightness":
           filterString += `brightness(${(filter.value || 0) + 100}%) `;
           break;
-        case 'contrast':
+        case "contrast":
           filterString += `contrast(${(filter.value || 0) + 100}%) `;
           break;
-        case 'grayscale':
+        case "grayscale":
           filterString += `grayscale(${filter.value || 100}%) `;
           break;
-        case 'sepia':
+        case "sepia":
           filterString += `sepia(${filter.value || 100}%) `;
           break;
       }
@@ -394,7 +429,7 @@ export class LayerCompositionEngine {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.putImageData(imageData, 0, 0);
-      ctx.filter = 'none';
+      ctx.filter = "none";
     }
   }
 
@@ -405,7 +440,7 @@ export class LayerCompositionEngine {
    * @private
    */
   _applyLayerAdjustments(canvas, adjustments) {
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
@@ -477,22 +512,22 @@ export class LayerCompositionEngine {
    * @returns {HTMLCanvasElement} 拼合后的画布
    */
   flattenLayers(layerIds = null) {
-    const layersToFlatten = layerIds 
-      ? this.layers.filter(layer => layerIds.includes(layer.id))
-      : this.layers.filter(layer => layer.visible);
+    const layersToFlatten = layerIds
+      ? this.layers.filter((layer) => layerIds.includes(layer.id))
+      : this.layers.filter((layer) => layer.visible);
 
     // 临时保存原图层
     const originalLayers = [...this.layers];
-    
+
     // 设置要拼合的图层
     this.layers = layersToFlatten;
-    
+
     // 合成
     const flattenedCanvas = this.compose();
-    
+
     // 恢复原图层
     this.layers = originalLayers;
-    
+
     return flattenedCanvas;
   }
 }

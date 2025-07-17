@@ -1,58 +1,59 @@
 /**
  * 测试工具函数
  */
-import { createLocalVue } from '@vue/test-utils';
+import { createLocalVue } from "@vue/test-utils";
 
 // 创建本地Vue实例
 export const localVue = createLocalVue();
 
 // 通用的Vue组件stubs
 export const commonStubs = {
-  'color-picker': {
-    name: 'ColorPicker',
-    props: ['value', 'disabled'],
-    template: '<div class="mock-color-picker" @click="$emit(\'change\', value)"></div>'
+  "color-picker": {
+    name: "ColorPicker",
+    props: ["value", "disabled"],
+    template:
+      '<div class="mock-color-picker" @click="$emit(\'change\', value)"></div>',
   },
-  'filter-panel': {
-    name: 'FilterPanel',
-    props: ['availableFilters', 'activeFilterId'],
-    template: '<div class="mock-filter-panel"></div>'
+  "filter-panel": {
+    name: "FilterPanel",
+    props: ["availableFilters", "activeFilterId"],
+    template: '<div class="mock-filter-panel"></div>',
   },
-  'layer-panel': {
-    name: 'LayerPanel',
-    props: ['layers', 'selectedLayerIds'],
-    template: '<div class="mock-layer-panel"></div>'
+  "layer-panel": {
+    name: "LayerPanel",
+    props: ["layers", "selectedLayerIds"],
+    template: '<div class="mock-layer-panel"></div>',
   },
-  'export-panel': {
-    name: 'ExportPanel',
-    props: ['sourceCanvas', 'showHeader'],
-    template: '<div class="mock-export-panel"></div>'
+  "export-panel": {
+    name: "ExportPanel",
+    props: ["sourceCanvas", "showHeader"],
+    template: '<div class="mock-export-panel"></div>',
   },
-  'error-notification': {
-    name: 'ErrorNotification',
-    props: ['show', 'error'],
-    template: '<div class="mock-error-notification"></div>'
+  "error-notification": {
+    name: "ErrorNotification",
+    props: ["show", "error"],
+    template: '<div class="mock-error-notification"></div>',
   },
-  'user-guidance': {
-    name: 'UserGuidance',
-    props: ['show', 'guidance'],
-    template: '<div class="mock-user-guidance"></div>'
+  "user-guidance": {
+    name: "UserGuidance",
+    props: ["show", "guidance"],
+    template: '<div class="mock-user-guidance"></div>',
   },
-  'mobile-performance-monitor': {
-    name: 'MobilePerformanceMonitor',
-    template: '<div class="mock-mobile-performance-monitor"></div>'
-  }
+  "mobile-performance-monitor": {
+    name: "MobilePerformanceMonitor",
+    template: '<div class="mock-mobile-performance-monitor"></div>',
+  },
 };
 
 // 通用的Vue组件挂载选项
 export const defaultMountOptions = {
   localVue,
   stubs: commonStubs,
-  attachTo: document.body
+  attachTo: document.body,
 };
 
 // 创建Mock适配器
-export function createMockAdapter(type = 'fabric') {
+export function createMockAdapter(type = "fabric") {
   return {
     adapterType: type,
     isInitialized: true,
@@ -96,13 +97,15 @@ export function createMockAdapter(type = 'fabric') {
 
     emit(eventName, data) {
       if (this.eventListeners.has(eventName)) {
-        this.eventListeners.get(eventName).forEach(callback => callback(data));
+        this.eventListeners
+          .get(eventName)
+          .forEach((callback) => callback(data));
       }
     },
 
     // 图像操作方法
     loadImage: jest.fn().mockResolvedValue(true),
-    exportImage: jest.fn().mockResolvedValue('data:image/png;base64,mock'),
+    exportImage: jest.fn().mockResolvedValue("data:image/png;base64,mock"),
     applyFilter: jest.fn().mockResolvedValue(true),
     setBrightness: jest.fn().mockResolvedValue(true),
     setContrast: jest.fn().mockResolvedValue(true),
@@ -148,7 +151,7 @@ export function createMockAdapter(type = 'fabric') {
       return {
         operationCount: 0,
         renderTime: 0,
-        memoryUsage: 0
+        memoryUsage: 0,
       };
     },
 
@@ -156,10 +159,10 @@ export function createMockAdapter(type = 'fabric') {
     checkCompatibility() {
       return {
         isSupported: true,
-        supportedFeatures: ['drawing', 'text', 'shapes', 'filters'],
-        unsupportedFeatures: []
+        supportedFeatures: ["drawing", "text", "shapes", "filters"],
+        unsupportedFeatures: [],
       };
-    }
+    },
   };
 }
 
@@ -174,18 +177,18 @@ export function createMockStateManager() {
     setState: jest.fn(),
     updateState: jest.fn(),
     resetState: jest.fn(),
-    
+
     undo: jest.fn(),
     redo: jest.fn(),
     canUndo: jest.fn().mockReturnValue(false),
     canRedo: jest.fn().mockReturnValue(false),
-    
+
     addHistoryEntry: jest.fn(),
     clearHistory: jest.fn(),
-    
+
     on: jest.fn(),
     off: jest.fn(),
-    emit: jest.fn()
+    emit: jest.fn(),
   };
 }
 
@@ -197,10 +200,10 @@ export function createMockErrorHandler() {
     hideError: jest.fn(),
     getErrorHistory: jest.fn().mockReturnValue([]),
     clearErrorHistory: jest.fn(),
-    
+
     on: jest.fn(),
     off: jest.fn(),
-    emit: jest.fn()
+    emit: jest.fn(),
   };
 }
 
@@ -212,30 +215,34 @@ export function createMockUserGuidance() {
     nextStep: jest.fn(),
     previousStep: jest.fn(),
     skipGuidance: jest.fn(),
-    
+
     getCurrentStep: jest.fn().mockReturnValue(null),
     getTotalSteps: jest.fn().mockReturnValue(0),
     isGuidanceActive: jest.fn().mockReturnValue(false),
-    
+
     on: jest.fn(),
     off: jest.fn(),
-    emit: jest.fn()
+    emit: jest.fn(),
   };
 }
 
 // 等待Vue的下一个tick
 export function waitForNextTick() {
-  return new Promise(resolve => setTimeout(resolve, 0));
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 // 等待动画完成
 export function waitForAnimation(duration = 20) {
-  return new Promise(resolve => setTimeout(resolve, duration));
+  return new Promise((resolve) => setTimeout(resolve, duration));
 }
 
 // 模拟文件上传
-export function createMockFile(name = 'test.jpg', type = 'image/jpeg', size = 1024) {
-  return new File(['mock file content'], name, { type, size });
+export function createMockFile(
+  name = "test.jpg",
+  type = "image/jpeg",
+  size = 1024
+) {
+  return new File(["mock file content"], name, { type, size });
 }
 
 // 模拟图像对象
@@ -250,7 +257,7 @@ export function createMockImage(width = 100, height = 100) {
 
 // 模拟Canvas对象
 export function createMockCanvas(width = 800, height = 600) {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   return canvas;
@@ -274,7 +281,7 @@ export function mockDragEvent(element, eventType, clientX = 0, clientY = 0) {
     bubbles: true,
     cancelable: true,
     clientX,
-    clientY
+    clientY,
   });
   element.dispatchEvent(event);
 }
@@ -285,7 +292,7 @@ export function mockKeyboardEvent(element, eventType, key, options = {}) {
     bubbles: true,
     cancelable: true,
     key,
-    ...options
+    ...options,
   });
   element.dispatchEvent(event);
 }

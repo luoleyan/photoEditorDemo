@@ -3,54 +3,54 @@
  */
 
 // 设置全局测试环境
-import { config } from '@vue/test-utils';
+import { config } from "@vue/test-utils";
 
 // 配置 Vue Test Utils (Vue 2 版本)
 config.mocks = {
   $t: (msg) => msg, // 模拟国际化
   $route: {
-    path: '/',
+    path: "/",
     params: {},
-    query: {}
+    query: {},
   },
   $router: {
     push: jest.fn(),
     replace: jest.fn(),
     go: jest.fn(),
     back: jest.fn(),
-    forward: jest.fn()
-  }
+    forward: jest.fn(),
+  },
 };
 
 // 增强DOM元素模拟
-Object.defineProperty(HTMLElement.prototype, 'setAttribute', {
+Object.defineProperty(HTMLElement.prototype, "setAttribute", {
   value: jest.fn(),
-  writable: true
+  writable: true,
 });
 
-Object.defineProperty(HTMLElement.prototype, 'getAttribute', {
-  value: jest.fn(() => ''),
-  writable: true
+Object.defineProperty(HTMLElement.prototype, "getAttribute", {
+  value: jest.fn(() => ""),
+  writable: true,
 });
 
-Object.defineProperty(HTMLElement.prototype, 'removeAttribute', {
+Object.defineProperty(HTMLElement.prototype, "removeAttribute", {
   value: jest.fn(),
-  writable: true
+  writable: true,
 });
 
-Object.defineProperty(HTMLElement.prototype, 'classList', {
+Object.defineProperty(HTMLElement.prototype, "classList", {
   value: {
     add: jest.fn(),
     remove: jest.fn(),
     contains: jest.fn(() => false),
-    toggle: jest.fn()
+    toggle: jest.fn(),
   },
-  writable: true
+  writable: true,
 });
 
-Object.defineProperty(HTMLElement.prototype, 'style', {
+Object.defineProperty(HTMLElement.prototype, "style", {
   value: {},
-  writable: true
+  writable: true,
 });
 
 // 模拟 Canvas API
@@ -60,13 +60,13 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   getImageData: jest.fn(() => ({
     data: new Uint8ClampedArray(4),
     width: 1,
-    height: 1
+    height: 1,
   })),
   putImageData: jest.fn(),
   createImageData: jest.fn(() => ({
     data: new Uint8ClampedArray(4),
     width: 1,
-    height: 1
+    height: 1,
   })),
   setTransform: jest.fn(),
   drawImage: jest.fn(),
@@ -87,21 +87,23 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   transform: jest.fn(),
   rect: jest.fn(),
   clip: jest.fn(),
-  strokeStyle: '#000000',
-  fillStyle: '#000000',
+  strokeStyle: "#000000",
+  fillStyle: "#000000",
   lineWidth: 1,
   globalAlpha: 1,
-  font: '10px sans-serif',
-  textAlign: 'start',
-  textBaseline: 'alphabetic',
+  font: "10px sans-serif",
+  textAlign: "start",
+  textBaseline: "alphabetic",
   imageSmoothingEnabled: true,
-  imageSmoothingQuality: 'low',
-  filter: 'none'
+  imageSmoothingQuality: "low",
+  filter: "none",
 }));
 
-HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,mockdata');
+HTMLCanvasElement.prototype.toDataURL = jest.fn(
+  () => "data:image/png;base64,mockdata"
+);
 HTMLCanvasElement.prototype.toBlob = jest.fn((callback) => {
-  callback(new Blob(['mock'], { type: 'image/png' }));
+  callback(new Blob(["mock"], { type: "image/png" }));
 });
 
 // 模拟 Image 对象
@@ -109,7 +111,7 @@ global.Image = class {
   constructor() {
     this.onload = null;
     this.onerror = null;
-    this.src = '';
+    this.src = "";
     this.width = 100;
     this.height = 100;
   }
@@ -139,7 +141,7 @@ global.FileReader = class {
 
   readAsDataURL(file) {
     setTimeout(() => {
-      this.result = 'data:image/png;base64,mockdata';
+      this.result = "data:image/png;base64,mockdata";
       if (this.onload) {
         this.onload({ target: this });
       }
@@ -157,14 +159,14 @@ global.FileReader = class {
 };
 
 // 模拟 URL.createObjectURL
-global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
+global.URL.createObjectURL = jest.fn(() => "blob:mock-url");
 global.URL.revokeObjectURL = jest.fn();
 
 // 模拟 Blob
 global.Blob = class {
   constructor(parts, options) {
     this.parts = parts;
-    this.type = options?.type || '';
+    this.type = options?.type || "";
     this.size = parts.reduce((size, part) => size + part.length, 0);
   }
 };
@@ -185,7 +187,7 @@ const localStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
   length: 0,
-  key: jest.fn()
+  key: jest.fn(),
 };
 global.localStorage = localStorageMock;
 
@@ -196,7 +198,7 @@ const sessionStorageMock = {
   removeItem: jest.fn(),
   clear: jest.fn(),
   length: 0,
-  key: jest.fn()
+  key: jest.fn(),
 };
 global.sessionStorage = sessionStorageMock;
 
@@ -247,14 +249,16 @@ global.navigator = {
   hardwareConcurrency: 4,
   deviceMemory: 4,
   connection: {
-    effectiveType: '4g',
-    addEventListener: jest.fn()
+    effectiveType: "4g",
+    addEventListener: jest.fn(),
   },
-  getBattery: jest.fn(() => Promise.resolve({
-    level: 0.8,
-    addEventListener: jest.fn()
-  })),
-  vibrate: jest.fn()
+  getBattery: jest.fn(() =>
+    Promise.resolve({
+      level: 0.8,
+      addEventListener: jest.fn(),
+    })
+  ),
+  vibrate: jest.fn(),
 };
 
 // 模拟 performance API
@@ -264,8 +268,8 @@ global.performance = {
   memory: {
     usedJSHeapSize: 50 * 1024 * 1024,
     totalJSHeapSize: 100 * 1024 * 1024,
-    jsHeapSizeLimit: 200 * 1024 * 1024
-  }
+    jsHeapSizeLimit: 200 * 1024 * 1024,
+  },
 };
 
 // 模拟 Worker
@@ -283,8 +287,8 @@ global.Worker = class MockWorker {
         this.onmessage({
           data: {
             success: true,
-            data: data
-          }
+            data: data,
+          },
         });
       }
     }, 0);
@@ -312,7 +316,7 @@ global.console = {
   warn: jest.fn(),
   error: jest.fn(),
   info: jest.fn(),
-  debug: jest.fn()
+  debug: jest.fn(),
 };
 
 // 在测试结束后恢复 console
@@ -324,21 +328,21 @@ afterAll(() => {
 jest.setTimeout(10000);
 
 // 全局错误处理
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 // 清理函数
 afterEach(() => {
   // 清理 DOM
-  document.body.innerHTML = '';
-  
+  document.body.innerHTML = "";
+
   // 清理 localStorage mock
   localStorageMock.getItem.mockClear();
   localStorageMock.setItem.mockClear();
   localStorageMock.removeItem.mockClear();
   localStorageMock.clear.mockClear();
-  
+
   // 清理 sessionStorage mock
   sessionStorageMock.getItem.mockClear();
   sessionStorageMock.setItem.mockClear();
@@ -355,20 +359,24 @@ export const createMockImage = (width = 100, height = 100) => {
 };
 
 export const createMockCanvas = (width = 800, height = 600) => {
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
   return canvas;
 };
 
-export const createMockFile = (name = 'test.jpg', type = 'image/jpeg', size = 1024) => {
-  return new File(['mock file content'], name, { type, size });
+export const createMockFile = (
+  name = "test.jpg",
+  type = "image/jpeg",
+  size = 1024
+) => {
+  return new File(["mock file content"], name, { type, size });
 };
 
 export const waitForNextTick = () => {
-  return new Promise(resolve => setTimeout(resolve, 0));
+  return new Promise((resolve) => setTimeout(resolve, 0));
 };
 
 export const waitForAnimation = () => {
-  return new Promise(resolve => setTimeout(resolve, 20));
+  return new Promise((resolve) => setTimeout(resolve, 20));
 };

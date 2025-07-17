@@ -11,37 +11,41 @@
           <h4>原始图片</h4>
           <img :src="originalImageSrc" alt="原始图片" class="display-image" />
         </div>
-        
+
         <div class="processed-image" v-if="processedImageSrc">
           <h4>处理后图片</h4>
-          <img :src="processedImageSrc" alt="处理后图片" class="display-image" />
+          <img
+            :src="processedImageSrc"
+            alt="处理后图片"
+            class="display-image"
+          />
         </div>
       </div>
-      
+
       <div class="controls-panel">
         <h3>图片处理</h3>
-        
+
         <div class="control-group">
           <h4>基本调节</h4>
           <div class="control-item">
             <label>亮度: {{ brightness }}</label>
-            <input 
-              type="range" 
-              min="-1" 
-              max="1" 
-              step="0.1" 
+            <input
+              type="range"
+              min="-1"
+              max="1"
+              step="0.1"
               v-model="brightness"
               @input="processImage"
             />
           </div>
-          
+
           <div class="control-item">
             <label>对比度: {{ contrast }}</label>
-            <input 
-              type="range" 
-              min="-1" 
-              max="1" 
-              step="0.1" 
+            <input
+              type="range"
+              min="-1"
+              max="1"
+              step="0.1"
               v-model="contrast"
               @input="processImage"
             />
@@ -52,18 +56,22 @@
           <h4>旋转操作</h4>
           <div class="control-item">
             <label>旋转角度: {{ rotationAngle }}°</label>
-            <input 
-              type="range" 
-              min="0" 
-              max="360" 
-              step="15" 
+            <input
+              type="range"
+              min="0"
+              max="360"
+              step="15"
               v-model="rotationAngle"
               @input="processImage"
             />
           </div>
           <div class="button-group">
-            <button @click="rotateLeft" class="btn btn-secondary">向左90°</button>
-            <button @click="rotateRight" class="btn btn-secondary">向右90°</button>
+            <button @click="rotateLeft" class="btn btn-secondary">
+              向左90°
+            </button>
+            <button @click="rotateRight" class="btn btn-secondary">
+              向右90°
+            </button>
           </div>
         </div>
 
@@ -75,8 +83,12 @@
               <label>Y: <input type="number" v-model="cropY" min="0" /></label>
             </div>
             <div class="crop-input">
-              <label>宽度: <input type="number" v-model="cropWidth" min="1" /></label>
-              <label>高度: <input type="number" v-model="cropHeight" min="1" /></label>
+              <label
+                >宽度: <input type="number" v-model="cropWidth" min="1"
+              /></label>
+              <label
+                >高度: <input type="number" v-model="cropHeight" min="1"
+              /></label>
             </div>
           </div>
           <button @click="applyCrop" class="btn btn-primary">应用裁剪</button>
@@ -85,7 +97,9 @@
         <div class="control-group">
           <h4>滤镜效果</h4>
           <div class="button-group">
-            <button @click="applyGrayscale" class="btn btn-secondary">灰度</button>
+            <button @click="applyGrayscale" class="btn btn-secondary">
+              灰度
+            </button>
             <button @click="applySepia" class="btn btn-secondary">复古</button>
             <button @click="applyInvert" class="btn btn-secondary">反色</button>
             <button @click="applyBlur" class="btn btn-secondary">模糊</button>
@@ -95,15 +109,23 @@
         <div class="control-group">
           <h4>文件操作</h4>
           <div class="button-group">
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="loadImage" 
+            <input
+              type="file"
+              ref="fileInput"
+              @change="loadImage"
               accept="image/*"
               style="display: none"
             />
-            <button @click="$refs.fileInput.click()" class="btn btn-primary">加载图片</button>
-            <button @click="downloadImage" class="btn btn-success" :disabled="!processedImageSrc">下载图片</button>
+            <button @click="$refs.fileInput.click()" class="btn btn-primary">
+              加载图片
+            </button>
+            <button
+              @click="downloadImage"
+              class="btn btn-success"
+              :disabled="!processedImageSrc"
+            >
+              下载图片
+            </button>
             <button @click="resetImage" class="btn btn-secondary">重置</button>
           </div>
         </div>
@@ -152,8 +174,13 @@
     <div class="usage-note">
       <h3>使用说明</h3>
       <div class="note-content">
-        <p><strong>注意：</strong> Jimp主要设计用于服务端图片处理。在浏览器环境中，某些功能可能受到限制。</p>
-        <p>本演示展示了Jimp的基本功能，包括亮度/对比度调节、旋转、裁剪和滤镜效果。</p>
+        <p>
+          <strong>注意：</strong>
+          Jimp主要设计用于服务端图片处理。在浏览器环境中，某些功能可能受到限制。
+        </p>
+        <p>
+          本演示展示了Jimp的基本功能，包括亮度/对比度调节、旋转、裁剪和滤镜效果。
+        </p>
         <p>在实际项目中，建议在Node.js环境中使用Jimp进行批量图片处理。</p>
       </div>
     </div>
@@ -162,14 +189,14 @@
 
 <script>
 // 导入浏览器版本的 Jimp
-require('jimp/browser/lib/jimp.js')
-const Jimp = window.Jimp
+require("jimp/browser/lib/jimp.js");
+const Jimp = window.Jimp;
 
 export default {
-  name: 'JimpEditorView',
+  name: "JimpEditorView",
   data() {
     return {
-      originalImageSrc: require('@/assets/illust_104350264_20230531_093134.png'),
+      originalImageSrc: require("@/assets/illust_104350264_20230531_093134.png"),
       processedImageSrc: null,
       brightness: 0,
       contrast: 0,
@@ -179,260 +206,261 @@ export default {
       cropWidth: 200,
       cropHeight: 200,
       isProcessing: false,
-      currentJimpImage: null
-    }
+      currentJimpImage: null,
+    };
   },
   mounted() {
-    this.loadDefaultImage()
+    this.loadDefaultImage();
   },
   methods: {
     async loadDefaultImage() {
       try {
-        this.isProcessing = true
+        this.isProcessing = true;
 
         // 使用Jimp加载默认图片
-        const image = await Jimp.read(this.originalImageSrc)
-        this.currentJimpImage = image
-        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG)
+        const image = await Jimp.read(this.originalImageSrc);
+        this.currentJimpImage = image;
+        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG);
 
-        console.log('默认图片加载成功:', {
+        console.log("默认图片加载成功:", {
           width: image.bitmap.width,
-          height: image.bitmap.height
-        })
+          height: image.bitmap.height,
+        });
 
-        this.isProcessing = false
+        this.isProcessing = false;
       } catch (error) {
-        console.error('加载默认图片失败:', error)
-        this.processedImageSrc = this.originalImageSrc
-        this.isProcessing = false
+        console.error("加载默认图片失败:", error);
+        this.processedImageSrc = this.originalImageSrc;
+        this.isProcessing = false;
       }
     },
-    
+
     async processImage() {
-      if (!this.originalImageSrc) return
+      if (!this.originalImageSrc) return;
 
       try {
-        this.isProcessing = true
+        this.isProcessing = true;
 
         // 使用Jimp进行真正的图片处理
-        const image = await Jimp.read(this.originalImageSrc)
+        const image = await Jimp.read(this.originalImageSrc);
 
         // 应用亮度调节
         if (this.brightness !== 0) {
-          image.brightness(this.brightness)
+          image.brightness(this.brightness);
         }
 
         // 应用对比度调节
         if (this.contrast !== 0) {
-          image.contrast(this.contrast)
+          image.contrast(this.contrast);
         }
 
         // 应用旋转
         if (this.rotationAngle > 0) {
-          image.rotate(this.rotationAngle)
+          image.rotate(this.rotationAngle);
         }
 
         // 获取处理后的图片数据
-        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG)
-        this.currentJimpImage = image
-        this.isProcessing = false
+        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG);
+        this.currentJimpImage = image;
+        this.isProcessing = false;
 
-        console.log('图片处理完成:', {
+        console.log("图片处理完成:", {
           brightness: this.brightness,
           contrast: this.contrast,
-          rotation: this.rotationAngle
-        })
-
+          rotation: this.rotationAngle,
+        });
       } catch (error) {
-        console.error('图片处理失败:', error)
-        this.isProcessing = false
-        alert('图片处理失败: ' + error.message)
+        console.error("图片处理失败:", error);
+        this.isProcessing = false;
+        alert("图片处理失败: " + error.message);
       }
     },
-    
+
     rotateLeft() {
-      this.rotationAngle = (this.rotationAngle - 90) % 360
-      this.processImage()
+      this.rotationAngle = (this.rotationAngle - 90) % 360;
+      this.processImage();
     },
-    
+
     rotateRight() {
-      this.rotationAngle = (this.rotationAngle + 90) % 360
-      this.processImage()
+      this.rotationAngle = (this.rotationAngle + 90) % 360;
+      this.processImage();
     },
-    
+
     async applyCrop() {
-      if (!this.originalImageSrc) return
+      if (!this.originalImageSrc) return;
 
       try {
-        this.isProcessing = true
+        this.isProcessing = true;
 
         // 使用Jimp进行真正的裁剪处理
-        const image = await Jimp.read(this.originalImageSrc)
+        const image = await Jimp.read(this.originalImageSrc);
 
         // 验证裁剪参数
-        const maxWidth = image.bitmap.width
-        const maxHeight = image.bitmap.height
+        const maxWidth = image.bitmap.width;
+        const maxHeight = image.bitmap.height;
 
-        const cropX = Math.max(0, Math.min(this.cropX, maxWidth - 1))
-        const cropY = Math.max(0, Math.min(this.cropY, maxHeight - 1))
-        const cropWidth = Math.max(1, Math.min(this.cropWidth, maxWidth - cropX))
-        const cropHeight = Math.max(1, Math.min(this.cropHeight, maxHeight - cropY))
+        const cropX = Math.max(0, Math.min(this.cropX, maxWidth - 1));
+        const cropY = Math.max(0, Math.min(this.cropY, maxHeight - 1));
+        const cropWidth = Math.max(
+          1,
+          Math.min(this.cropWidth, maxWidth - cropX)
+        );
+        const cropHeight = Math.max(
+          1,
+          Math.min(this.cropHeight, maxHeight - cropY)
+        );
 
         // 应用裁剪
-        image.crop(cropX, cropY, cropWidth, cropHeight)
+        image.crop(cropX, cropY, cropWidth, cropHeight);
 
         // 获取裁剪后的图片数据
-        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG)
-        this.currentJimpImage = image
-        this.isProcessing = false
+        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG);
+        this.currentJimpImage = image;
+        this.isProcessing = false;
 
-        console.log('裁剪完成:', {
+        console.log("裁剪完成:", {
           x: cropX,
           y: cropY,
           width: cropWidth,
-          height: cropHeight
-        })
-
+          height: cropHeight,
+        });
       } catch (error) {
-        console.error('裁剪失败:', error)
-        this.isProcessing = false
-        alert('裁剪失败: ' + error.message)
+        console.error("裁剪失败:", error);
+        this.isProcessing = false;
+        alert("裁剪失败: " + error.message);
       }
     },
-    
+
     async applyGrayscale() {
-      await this.applyFilter('grayscale')
+      await this.applyFilter("grayscale");
     },
-    
+
     async applySepia() {
-      await this.applyFilter('sepia')
+      await this.applyFilter("sepia");
     },
-    
+
     async applyInvert() {
-      await this.applyFilter('invert')
+      await this.applyFilter("invert");
     },
-    
+
     async applyBlur() {
-      await this.applyFilter('blur')
+      await this.applyFilter("blur");
     },
-    
+
     async applyFilter(filterType) {
-      if (!this.originalImageSrc) return
+      if (!this.originalImageSrc) return;
 
       try {
-        this.isProcessing = true
+        this.isProcessing = true;
 
         // 使用Jimp进行真正的滤镜处理
-        const image = await Jimp.read(this.originalImageSrc)
+        const image = await Jimp.read(this.originalImageSrc);
 
         // 应用指定的滤镜效果
-        switch(filterType) {
-          case 'grayscale':
-            image.greyscale()
-            break
-          case 'sepia':
-            image.sepia()
-            break
-          case 'invert':
-            image.invert()
-            break
-          case 'blur':
-            image.blur(2)
-            break
+        switch (filterType) {
+          case "grayscale":
+            image.greyscale();
+            break;
+          case "sepia":
+            image.sepia();
+            break;
+          case "invert":
+            image.invert();
+            break;
+          case "blur":
+            image.blur(2);
+            break;
           default:
-            console.warn('未知的滤镜类型:', filterType)
-            break
+            console.warn("未知的滤镜类型:", filterType);
+            break;
         }
 
         // 获取处理后的图片数据
-        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG)
-        this.currentJimpImage = image
-        this.isProcessing = false
+        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG);
+        this.currentJimpImage = image;
+        this.isProcessing = false;
 
-        console.log('滤镜应用完成:', filterType)
-
+        console.log("滤镜应用完成:", filterType);
       } catch (error) {
-        console.error('滤镜应用失败:', error)
-        this.isProcessing = false
-        alert('滤镜应用失败: ' + error.message)
+        console.error("滤镜应用失败:", error);
+        this.isProcessing = false;
+        alert("滤镜应用失败: " + error.message);
       }
     },
-    
+
     async loadImage(event) {
-      const file = event.target.files[0]
+      const file = event.target.files[0];
       if (file) {
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            this.isProcessing = true
-            this.originalImageSrc = e.target.result
+            this.isProcessing = true;
+            this.originalImageSrc = e.target.result;
 
             // 使用Jimp加载新图片
-            const image = await Jimp.read(e.target.result)
-            this.currentJimpImage = image
-            this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG)
+            const image = await Jimp.read(e.target.result);
+            this.currentJimpImage = image;
+            this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG);
 
-            this.resetControls()
-            this.isProcessing = false
+            this.resetControls();
+            this.isProcessing = false;
 
-            console.log('用户图片加载成功:', {
+            console.log("用户图片加载成功:", {
               width: image.bitmap.width,
-              height: image.bitmap.height
-            })
-
+              height: image.bitmap.height,
+            });
           } catch (error) {
-            console.error('加载用户图片失败:', error)
-            this.processedImageSrc = null
-            this.isProcessing = false
-            alert('图片加载失败: ' + error.message)
+            console.error("加载用户图片失败:", error);
+            this.processedImageSrc = null;
+            this.isProcessing = false;
+            alert("图片加载失败: " + error.message);
           }
-        }
-        reader.readAsDataURL(file)
+        };
+        reader.readAsDataURL(file);
       }
     },
-    
+
     downloadImage() {
       if (this.processedImageSrc) {
-        const link = document.createElement('a')
-        link.download = 'jimp-processed-image.png'
-        link.href = this.processedImageSrc
-        link.click()
+        const link = document.createElement("a");
+        link.download = "jimp-processed-image.png";
+        link.href = this.processedImageSrc;
+        link.click();
       }
     },
-    
+
     async resetImage() {
       try {
-        this.isProcessing = true
-        this.originalImageSrc = require('@/assets/illust_104350264_20230531_093134.png')
+        this.isProcessing = true;
+        this.originalImageSrc = require("@/assets/illust_104350264_20230531_093134.png");
 
         // 重新加载默认图片
-        const image = await Jimp.read(this.originalImageSrc)
-        this.currentJimpImage = image
-        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG)
+        const image = await Jimp.read(this.originalImageSrc);
+        this.currentJimpImage = image;
+        this.processedImageSrc = await image.getBase64Async(Jimp.MIME_PNG);
 
-        this.resetControls()
-        this.isProcessing = false
+        this.resetControls();
+        this.isProcessing = false;
 
-        console.log('图片已重置为默认图片')
-
+        console.log("图片已重置为默认图片");
       } catch (error) {
-        console.error('重置图片失败:', error)
-        this.processedImageSrc = null
-        this.isProcessing = false
+        console.error("重置图片失败:", error);
+        this.processedImageSrc = null;
+        this.isProcessing = false;
       }
     },
-    
+
     resetControls() {
-      this.brightness = 0
-      this.contrast = 0
-      this.rotationAngle = 0
-      this.cropX = 0
-      this.cropY = 0
-      this.cropWidth = 200
-      this.cropHeight = 200
-    }
-  }
-}
+      this.brightness = 0;
+      this.contrast = 0;
+      this.rotationAngle = 0;
+      this.cropX = 0;
+      this.cropY = 0;
+      this.cropWidth = 200;
+      this.cropHeight = 200;
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -470,15 +498,17 @@ export default {
   gap: 2rem;
 }
 
-.original-image, .processed-image {
+.original-image,
+.processed-image {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
-.original-image h4, .processed-image h4 {
+.original-image h4,
+.processed-image h4 {
   color: #2c3e50;
   margin-bottom: 1rem;
   font-size: 1.1rem;
@@ -495,7 +525,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   height: fit-content;
 }
 
@@ -632,7 +662,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   margin-bottom: 3rem;
 }
 
@@ -689,16 +719,16 @@ export default {
   .editor-container {
     grid-template-columns: 1fr;
   }
-  
+
   .controls-panel {
     order: -1;
   }
-  
+
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
   }
-  
+
   .image-display {
     flex-direction: row;
   }
@@ -708,19 +738,19 @@ export default {
   .editor-header h1 {
     font-size: 1.8rem;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .controls-panel {
     padding: 1rem;
   }
-  
+
   .image-display {
     flex-direction: column;
   }
-  
+
   .crop-input {
     flex-direction: column;
     gap: 0.5rem;

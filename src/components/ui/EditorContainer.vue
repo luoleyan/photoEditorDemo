@@ -1,9 +1,5 @@
 <template>
-  <div 
-    class="editor-container" 
-    :class="containerClasses"
-    ref="container"
-  >
+  <div class="editor-container" :class="containerClasses" ref="container">
     <!-- 顶部工具栏区域 -->
     <div v-if="$slots['toolbar-top']" class="editor-toolbar-top">
       <slot name="toolbar-top"></slot>
@@ -12,21 +8,25 @@
     <!-- 主要内容区域 -->
     <div class="editor-main">
       <!-- 左侧边栏 -->
-      <div 
-        v-if="$slots['sidebar-left']" 
+      <div
+        v-if="$slots['sidebar-left']"
         class="editor-sidebar editor-sidebar-left"
-        :class="{ 'collapsed': leftSidebarCollapsed }"
+        :class="{ collapsed: leftSidebarCollapsed }"
         :style="{ width: leftSidebarCollapsed ? '0' : leftSidebarWidth + 'px' }"
       >
         <div class="sidebar-content">
           <slot name="sidebar-left"></slot>
         </div>
-        <div 
+        <div
           class="sidebar-toggle sidebar-toggle-left"
           @click="toggleLeftSidebar"
           :title="leftSidebarCollapsed ? '展开左侧栏' : '收起左侧栏'"
         >
-          <i :class="leftSidebarCollapsed ? 'icon-chevron-right' : 'icon-chevron-left'"></i>
+          <i
+            :class="
+              leftSidebarCollapsed ? 'icon-chevron-right' : 'icon-chevron-left'
+            "
+          ></i>
         </div>
       </div>
 
@@ -42,7 +42,7 @@
           <div class="canvas-wrapper">
             <slot name="canvas"></slot>
           </div>
-          
+
           <!-- 画布覆盖层 -->
           <div v-if="$slots['canvas-overlay']" class="canvas-overlay">
             <slot name="canvas-overlay"></slot>
@@ -50,24 +50,33 @@
         </div>
 
         <!-- 底部工具栏（内容区域内） -->
-        <div v-if="$slots['content-toolbar-bottom']" class="editor-content-toolbar-bottom">
+        <div
+          v-if="$slots['content-toolbar-bottom']"
+          class="editor-content-toolbar-bottom"
+        >
           <slot name="content-toolbar-bottom"></slot>
         </div>
       </div>
 
       <!-- 右侧边栏 -->
-      <div 
-        v-if="$slots['sidebar-right']" 
+      <div
+        v-if="$slots['sidebar-right']"
         class="editor-sidebar editor-sidebar-right"
-        :class="{ 'collapsed': rightSidebarCollapsed }"
-        :style="{ width: rightSidebarCollapsed ? '0' : rightSidebarWidth + 'px' }"
+        :class="{ collapsed: rightSidebarCollapsed }"
+        :style="{
+          width: rightSidebarCollapsed ? '0' : rightSidebarWidth + 'px',
+        }"
       >
-        <div 
+        <div
           class="sidebar-toggle sidebar-toggle-right"
           @click="toggleRightSidebar"
           :title="rightSidebarCollapsed ? '展开右侧栏' : '收起右侧栏'"
         >
-          <i :class="rightSidebarCollapsed ? 'icon-chevron-left' : 'icon-chevron-right'"></i>
+          <i
+            :class="
+              rightSidebarCollapsed ? 'icon-chevron-left' : 'icon-chevron-right'
+            "
+          ></i>
         </div>
         <div class="sidebar-content">
           <slot name="sidebar-right"></slot>
@@ -92,95 +101,95 @@
 
 <script>
 export default {
-  name: 'EditorContainer',
+  name: "EditorContainer",
   props: {
     // 响应式断点
     mobileBreakpoint: {
       type: Number,
-      default: 768
+      default: 768,
     },
     tabletBreakpoint: {
       type: Number,
-      default: 1024
+      default: 1024,
     },
-    
+
     // 侧边栏宽度
     leftSidebarWidth: {
       type: Number,
-      default: 280
+      default: 280,
     },
     rightSidebarWidth: {
       type: Number,
-      default: 320
+      default: 320,
     },
-    
+
     // 侧边栏初始状态
     leftSidebarInitialCollapsed: {
       type: Boolean,
-      default: false
+      default: false,
     },
     rightSidebarInitialCollapsed: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 加载状态
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     loadingText: {
       type: String,
-      default: '加载中...'
+      default: "加载中...",
     },
-    
+
     // 主题
     theme: {
       type: String,
-      default: 'light',
-      validator: value => ['light', 'dark'].includes(value)
-    }
+      default: "light",
+      validator: (value) => ["light", "dark"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 容器尺寸
       containerWidth: 0,
       containerHeight: 0,
-      
+
       // 设备类型
       isMobile: false,
       isTablet: false,
       isDesktop: true,
-      
+
       // 侧边栏状态
       leftSidebarCollapsed: this.leftSidebarInitialCollapsed,
       rightSidebarCollapsed: this.rightSidebarInitialCollapsed,
-      
+
       // 画布容器尺寸
       canvasContainerWidth: 0,
       canvasContainerHeight: 0,
-      
+
       // 调整大小观察器
       resizeObserver: null,
 
       // 防抖相关
       resizeTimeout: null,
-      isUpdatingDimensions: false
+      isUpdatingDimensions: false,
     };
   },
-  
+
   computed: {
     containerClasses() {
       return {
-        'mobile-view': this.isMobile,
-        'tablet-view': this.isTablet,
-        'desktop-view': this.isDesktop,
+        "mobile-view": this.isMobile,
+        "tablet-view": this.isTablet,
+        "desktop-view": this.isDesktop,
         [`theme-${this.theme}`]: true,
-        'loading': this.loading
+        loading: this.loading,
       };
     },
-    
+
     availableWidth() {
       let width = this.containerWidth;
       if (!this.leftSidebarCollapsed) {
@@ -191,25 +200,25 @@ export default {
       }
       return Math.max(0, width);
     },
-    
+
     availableHeight() {
       return this.containerHeight;
-    }
+    },
   },
-  
+
   mounted() {
     this.initializeContainer();
     this.setupResizeObserver();
     this.updateDimensions();
-    
+
     // 监听窗口大小变化
-    window.addEventListener('resize', this.handleWindowResize);
+    window.addEventListener("resize", this.handleWindowResize);
   },
-  
+
   beforeDestroy() {
     this.cleanup();
   },
-  
+
   methods: {
     /**
      * 初始化容器
@@ -221,13 +230,13 @@ export default {
         this.rightSidebarCollapsed = true;
       }
     },
-    
+
     /**
      * 设置尺寸观察器
      */
     setupResizeObserver() {
       if (window.ResizeObserver) {
-        this.resizeObserver = new ResizeObserver(entries => {
+        this.resizeObserver = new ResizeObserver((entries) => {
           // 防抖处理，避免频繁调用
           if (this.resizeTimeout) {
             clearTimeout(this.resizeTimeout);
@@ -253,7 +262,7 @@ export default {
         });
       }
     },
-    
+
     /**
      * 更新容器尺寸
      */
@@ -268,7 +277,10 @@ export default {
         const newHeight = rect.height;
 
         // 只在尺寸真正变化时更新
-        if (newWidth !== this.containerWidth || newHeight !== this.containerHeight) {
+        if (
+          newWidth !== this.containerWidth ||
+          newHeight !== this.containerHeight
+        ) {
           this.containerWidth = newWidth;
           this.containerHeight = newHeight;
 
@@ -276,7 +288,7 @@ export default {
           this.updateDeviceType();
 
           // 触发尺寸变化事件
-          this.$emit('dimensions-change', {
+          this.$emit("dimensions-change", {
             containerWidth: this.containerWidth,
             containerHeight: this.containerHeight,
             availableWidth: this.availableWidth,
@@ -285,16 +297,16 @@ export default {
             canvasHeight: this.canvasContainerHeight,
             isMobile: this.isMobile,
             isTablet: this.isTablet,
-            isDesktop: this.isDesktop
+            isDesktop: this.isDesktop,
           });
         }
       } catch (error) {
-        console.error('更新容器尺寸失败:', error);
+        console.error("更新容器尺寸失败:", error);
       } finally {
         this.isUpdatingDimensions = false;
       }
     },
-    
+
     /**
      * 更新画布容器尺寸
      */
@@ -307,77 +319,81 @@ export default {
         const newHeight = rect.height;
 
         // 只在尺寸真正变化时更新
-        if (newWidth !== this.canvasContainerWidth || newHeight !== this.canvasContainerHeight) {
+        if (
+          newWidth !== this.canvasContainerWidth ||
+          newHeight !== this.canvasContainerHeight
+        ) {
           this.canvasContainerWidth = newWidth;
           this.canvasContainerHeight = newHeight;
         }
       } catch (error) {
-        console.error('更新画布容器尺寸失败:', error);
+        console.error("更新画布容器尺寸失败:", error);
       }
     },
-    
+
     /**
      * 更新设备类型
      */
     updateDeviceType() {
       this.isMobile = this.containerWidth < this.mobileBreakpoint;
-      this.isTablet = this.containerWidth >= this.mobileBreakpoint && 
-                     this.containerWidth < this.tabletBreakpoint;
+      this.isTablet =
+        this.containerWidth >= this.mobileBreakpoint &&
+        this.containerWidth < this.tabletBreakpoint;
       this.isDesktop = this.containerWidth >= this.tabletBreakpoint;
-      
+
       // 在移动设备上自动收起侧边栏
       if (this.isMobile) {
         this.leftSidebarCollapsed = true;
         this.rightSidebarCollapsed = true;
       }
     },
-    
+
     /**
      * 切换左侧边栏
      */
     toggleLeftSidebar() {
       this.leftSidebarCollapsed = !this.leftSidebarCollapsed;
-      this.$emit('sidebar-toggle', {
-        side: 'left',
-        collapsed: this.leftSidebarCollapsed
+      this.$emit("sidebar-toggle", {
+        side: "left",
+        collapsed: this.leftSidebarCollapsed,
       });
-      
+
       // 延迟更新尺寸，等待动画完成
       setTimeout(() => {
         this.updateDimensions();
       }, 300);
     },
-    
+
     /**
      * 切换右侧边栏
      */
     toggleRightSidebar() {
       this.rightSidebarCollapsed = !this.rightSidebarCollapsed;
-      this.$emit('sidebar-toggle', {
-        side: 'right',
-        collapsed: this.rightSidebarCollapsed
+      this.$emit("sidebar-toggle", {
+        side: "right",
+        collapsed: this.rightSidebarCollapsed,
       });
-      
+
       // 延迟更新尺寸，等待动画完成
       setTimeout(() => {
         this.updateDimensions();
       }, 300);
     },
-    
+
     /**
      * 获取画布容器引用
      */
     getCanvasContainer() {
       return this.$refs.canvasContainer;
     },
-    
+
     /**
      * 获取编辑内容区域引用
      */
     getEditorContent() {
       return this.$refs.editorContent;
     },
-    
+
     /**
      * 处理窗口大小变化
      */
@@ -388,7 +404,7 @@ export default {
         this.updateDimensions();
       }, 100);
     },
-    
+
     /**
      * 清理资源
      */
@@ -397,14 +413,14 @@ export default {
         this.resizeObserver.disconnect();
         this.resizeObserver = null;
       }
-      
-      window.removeEventListener('resize', this.handleWindowResize);
-      
+
+      window.removeEventListener("resize", this.handleWindowResize);
+
       if (this.resizeTimeout) {
         clearTimeout(this.resizeTimeout);
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -417,7 +433,14 @@ export default {
   min-height: 400px;
   background-color: var(--editor-bg-color, #f5f5f5);
   color: var(--editor-text-color, #333);
-  font-family: var(--editor-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --editor-font-family,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   position: relative;
   overflow: hidden;
 }
@@ -614,8 +637,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 响应式样式 */
@@ -645,13 +672,13 @@ export default {
 
 /* 图标样式 */
 .icon-chevron-left::before {
-  content: '‹';
+  content: "‹";
   font-size: 16px;
   font-weight: bold;
 }
 
 .icon-chevron-right::before {
-  content: '›';
+  content: "›";
   font-size: 16px;
   font-weight: bold;
 }

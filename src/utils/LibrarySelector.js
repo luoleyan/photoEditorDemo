@@ -29,18 +29,18 @@ class LibrarySelector {
   selectBestLibraryForOperation(operationType, imageInfo = null) {
     // 记录操作
     this._recordOperation(operationType, imageInfo);
-    
+
     // 如果有图像信息，更新图像特征
     if (imageInfo) {
       this._updateImageFeatures(imageInfo);
     }
-    
+
     // 根据操作类型选择库
     const libraryType = this._selectLibraryByOperationType(operationType);
-    
+
     // 记录选择结果
     this._recordSelection(operationType, libraryType);
-    
+
     return libraryType;
   }
 
@@ -52,13 +52,13 @@ class LibrarySelector {
   selectBestLibraryForImage(imageInfo) {
     // 更新图像特征
     this._updateImageFeatures(imageInfo);
-    
+
     // 根据图像特征选择库
     const libraryType = this._selectLibraryByImageFeatures(imageInfo);
-    
+
     // 记录选择结果
-    this._recordSelection('image-load', libraryType);
-    
+    this._recordSelection("image-load", libraryType);
+
     return libraryType;
   }
 
@@ -105,19 +105,19 @@ class LibrarySelector {
         operationCount: 0,
         totalRenderTime: 0,
         averageRenderTime: 0,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
     }
-    
+
     const data = this.performanceData[libraryType];
     data.operationCount++;
     data.totalRenderTime += metrics.renderTime || 0;
     data.averageRenderTime = data.totalRenderTime / data.operationCount;
     data.lastUpdated = Date.now();
-    
+
     // 添加新指标
-    Object.keys(metrics).forEach(key => {
-      if (key !== 'renderTime') {
+    Object.keys(metrics).forEach((key) => {
+      if (key !== "renderTime") {
         data[key] = metrics[key];
       }
     });
@@ -142,12 +142,14 @@ class LibrarySelector {
     this.operationHistory.push({
       operationType,
       timestamp: Date.now(),
-      imageInfo: imageInfo ? { ...imageInfo } : null
+      imageInfo: imageInfo ? { ...imageInfo } : null,
     });
-    
+
     // 限制历史记录长度
     if (this.operationHistory.length > this.maxHistoryLength) {
-      this.operationHistory = this.operationHistory.slice(-this.maxHistoryLength);
+      this.operationHistory = this.operationHistory.slice(
+        -this.maxHistoryLength
+      );
     }
   }
 
@@ -160,10 +162,10 @@ class LibrarySelector {
     this.imageFeatures = {
       width: imageInfo.width || 0,
       height: imageInfo.height || 0,
-      fileType: imageInfo.fileType || 'unknown',
+      fileType: imageInfo.fileType || "unknown",
       hasAlpha: imageInfo.hasAlpha || false,
       fileSize: imageInfo.fileSize || 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
   }
 
@@ -189,38 +191,38 @@ class LibrarySelector {
     if (this.preferredLibraries[operationType]) {
       return this.preferredLibraries[operationType];
     }
-    
+
     // 根据操作类型选择最佳库
     switch (operationType) {
-      case 'crop':
-        return 'cropper'; // Cropper.js专注于裁剪功能
-        
-      case 'rotate':
-      case 'scale':
-      case 'position':
-      case 'animation':
-        return 'konva'; // Konva.js在变换和动画方面表现优秀
-        
-      case 'filter':
-      case 'brightness':
-      case 'contrast':
-      case 'saturation':
-      case 'hue':
-        return 'fabric'; // Fabric.js在滤镜方面功能丰富
-        
-      case 'text':
-      case 'shape':
-      case 'object':
-        return 'fabric'; // Fabric.js在对象操作方面功能强大
-        
-      case 'batch-processing':
-        return 'jimp'; // Jimp在批处理方面表现良好
-        
-      case 'full-ui':
-        return 'tui'; // TUI Image Editor提供完整UI
-        
+      case "crop":
+        return "cropper"; // Cropper.js专注于裁剪功能
+
+      case "rotate":
+      case "scale":
+      case "position":
+      case "animation":
+        return "konva"; // Konva.js在变换和动画方面表现优秀
+
+      case "filter":
+      case "brightness":
+      case "contrast":
+      case "saturation":
+      case "hue":
+        return "fabric"; // Fabric.js在滤镜方面功能丰富
+
+      case "text":
+      case "shape":
+      case "object":
+        return "fabric"; // Fabric.js在对象操作方面功能强大
+
+      case "batch-processing":
+        return "jimp"; // Jimp在批处理方面表现良好
+
+      case "full-ui":
+        return "tui"; // TUI Image Editor提供完整UI
+
       default:
-        return 'fabric'; // 默认使用Fabric.js作为通用库
+        return "fabric"; // 默认使用Fabric.js作为通用库
     }
   }
 
@@ -232,24 +234,24 @@ class LibrarySelector {
    */
   _selectLibraryByImageFeatures(imageInfo) {
     const { width, height, fileType, hasAlpha, fileSize } = imageInfo;
-    
+
     // 大图像使用性能更好的库
     if (width * height > 4000 * 3000 || fileSize > 5 * 1024 * 1024) {
-      return 'konva'; // Konva.js在处理大图像时性能更好
+      return "konva"; // Konva.js在处理大图像时性能更好
     }
-    
+
     // SVG图像
-    if (fileType === 'svg') {
-      return 'fabric'; // Fabric.js对SVG支持更好
+    if (fileType === "svg") {
+      return "fabric"; // Fabric.js对SVG支持更好
     }
-    
+
     // 带透明度的图像
     if (hasAlpha) {
-      return 'fabric'; // Fabric.js对透明度处理更好
+      return "fabric"; // Fabric.js对透明度处理更好
     }
-    
+
     // 默认使用功能最全面的库
-    return 'fabric';
+    return "fabric";
   }
 
   /**
@@ -261,10 +263,11 @@ class LibrarySelector {
   _getLibraryPerformanceScore(libraryType) {
     const data = this.performanceData[libraryType];
     if (!data) return 0;
-    
+
     // 计算性能评分，可以根据需要调整权重
-    const renderTimeScore = data.averageRenderTime > 0 ? 100 / data.averageRenderTime : 0;
-    
+    const renderTimeScore =
+      data.averageRenderTime > 0 ? 100 / data.averageRenderTime : 0;
+
     return renderTimeScore;
   }
 }

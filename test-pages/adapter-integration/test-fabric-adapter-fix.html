@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +12,21 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .test-container {
             border: 1px solid #ddd;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
         }
+
         .controls {
             margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
         button {
             padding: 10px 15px;
             background: #007bff;
@@ -32,19 +36,24 @@
             cursor: pointer;
             min-width: 120px;
         }
+
         button:hover {
             background: #0056b3;
         }
+
         button.success {
             background: #28a745;
         }
+
         button.error {
             background: #dc3545;
         }
+
         button.warning {
             background: #ffc107;
             color: #212529;
         }
+
         .log {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -57,41 +66,51 @@
             overflow-y: auto;
             font-size: 12px;
         }
+
         .error {
             color: #dc3545;
         }
+
         .success {
             color: #28a745;
         }
+
         .warning {
             color: #ffc107;
         }
+
         .info {
             color: #17a2b8;
         }
+
         .test-results {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
+
         .test-result {
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 5px;
         }
+
         .test-result.success {
             border-color: #28a745;
             background-color: #d4edda;
         }
+
         .test-result.error {
             border-color: #dc3545;
             background-color: #f8d7da;
         }
+
         .test-result.pending {
             border-color: #ffc107;
             background-color: #fff3cd;
         }
+
         .console-monitor {
             position: fixed;
             top: 10px;
@@ -107,20 +126,25 @@
             overflow-y: auto;
             z-index: 1000;
         }
+
         .console-monitor .console-item {
             margin: 2px 0;
             padding: 2px 0;
             border-bottom: 1px solid #333;
         }
+
         .console-monitor .console-error {
             color: #ff6b6b;
         }
+
         .console-monitor .console-warn {
             color: #feca57;
         }
+
         .console-monitor .console-info {
             color: #48dbfb;
         }
+
         .fabric-error-counter {
             position: fixed;
             top: 10px;
@@ -134,11 +158,13 @@
             font-weight: bold;
             z-index: 1000;
         }
+
         .fabric-error-counter.zero {
             background: rgba(40, 167, 69, 0.9);
         }
     </style>
 </head>
+
 <body>
     <div class="fabric-error-counter" id="fabricErrorCounter">
         Fabric.js错误: <span id="fabricErrorCount">0</span>
@@ -151,7 +177,7 @@
 
     <h1>Fabric.js适配器修复测试</h1>
     <p>这个测试页面用于验证Fabric.js库依赖和适配器初始化错误的修复效果。</p>
-    
+
     <div class="test-container">
         <h3>测试说明</h3>
         <p>本测试将验证以下修复：</p>
@@ -161,7 +187,7 @@
             <li><strong>Mock适配器Fallback</strong>: 当Fabric.js加载失败时使用mock适配器</li>
             <li><strong>TextTool Prop验证</strong>: 适配器对象通过Vue.js prop验证</li>
         </ul>
-        
+
         <div class="controls">
             <button id="openProject">打开项目 (localhost:8081)</button>
             <button id="openMidPriorityDemo">打开中优先级组件演示</button>
@@ -172,7 +198,7 @@
             <button id="clearConsole">清除控制台</button>
             <button id="clearLog">清除日志</button>
         </div>
-        
+
         <div class="test-results" id="testResults">
             <div class="test-result pending" id="result-fabric-loading">
                 <h4>Fabric.js加载</h4>
@@ -191,7 +217,7 @@
                 <div class="status">等待测试</div>
             </div>
         </div>
-        
+
         <div class="log" id="log">等待测试开始...</div>
     </div>
 
@@ -206,73 +232,73 @@
             'text-methods': document.getElementById('result-text-methods'),
             'prop-validation': document.getElementById('result-prop-validation')
         };
-        
+
         let consoleMessages = [];
         let fabricErrors = 0;
         let adapterErrors = 0;
         let propValidationErrors = 0;
-        
+
         // 监控控制台消息
         const originalConsoleError = console.error;
         const originalConsoleWarn = console.warn;
         const originalConsoleLog = console.log;
-        
-        console.error = function(...args) {
+
+        console.error = function (...args) {
             const message = args.join(' ');
             consoleMessages.push({ type: 'error', message, timestamp: Date.now() });
-            
+
             // 检查Fabric.js相关错误
-            if (message.includes('Fabric.js library is not loaded') || 
-                message.includes('fabric') || 
+            if (message.includes('Fabric.js library is not loaded') ||
+                message.includes('fabric') ||
                 message.includes('ADAPTER')) {
                 fabricErrors++;
                 updateFabricErrorCounter();
                 addLog(`检测到Fabric.js错误: ${message}`, 'error');
             }
-            
+
             // 检查适配器初始化错误
             if (message.includes('adapter') && message.includes('initialize')) {
                 adapterErrors++;
                 addLog(`检测到适配器错误: ${message}`, 'error');
             }
-            
+
             // 检查prop验证错误
             if (message.includes('Invalid prop') || message.includes('Missing required prop')) {
                 propValidationErrors++;
                 addLog(`检测到Prop验证错误: ${message}`, 'error');
             }
-            
+
             updateConsoleMonitor();
             originalConsoleError.apply(console, args);
         };
-        
-        console.warn = function(...args) {
+
+        console.warn = function (...args) {
             const message = args.join(' ');
             consoleMessages.push({ type: 'warn', message, timestamp: Date.now() });
-            
+
             // 检查相关警告
             if (message.includes('fabric') || message.includes('adapter') || message.includes('prop')) {
                 addLog(`检测到相关警告: ${message}`, 'warning');
             }
-            
+
             updateConsoleMonitor();
             originalConsoleWarn.apply(console, args);
         };
-        
-        console.log = function(...args) {
+
+        console.log = function (...args) {
             const message = args.join(' ');
             consoleMessages.push({ type: 'info', message, timestamp: Date.now() });
-            
+
             // 检查成功消息
-            if (message.includes('adapter initialized successfully') || 
+            if (message.includes('adapter initialized successfully') ||
                 message.includes('Mock adapter')) {
                 addLog(`适配器状态: ${message}`, 'success');
             }
-            
+
             updateConsoleMonitor();
             originalConsoleLog.apply(console, args);
         };
-        
+
         function updateFabricErrorCounter() {
             fabricErrorCount.textContent = fabricErrors;
             if (fabricErrors === 0) {
@@ -281,7 +307,7 @@
                 fabricErrorCounter.className = 'fabric-error-counter';
             }
         }
-        
+
         function updateConsoleMonitor() {
             const recent = consoleMessages.slice(-15);
             consoleContent.innerHTML = recent.map(msg => {
@@ -289,18 +315,18 @@
                 return `<div class="console-item console-${msg.type}">[${time}] ${msg.message.substring(0, 150)}${msg.message.length > 150 ? '...' : ''}</div>`;
             }).join('');
         }
-        
+
         function addLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
             log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
             log.scrollTop = log.scrollHeight;
         }
-        
+
         function clearLog() {
             log.innerHTML = '';
         }
-        
+
         function clearConsole() {
             consoleMessages = [];
             fabricErrors = 0;
@@ -310,27 +336,27 @@
             updateConsoleMonitor();
             addLog('控制台监控已清除');
         }
-        
+
         function updateTestResult(testName, status, message) {
             const result = testResults[testName];
             if (!result) return;
-            
+
             result.className = `test-result ${status}`;
             const statusDiv = result.querySelector('.status');
             statusDiv.textContent = message;
         }
-        
+
         // 测试Fabric.js加载
         async function testFabricLoading() {
             addLog('开始测试Fabric.js加载...', 'info');
             updateTestResult('fabric-loading', 'pending', '测试中...');
-            
+
             try {
                 addLog('检查Fabric.js库是否可用...', 'info');
-                
+
                 // 等待一段时间收集错误
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 if (fabricErrors === 0) {
                     updateTestResult('fabric-loading', 'success', 'Fabric.js加载成功');
                     addLog('✓ Fabric.js加载测试通过：库正确加载', 'success');
@@ -338,23 +364,23 @@
                     updateTestResult('fabric-loading', 'error', `检测到${fabricErrors}个Fabric.js错误`);
                     addLog(`✗ Fabric.js加载测试失败：检测到${fabricErrors}个错误`, 'error');
                 }
-                
+
             } catch (error) {
                 updateTestResult('fabric-loading', 'error', `测试失败: ${error.message}`);
                 addLog(`Fabric.js加载测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 测试适配器初始化
         async function testAdapterInit() {
             addLog('开始测试适配器初始化...', 'info');
             updateTestResult('adapter-init', 'pending', '测试中...');
-            
+
             try {
                 addLog('检查适配器初始化状态...', 'info');
-                
+
                 await new Promise(resolve => setTimeout(resolve, 3000));
-                
+
                 if (adapterErrors === 0) {
                     updateTestResult('adapter-init', 'success', '适配器初始化成功');
                     addLog('✓ 适配器初始化测试通过：适配器正确初始化', 'success');
@@ -362,47 +388,47 @@
                     updateTestResult('adapter-init', 'warning', '使用Mock适配器');
                     addLog('⚠ 适配器初始化：使用Mock适配器作为fallback', 'warning');
                 }
-                
+
             } catch (error) {
                 updateTestResult('adapter-init', 'error', `测试失败: ${error.message}`);
                 addLog(`适配器初始化测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 测试文本方法
         async function testTextMethods() {
             addLog('开始测试文本方法...', 'info');
             updateTestResult('text-methods', 'pending', '测试中...');
-            
+
             try {
                 addLog('检查文本操作方法...', 'info');
-                
+
                 const methods = ['addText', 'removeText', 'updateText', 'removeObject', 'updateObject'];
-                
+
                 for (const method of methods) {
                     addLog(`检查方法: ${method}`, 'info');
                     await new Promise(resolve => setTimeout(resolve, 200));
                 }
-                
+
                 updateTestResult('text-methods', 'success', '文本方法可用');
                 addLog('✓ 文本方法测试通过：所有必需方法可用', 'success');
-                
+
             } catch (error) {
                 updateTestResult('text-methods', 'error', `测试失败: ${error.message}`);
                 addLog(`文本方法测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 测试Prop验证
         async function testPropValidation() {
             addLog('开始测试Prop验证...', 'info');
             updateTestResult('prop-validation', 'pending', '测试中...');
-            
+
             try {
                 addLog('检查Vue.js prop验证...', 'info');
-                
+
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 if (propValidationErrors === 0) {
                     updateTestResult('prop-validation', 'success', 'Prop验证通过');
                     addLog('✓ Prop验证测试通过：适配器对象通过验证', 'success');
@@ -410,31 +436,31 @@
                     updateTestResult('prop-validation', 'error', `检测到${propValidationErrors}个验证错误`);
                     addLog(`✗ Prop验证测试失败：检测到${propValidationErrors}个错误`, 'error');
                 }
-                
+
             } catch (error) {
                 updateTestResult('prop-validation', 'error', `测试失败: ${error.message}`);
                 addLog(`Prop验证测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 事件监听
         document.getElementById('openProject').addEventListener('click', () => {
             window.open('http://localhost:8081/', '_blank');
             addLog('已打开项目主页');
         });
-        
+
         document.getElementById('openMidPriorityDemo').addEventListener('click', () => {
             window.open('http://localhost:8081/mid-priority-components', '_blank');
             addLog('已打开中优先级组件演示页面，请在新窗口中检查TextTool组件');
         });
-        
+
         document.getElementById('testFabricLoading').addEventListener('click', testFabricLoading);
         document.getElementById('testAdapterInit').addEventListener('click', testAdapterInit);
         document.getElementById('testTextMethods').addEventListener('click', testTextMethods);
         document.getElementById('testPropValidation').addEventListener('click', testPropValidation);
         document.getElementById('clearConsole').addEventListener('click', clearConsole);
         document.getElementById('clearLog').addEventListener('click', clearLog);
-        
+
         // 初始化
         updateFabricErrorCounter();
         addLog('Fabric.js适配器修复测试页面已加载');
@@ -442,4 +468,5 @@
         addLog('点击"打开中优先级组件演示"进行实际测试');
     </script>
 </body>
+
 </html>

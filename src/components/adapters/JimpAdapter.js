@@ -1,6 +1,6 @@
-import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
-import { errorHandler } from '@/utils/ErrorHandler.js';
-import { memoryManager } from '@/utils/MemoryManager.js';
+import BaseImageEditorAdapter from "./BaseImageEditorAdapter.js";
+import { errorHandler } from "@/utils/ErrorHandler.js";
+import { memoryManager } from "@/utils/MemoryManager.js";
 
 /**
  * Jimp适配器实现
@@ -9,7 +9,7 @@ import { memoryManager } from '@/utils/MemoryManager.js';
 class JimpAdapter extends BaseImageEditorAdapter {
   constructor() {
     super();
-    this.adapterType = 'jimp';
+    this.adapterType = "jimp";
     this.jimpInstance = null;
     this.canvas = null;
     this.ctx = null;
@@ -22,7 +22,7 @@ class JimpAdapter extends BaseImageEditorAdapter {
       lastRenderTime: Date.now(),
       operationCount: 0,
       processingTime: 0,
-      memoryUsage: 0
+      memoryUsage: 0,
     };
 
     // 注册内存清理回调 - 保存引用以便后续移除
@@ -39,7 +39,7 @@ class JimpAdapter extends BaseImageEditorAdapter {
     return {
       width: 800,
       height: 600,
-      background: '#ffffff'
+      background: "#ffffff",
     };
   }
 
@@ -49,33 +49,41 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doInitialize() {
-    return this._safeExecute(async () => {
-      // 检查Jimp是否已加载
-      if (typeof window.Jimp === 'undefined') {
-        throw new Error('Jimp library is not loaded');
-      }
+    return this._safeExecute(
+      async () => {
+        // 检查Jimp是否已加载
+        if (typeof window.Jimp === "undefined") {
+          throw new Error("Jimp library is not loaded");
+        }
 
-      // 创建Canvas用于显示
-      this.canvas = document.createElement('canvas');
-      this.canvas.width = this.options.width;
-      this.canvas.height = this.options.height;
-      this.canvas.style.maxWidth = '100%';
-      this.canvas.style.height = 'auto';
-      this.container.appendChild(this.canvas);
-      this.ctx = this.canvas.getContext('2d');
+        // 创建Canvas用于显示
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = this.options.width;
+        this.canvas.height = this.options.height;
+        this.canvas.style.maxWidth = "100%";
+        this.canvas.style.height = "auto";
+        this.container.appendChild(this.canvas);
+        this.ctx = this.canvas.getContext("2d");
 
-      // 设置背景色
-      this.ctx.fillStyle = this.options.background;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // 设置背景色
+        this.ctx.fillStyle = this.options.background;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-      // 注册内存使用
-      const estimatedSize = 30 * 1024 * 1024; // 估算30MB
-      memoryManager.allocate(`jimp-adapter-${this.adapterType}`, this, estimatedSize);
+        // 注册内存使用
+        const estimatedSize = 30 * 1024 * 1024; // 估算30MB
+        memoryManager.allocate(
+          `jimp-adapter-${this.adapterType}`,
+          this,
+          estimatedSize
+        );
 
-      // 创建初始状态
-      this.currentStateId = this._generateStateId();
-      this.stateHistory.set(this.currentStateId, this._createEmptyState());
-    }, 'initialize', { containerId: this.container.id || 'unknown' });
+        // 创建初始状态
+        this.currentStateId = this._generateStateId();
+        this.stateHistory.set(this.currentStateId, this._createEmptyState());
+      },
+      "initialize",
+      { containerId: this.container.id || "unknown" }
+    );
   }
 
   /**
@@ -84,7 +92,7 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   _doDestroy() {
     try {
-      console.log('JimpAdapter: Starting destruction process...');
+      console.log("JimpAdapter: Starting destruction process...");
 
       // 清理内存
       this._performMemoryCleanup();
@@ -94,10 +102,12 @@ class JimpAdapter extends BaseImageEditorAdapter {
         if (this._memoryCleanupCallback) {
           memoryManager.removeCleanupCallback(this._memoryCleanupCallback);
           this._memoryCleanupCallback = null;
-          console.log('JimpAdapter: Memory cleanup callback removed successfully');
+          console.log(
+            "JimpAdapter: Memory cleanup callback removed successfully"
+          );
         }
       } catch (error) {
-        console.warn('JimpAdapter: Failed to remove cleanup callback:', error);
+        console.warn("JimpAdapter: Failed to remove cleanup callback:", error);
       }
 
       // 清理Jimp实例
@@ -105,15 +115,15 @@ class JimpAdapter extends BaseImageEditorAdapter {
         try {
           // 释放Jimp内存
           memoryManager.deallocate(`jimp-adapter-${this.adapterType}`);
-          console.log('JimpAdapter: Jimp instance memory deallocated');
+          console.log("JimpAdapter: Jimp instance memory deallocated");
         } catch (error) {
-          console.warn('JimpAdapter: Failed to deallocate Jimp memory:', error);
+          console.warn("JimpAdapter: Failed to deallocate Jimp memory:", error);
         }
         this.jimpInstance = null;
       }
 
       // 清理Canvas元素
-      this._safeDOMCleanup(this.canvas, 'canvas');
+      this._safeDOMCleanup(this.canvas, "canvas");
 
       // 安全地清理所有属性
       this.canvas = null;
@@ -122,17 +132,16 @@ class JimpAdapter extends BaseImageEditorAdapter {
       this.currentStateId = null;
 
       // 安全地清理状态历史
-      this._safeCollectionCleanup(this.stateHistory, 'stateHistory');
+      this._safeCollectionCleanup(this.stateHistory, "stateHistory");
       this.stateHistory = null;
 
       // 安全地清理操作历史
-      this._safeArrayCleanup(this.appliedOperations, 'appliedOperations');
+      this._safeArrayCleanup(this.appliedOperations, "appliedOperations");
       this.appliedOperations = null;
 
-      console.log('JimpAdapter: Destruction completed successfully');
-
+      console.log("JimpAdapter: Destruction completed successfully");
     } catch (error) {
-      console.error('JimpAdapter: Error during destruction:', error);
+      console.error("JimpAdapter: Error during destruction:", error);
       // 即使出错也要确保基本清理
       this.jimpInstance = null;
       this.canvas = null;
@@ -151,46 +160,50 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doLoadImage(imageData) {
-    return this._safeExecute(async () => {
-      // 验证图像数据
-      this._validateImageData(imageData);
+    return this._safeExecute(
+      async () => {
+        // 验证图像数据
+        this._validateImageData(imageData);
 
-      return new Promise((resolve, reject) => {
-        const startTime = Date.now();
+        return new Promise((resolve, reject) => {
+          const startTime = Date.now();
 
-        window.Jimp.read(imageData.src)
-          .then(jimpImage => {
-            this.jimpInstance = jimpImage;
+          window.Jimp.read(imageData.src)
+            .then((jimpImage) => {
+              this.jimpInstance = jimpImage;
 
-            // 保存原始数据
-            this.originalImageData = {
-              src: imageData.src,
-              type: imageData.type || 'url',
-              timestamp: Date.now(),
-              width: jimpImage.getWidth(),
-              height: jimpImage.getHeight()
-            };
+              // 保存原始数据
+              this.originalImageData = {
+                src: imageData.src,
+                type: imageData.type || "url",
+                timestamp: Date.now(),
+                width: jimpImage.getWidth(),
+                height: jimpImage.getHeight(),
+              };
 
-            // 清空操作历史
-            this.appliedOperations = [];
+              // 清空操作历史
+              this.appliedOperations = [];
 
-            // 渲染到Canvas
-            this._renderToCanvas();
+              // 渲染到Canvas
+              this._renderToCanvas();
 
-            // 创建新的状态
-            this.currentStateId = this._generateStateId();
-            const state = this._createCurrentState();
-            this.stateHistory.set(this.currentStateId, state);
+              // 创建新的状态
+              this.currentStateId = this._generateStateId();
+              const state = this._createCurrentState();
+              this.stateHistory.set(this.currentStateId, state);
 
-            this.performanceMetrics.processingTime = Date.now() - startTime;
-            this._updatePerformanceMetrics();
-            resolve();
-          })
-          .catch(error => {
-            reject(error);
-          });
-      });
-    }, 'loadImage', { src: imageData.src });
+              this.performanceMetrics.processingTime = Date.now() - startTime;
+              this._updatePerformanceMetrics();
+              resolve();
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        });
+      },
+      "loadImage",
+      { src: imageData.src }
+    );
   }
 
   /**
@@ -202,14 +215,14 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async _doResize(width, height) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     const startTime = Date.now();
-    
+
     this.jimpInstance.resize(width, height);
     this._renderToCanvas();
-    
+
     this.performanceMetrics.processingTime = Date.now() - startTime;
     this._updatePerformanceMetrics();
   }
@@ -225,14 +238,14 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async _doCrop(x, y, width, height) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     const startTime = Date.now();
-    
+
     this.jimpInstance.crop(x, y, width, height);
     this._renderToCanvas();
-    
+
     this.performanceMetrics.processingTime = Date.now() - startTime;
     this._updatePerformanceMetrics();
   }
@@ -245,17 +258,17 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async _doRotate(angle) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     const startTime = Date.now();
-    
+
     // Jimp的旋转是顺时针的，且只支持90度的倍数
     // 这里简化处理，取最接近的90度倍数
     const normalizedAngle = Math.round(angle / 90) * 90;
     this.jimpInstance.rotate(normalizedAngle);
     this._renderToCanvas();
-    
+
     this.performanceMetrics.processingTime = Date.now() - startTime;
     this._updatePerformanceMetrics();
   }
@@ -269,21 +282,21 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async _doFlip(horizontal, vertical) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     const startTime = Date.now();
-    
+
     if (horizontal) {
       this.jimpInstance.flip(true, false);
     }
-    
+
     if (vertical) {
       this.jimpInstance.flip(false, true);
     }
-    
+
     this._renderToCanvas();
-    
+
     this.performanceMetrics.processingTime = Date.now() - startTime;
     this._updatePerformanceMetrics();
   }
@@ -295,26 +308,30 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doSetBrightness(value) {
-    return this._safeExecute(async () => {
-      if (!this.jimpInstance) {
-        throw new Error('No Jimp instance');
-      }
+    return this._safeExecute(
+      async () => {
+        if (!this.jimpInstance) {
+          throw new Error("No Jimp instance");
+        }
 
-      // 验证亮度值
-      value = Math.max(-1, Math.min(1, value));
+        // 验证亮度值
+        value = Math.max(-1, Math.min(1, value));
 
-      const startTime = Date.now();
+        const startTime = Date.now();
 
-      // Jimp的亮度范围是-1到1
-      this.jimpInstance.brightness(value);
-      this._renderToCanvas();
+        // Jimp的亮度范围是-1到1
+        this.jimpInstance.brightness(value);
+        this._renderToCanvas();
 
-      // 记录操作
-      this._recordOperation('brightness', { value });
+        // 记录操作
+        this._recordOperation("brightness", { value });
 
-      this.performanceMetrics.processingTime = Date.now() - startTime;
-      this._updatePerformanceMetrics();
-    }, 'setBrightness', { value });
+        this.performanceMetrics.processingTime = Date.now() - startTime;
+        this._updatePerformanceMetrics();
+      },
+      "setBrightness",
+      { value }
+    );
   }
 
   /**
@@ -324,26 +341,30 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doSetContrast(value) {
-    return this._safeExecute(async () => {
-      if (!this.jimpInstance) {
-        throw new Error('No Jimp instance');
-      }
+    return this._safeExecute(
+      async () => {
+        if (!this.jimpInstance) {
+          throw new Error("No Jimp instance");
+        }
 
-      // 验证对比度值
-      value = Math.max(-1, Math.min(1, value));
+        // 验证对比度值
+        value = Math.max(-1, Math.min(1, value));
 
-      const startTime = Date.now();
+        const startTime = Date.now();
 
-      // Jimp的对比度范围是-1到1
-      this.jimpInstance.contrast(value);
-      this._renderToCanvas();
+        // Jimp的对比度范围是-1到1
+        this.jimpInstance.contrast(value);
+        this._renderToCanvas();
 
-      // 记录操作
-      this._recordOperation('contrast', { value });
+        // 记录操作
+        this._recordOperation("contrast", { value });
 
-      this.performanceMetrics.processingTime = Date.now() - startTime;
-      this._updatePerformanceMetrics();
-    }, 'setContrast', { value });
+        this.performanceMetrics.processingTime = Date.now() - startTime;
+        this._updatePerformanceMetrics();
+      },
+      "setContrast",
+      { value }
+    );
   }
 
   /**
@@ -354,51 +375,57 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doApplyFilter(filterType, options = {}) {
-    return this._safeExecute(async () => {
-      if (!this.jimpInstance) {
-        throw new Error('No Jimp instance');
-      }
+    return this._safeExecute(
+      async () => {
+        if (!this.jimpInstance) {
+          throw new Error("No Jimp instance");
+        }
 
-      const startTime = Date.now();
+        const startTime = Date.now();
 
-      switch (filterType.toLowerCase()) {
-        case 'grayscale':
-          this.jimpInstance.greyscale();
-          break;
-        case 'sepia':
-          this.jimpInstance.sepia();
-          break;
-        case 'blur':
-          const radius = options.blur || options.radius || 5;
-          this.jimpInstance.blur(radius);
-          break;
-        case 'invert':
-          this.jimpInstance.invert();
-          break;
-        case 'posterize':
-          const levels = options.levels || 5;
-          this.jimpInstance.posterize(levels);
-          break;
-        case 'pixelate':
-          const size = options.size || 10;
-          this.jimpInstance.pixelate(size);
-          break;
-        case 'dither':
-          this.jimpInstance.dither565();
-          break;
-        default:
-          console.warn(`Unsupported filter type: ${filterType}. Supported: grayscale, sepia, blur, invert, posterize, pixelate, dither`);
-          return;
-      }
+        switch (filterType.toLowerCase()) {
+          case "grayscale":
+            this.jimpInstance.greyscale();
+            break;
+          case "sepia":
+            this.jimpInstance.sepia();
+            break;
+          case "blur":
+            const radius = options.blur || options.radius || 5;
+            this.jimpInstance.blur(radius);
+            break;
+          case "invert":
+            this.jimpInstance.invert();
+            break;
+          case "posterize":
+            const levels = options.levels || 5;
+            this.jimpInstance.posterize(levels);
+            break;
+          case "pixelate":
+            const size = options.size || 10;
+            this.jimpInstance.pixelate(size);
+            break;
+          case "dither":
+            this.jimpInstance.dither565();
+            break;
+          default:
+            console.warn(
+              `Unsupported filter type: ${filterType}. Supported: grayscale, sepia, blur, invert, posterize, pixelate, dither`
+            );
+            return;
+        }
 
-      this._renderToCanvas();
+        this._renderToCanvas();
 
-      // 记录操作
-      this._recordOperation('filter', { type: filterType, options });
+        // 记录操作
+        this._recordOperation("filter", { type: filterType, options });
 
-      this.performanceMetrics.processingTime = Date.now() - startTime;
-      this._updatePerformanceMetrics();
-    }, 'applyFilter', { filterType, options });
+        this.performanceMetrics.processingTime = Date.now() - startTime;
+        this._updatePerformanceMetrics();
+      },
+      "applyFilter",
+      { filterType, options }
+    );
   }
 
   /**
@@ -408,19 +435,23 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doRemoveFilter(filterType) {
-    return this._safeExecute(async () => {
-      if (!this.jimpInstance || !this.originalImageData) {
-        throw new Error('No Jimp instance or original image data');
-      }
+    return this._safeExecute(
+      async () => {
+        if (!this.jimpInstance || !this.originalImageData) {
+          throw new Error("No Jimp instance or original image data");
+        }
 
-      // 从操作历史中移除指定滤镜
-      this.appliedOperations = this.appliedOperations.filter(op =>
-        !(op.type === 'filter' && op.params.type === filterType)
-      );
+        // 从操作历史中移除指定滤镜
+        this.appliedOperations = this.appliedOperations.filter(
+          (op) => !(op.type === "filter" && op.params.type === filterType)
+        );
 
-      // 重新加载原始图像并重新应用操作
-      await this._reapplyOperations();
-    }, 'removeFilter', { filterType });
+        // 重新加载原始图像并重新应用操作
+        await this._reapplyOperations();
+      },
+      "removeFilter",
+      { filterType }
+    );
   }
 
   /**
@@ -432,17 +463,17 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async _doSetScale(scaleX, scaleY) {
     if (!this.jimpInstance || !this.originalImageData) {
-      throw new Error('No Jimp instance or original image data');
+      throw new Error("No Jimp instance or original image data");
     }
 
     const startTime = Date.now();
-    
+
     const newWidth = Math.round(this.originalImageData.width * scaleX);
     const newHeight = Math.round(this.originalImageData.height * scaleY);
-    
+
     this.jimpInstance.resize(newWidth, newHeight);
     this._renderToCanvas();
-    
+
     this.performanceMetrics.processingTime = Date.now() - startTime;
     this._updatePerformanceMetrics();
   }
@@ -498,7 +529,7 @@ class JimpAdapter extends BaseImageEditorAdapter {
       this._limitStateHistory();
 
       return stateId;
-    }, 'saveState');
+    }, "saveState");
   }
 
   /**
@@ -508,37 +539,41 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doRestoreState(stateId) {
-    return this._safeExecute(async () => {
-      const state = this.stateHistory.get(stateId);
-      if (!state) {
-        throw new Error(`State not found: ${stateId}`);
-      }
+    return this._safeExecute(
+      async () => {
+        const state = this.stateHistory.get(stateId);
+        if (!state) {
+          throw new Error(`State not found: ${stateId}`);
+        }
 
-      if (!state.buffer) {
-        throw new Error(`Invalid state data: ${stateId}`);
-      }
+        if (!state.buffer) {
+          throw new Error(`Invalid state data: ${stateId}`);
+        }
 
-      // 创建新的Jimp实例
-      const jimpImage = await window.Jimp.create(state.width, state.height);
+        // 创建新的Jimp实例
+        const jimpImage = await window.Jimp.create(state.width, state.height);
 
-      // 复制Buffer数据
-      jimpImage.bitmap.data.set(state.buffer);
+        // 复制Buffer数据
+        jimpImage.bitmap.data.set(state.buffer);
 
-      this.jimpInstance = jimpImage;
+        this.jimpInstance = jimpImage;
 
-      // 恢复其他状态信息
-      if (state.originalImageData) {
-        this.originalImageData = { ...state.originalImageData };
-      }
+        // 恢复其他状态信息
+        if (state.originalImageData) {
+          this.originalImageData = { ...state.originalImageData };
+        }
 
-      if (state.appliedOperations) {
-        this.appliedOperations = [...state.appliedOperations];
-      }
+        if (state.appliedOperations) {
+          this.appliedOperations = [...state.appliedOperations];
+        }
 
-      this._renderToCanvas();
-      this.currentStateId = stateId;
-      this._updatePerformanceMetrics();
-    }, 'restoreState', { stateId });
+        this._renderToCanvas();
+        this.currentStateId = stateId;
+        this._updatePerformanceMetrics();
+      },
+      "restoreState",
+      { stateId }
+    );
   }
 
   /**
@@ -559,9 +594,9 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @returns {Promise<string>}
    * @protected
    */
-  async _doToDataURL(type = 'image/png', quality = 0.9) {
+  async _doToDataURL(type = "image/png", quality = 0.9) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     // 使用Canvas导出
@@ -575,9 +610,9 @@ class JimpAdapter extends BaseImageEditorAdapter {
    * @returns {Promise<Blob>}
    * @protected
    */
-  async _doToBlob(type = 'image/png', quality = 0.9) {
+  async _doToBlob(type = "image/png", quality = 0.9) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     return new Promise((resolve) => {
@@ -594,10 +629,12 @@ class JimpAdapter extends BaseImageEditorAdapter {
     return {
       ...this.performanceMetrics,
       jimpReady: !!this.jimpInstance,
-      imageSize: this.jimpInstance ? {
-        width: this.jimpInstance.getWidth(),
-        height: this.jimpInstance.getHeight()
-      } : null
+      imageSize: this.jimpInstance
+        ? {
+            width: this.jimpInstance.getWidth(),
+            height: this.jimpInstance.getHeight(),
+          }
+        : null,
     };
   }
 
@@ -610,44 +647,44 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async processImage(operations) {
     if (!this.jimpInstance) {
-      throw new Error('No Jimp instance');
+      throw new Error("No Jimp instance");
     }
 
     const startTime = Date.now();
-    
+
     for (const op of operations) {
       switch (op.type) {
-        case 'resize':
+        case "resize":
           this.jimpInstance.resize(op.width, op.height);
           break;
-        case 'crop':
+        case "crop":
           this.jimpInstance.crop(op.x, op.y, op.width, op.height);
           break;
-        case 'rotate':
+        case "rotate":
           this.jimpInstance.rotate(op.angle);
           break;
-        case 'brightness':
+        case "brightness":
           this.jimpInstance.brightness(op.value);
           break;
-        case 'contrast':
+        case "contrast":
           this.jimpInstance.contrast(op.value);
           break;
-        case 'greyscale':
+        case "greyscale":
           this.jimpInstance.greyscale();
           break;
-        case 'invert':
+        case "invert":
           this.jimpInstance.invert();
           break;
-        case 'blur':
+        case "blur":
           this.jimpInstance.blur(op.radius || 5);
           break;
         default:
           console.warn(`Unsupported operation: ${op.type}`);
       }
     }
-    
+
     this._renderToCanvas();
-    
+
     this.performanceMetrics.processingTime = Date.now() - startTime;
     this._updatePerformanceMetrics();
   }
@@ -667,21 +704,21 @@ class JimpAdapter extends BaseImageEditorAdapter {
 
     // 清除Canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
+
     // 获取Jimp图像数据
     const imageData = new ImageData(
       new Uint8ClampedArray(this.jimpInstance.bitmap.data),
       this.jimpInstance.getWidth(),
       this.jimpInstance.getHeight()
     );
-    
+
     // 创建临时Canvas
-    const tempCanvas = document.createElement('canvas');
+    const tempCanvas = document.createElement("canvas");
     tempCanvas.width = imageData.width;
     tempCanvas.height = imageData.height;
-    const tempCtx = tempCanvas.getContext('2d');
+    const tempCtx = tempCanvas.getContext("2d");
     tempCtx.putImageData(imageData, 0, 0);
-    
+
     // 绘制到主Canvas
     this.ctx.drawImage(tempCanvas, x, y);
   }
@@ -692,7 +729,8 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   _updatePerformanceMetrics() {
     const now = Date.now();
-    this.performanceMetrics.renderTime = now - this.performanceMetrics.lastRenderTime;
+    this.performanceMetrics.renderTime =
+      now - this.performanceMetrics.lastRenderTime;
     this.performanceMetrics.lastRenderTime = now;
     this.performanceMetrics.operationCount++;
   }
@@ -707,7 +745,7 @@ class JimpAdapter extends BaseImageEditorAdapter {
     this.appliedOperations.push({
       type,
       params,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -729,23 +767,32 @@ class JimpAdapter extends BaseImageEditorAdapter {
     for (const operation of this.appliedOperations) {
       try {
         switch (operation.type) {
-          case 'brightness':
+          case "brightness":
             this.jimpInstance.brightness(operation.params.value);
             break;
-          case 'contrast':
+          case "contrast":
             this.jimpInstance.contrast(operation.params.value);
             break;
-          case 'filter':
-            await this._applyFilterOperation(operation.params.type, operation.params.options);
+          case "filter":
+            await this._applyFilterOperation(
+              operation.params.type,
+              operation.params.options
+            );
             break;
-          case 'resize':
-            this.jimpInstance.resize(operation.params.width, operation.params.height);
+          case "resize":
+            this.jimpInstance.resize(
+              operation.params.width,
+              operation.params.height
+            );
             break;
-          case 'rotate':
+          case "rotate":
             this.jimpInstance.rotate(operation.params.angle);
             break;
-          case 'flip':
-            this.jimpInstance.flip(operation.params.horizontal, operation.params.vertical);
+          case "flip":
+            this.jimpInstance.flip(
+              operation.params.horizontal,
+              operation.params.vertical
+            );
             break;
           default:
             console.warn(`Unknown operation type: ${operation.type}`);
@@ -766,28 +813,28 @@ class JimpAdapter extends BaseImageEditorAdapter {
    */
   async _applyFilterOperation(filterType, options = {}) {
     switch (filterType.toLowerCase()) {
-      case 'grayscale':
+      case "grayscale":
         this.jimpInstance.greyscale();
         break;
-      case 'sepia':
+      case "sepia":
         this.jimpInstance.sepia();
         break;
-      case 'blur':
+      case "blur":
         const radius = options.blur || options.radius || 5;
         this.jimpInstance.blur(radius);
         break;
-      case 'invert':
+      case "invert":
         this.jimpInstance.invert();
         break;
-      case 'posterize':
+      case "posterize":
         const levels = options.levels || 5;
         this.jimpInstance.posterize(levels);
         break;
-      case 'pixelate':
+      case "pixelate":
         const size = options.size || 10;
         this.jimpInstance.pixelate(size);
         break;
-      case 'dither':
+      case "dither":
         this.jimpInstance.dither565();
         break;
     }
@@ -806,7 +853,7 @@ class JimpAdapter extends BaseImageEditorAdapter {
       width: 0,
       height: 0,
       originalImageData: null,
-      appliedOperations: []
+      appliedOperations: [],
     };
   }
 
@@ -830,11 +877,13 @@ class JimpAdapter extends BaseImageEditorAdapter {
         buffer: buffer.slice(0), // 复制Buffer
         width: this.jimpInstance.getWidth(),
         height: this.jimpInstance.getHeight(),
-        originalImageData: this.originalImageData ? { ...this.originalImageData } : null,
-        appliedOperations: [...this.appliedOperations]
+        originalImageData: this.originalImageData
+          ? { ...this.originalImageData }
+          : null,
+        appliedOperations: [...this.appliedOperations],
       };
     } catch (error) {
-      console.warn('Failed to create current state:', error);
+      console.warn("Failed to create current state:", error);
       return this._createEmptyState();
     }
   }
@@ -863,36 +912,57 @@ class JimpAdapter extends BaseImageEditorAdapter {
     try {
       // 检查适配器是否已被销毁
       if (!this.stateHistory || !this.appliedOperations) {
-        console.log('JimpAdapter: Adapter already destroyed, skipping memory cleanup');
+        console.log(
+          "JimpAdapter: Adapter already destroyed, skipping memory cleanup"
+        );
         return;
       }
 
       // 安全清理状态历史
-      if (this.stateHistory && typeof this.stateHistory.size === 'number' && this.stateHistory.size > 10) {
+      if (
+        this.stateHistory &&
+        typeof this.stateHistory.size === "number" &&
+        this.stateHistory.size > 10
+      ) {
         try {
           const entries = Array.from(this.stateHistory.entries());
           const toDelete = entries.slice(0, this.stateHistory.size - 10);
 
           toDelete.forEach(([stateId]) => {
-            if (this.stateHistory && typeof this.stateHistory.delete === 'function') {
+            if (
+              this.stateHistory &&
+              typeof this.stateHistory.delete === "function"
+            ) {
               this.stateHistory.delete(stateId);
             }
           });
 
-          console.log(`JimpAdapter: Cleaned up ${toDelete.length} old state entries`);
+          console.log(
+            `JimpAdapter: Cleaned up ${toDelete.length} old state entries`
+          );
         } catch (error) {
-          console.warn('JimpAdapter: Failed to cleanup state history:', error);
+          console.warn("JimpAdapter: Failed to cleanup state history:", error);
         }
       }
 
       // 安全清理操作历史
-      if (Array.isArray(this.appliedOperations) && this.appliedOperations.length > 50) {
+      if (
+        Array.isArray(this.appliedOperations) &&
+        this.appliedOperations.length > 50
+      ) {
         try {
           const originalLength = this.appliedOperations.length;
           this.appliedOperations = this.appliedOperations.slice(-30);
-          console.log(`JimpAdapter: Cleaned up ${originalLength - this.appliedOperations.length} old operations`);
+          console.log(
+            `JimpAdapter: Cleaned up ${
+              originalLength - this.appliedOperations.length
+            } old operations`
+          );
         } catch (error) {
-          console.warn('JimpAdapter: Failed to cleanup operations history:', error);
+          console.warn(
+            "JimpAdapter: Failed to cleanup operations history:",
+            error
+          );
         }
       }
 
@@ -901,14 +971,19 @@ class JimpAdapter extends BaseImageEditorAdapter {
         try {
           window.gc();
         } catch (error) {
-          console.warn('JimpAdapter: Failed to trigger garbage collection:', error);
+          console.warn(
+            "JimpAdapter: Failed to trigger garbage collection:",
+            error
+          );
         }
       }
 
-      console.log('JimpAdapter: Memory cleanup completed successfully');
-
+      console.log("JimpAdapter: Memory cleanup completed successfully");
     } catch (error) {
-      console.error('JimpAdapter: Critical error during memory cleanup:', error);
+      console.error(
+        "JimpAdapter: Critical error during memory cleanup:",
+        error
+      );
       // 即使出错也不抛出异常，避免影响其他清理操作
     }
   }

@@ -1,4 +1,4 @@
-import AdapterFactory from './AdapterFactory.js';
+import AdapterFactory from "./AdapterFactory.js";
 
 /**
  * 适配器管理器
@@ -15,7 +15,7 @@ class AdapterManager {
       enableCaching: options.enableCaching !== false,
       maxCachedAdapters: options.maxCachedAdapters || 3,
       autoDestroy: options.autoDestroy !== false,
-      transferTimeout: options.transferTimeout || 10000 // 10秒
+      transferTimeout: options.transferTimeout || 10000, // 10秒
     };
     this.eventListeners = new Map();
   }
@@ -28,7 +28,7 @@ class AdapterManager {
    */
   async getAdapter(type, options = {}) {
     const adapterType = type.toLowerCase();
-    
+
     // 检查缓存
     if (this.options.enableCaching && this.adapters.has(adapterType)) {
       const adapter = this.adapters.get(adapterType);
@@ -39,14 +39,20 @@ class AdapterManager {
         this.adapters.delete(adapterType);
       }
     }
-    
+
     try {
       console.log(`AdapterManager: Creating adapter of type '${adapterType}'`);
 
       // 创建新适配器
-      const adapter = await this.adapterFactory.createAdapter(adapterType, this.container, options);
+      const adapter = await this.adapterFactory.createAdapter(
+        adapterType,
+        this.container,
+        options
+      );
 
-      console.log(`AdapterManager: Successfully created adapter '${adapterType}'`);
+      console.log(
+        `AdapterManager: Successfully created adapter '${adapterType}'`
+      );
 
       // 设置事件监听
       this._setupAdapterEventListeners(adapter, adapterType);
@@ -58,22 +64,26 @@ class AdapterManager {
       }
 
       console.log(`AdapterManager: Adapter '${adapterType}' ready for use`);
-      this.emit('adapter-created', { type: adapterType, adapter });
+      this.emit("adapter-created", { type: adapterType, adapter });
 
       return adapter;
-
     } catch (error) {
-      console.error(`AdapterManager: Failed to create ${adapterType} adapter:`, error);
-      console.error('Error details:', {
+      console.error(
+        `AdapterManager: Failed to create ${adapterType} adapter:`,
+        error
+      );
+      console.error("Error details:", {
         message: error.message,
         stack: error.stack,
         adapterType,
         containerExists: !!this.container,
-        containerInDOM: this.container ? document.contains(this.container) : false,
-        options
+        containerInDOM: this.container
+          ? document.contains(this.container)
+          : false,
+        options,
       });
 
-      this.emit('adapter-error', { type: adapterType, error });
+      this.emit("adapter-error", { type: adapterType, error });
       throw error;
     }
   }
@@ -86,32 +96,31 @@ class AdapterManager {
    */
   async setActiveAdapter(type, options = {}) {
     const adapterType = type.toLowerCase();
-    
+
     // 如果已经是活动适配器，直接返回
     if (this.activeAdapterType === adapterType && this.activeAdapter) {
       return this.activeAdapter;
     }
-    
+
     const previousAdapter = this.activeAdapter;
     const previousType = this.activeAdapterType;
-    
+
     try {
       // 获取新适配器
       const newAdapter = await this.getAdapter(adapterType, options);
-      
+
       // 设置为活动适配器
       this.activeAdapter = newAdapter;
       this.activeAdapterType = adapterType;
-      
-      this.emit('active-adapter-changed', {
+
+      this.emit("active-adapter-changed", {
         previousType,
         previousAdapter,
         currentType: adapterType,
-        currentAdapter: newAdapter
+        currentAdapter: newAdapter,
       });
-      
+
       return newAdapter;
-      
     } catch (error) {
       console.error(`Failed to set active adapter to ${adapterType}:`, error);
       throw error;
@@ -161,32 +170,43 @@ class AdapterManager {
   async transferState(fromType, toType, transferOptions = {}) {
     const sourceAdapter = this.adapters.get(fromType.toLowerCase());
     const targetAdapter = await this.getAdapter(toType.toLowerCase());
-    
+
     if (!sourceAdapter) {
       throw new Error(`Source adapter not found: ${fromType}`);
     }
-    
+
     if (!sourceAdapter.getIsInitialized()) {
       throw new Error(`Source adapter not initialized: ${fromType}`);
     }
-    
+
     try {
-      this.emit('state-transfer-start', { fromType, toType });
-      
+      this.emit("state-transfer-start", { fromType, toType });
+
       // 获取源适配器的状态
       const sourceState = await this._extractAdapterState(sourceAdapter);
-      
+
       // 转换状态格式
-      const convertedState = await this._convertState(sourceState, fromType, toType);
-      
+      const convertedState = await this._convertState(
+        sourceState,
+        fromType,
+        toType
+      );
+
       // 应用到目标适配器
       await this._applyStateToAdapter(targetAdapter, convertedState);
-      
-      this.emit('state-transfer-complete', { fromType, toType, success: true });
-      
+
+      this.emit("state-transfer-complete", { fromType, toType, success: true });
     } catch (error) {
-      console.error(`State transfer failed from ${fromType} to ${toType}:`, error);
-      this.emit('state-transfer-complete', { fromType, toType, success: false, error });
+      console.error(
+        `State transfer failed from ${fromType} to ${toType}:`,
+        error
+      );
+      this.emit("state-transfer-complete", {
+        fromType,
+        toType,
+        success: false,
+        error,
+      });
       throw error;
     }
   }
@@ -201,16 +221,22 @@ class AdapterManager {
     const adapter = this.adapters.get(adapterType);
 
     if (!adapter) {
-      console.log(`AdapterManager: No adapter found for type ${adapterType}, skipping destruction`);
+      console.log(
+        `AdapterManager: No adapter found for type ${adapterType}, skipping destruction`
+      );
       return;
     }
 
-    console.log(`AdapterManager: Starting destruction of ${adapterType} adapter`);
+    console.log(
+      `AdapterManager: Starting destruction of ${adapterType} adapter`
+    );
 
     try {
       // 如果是活动适配器，清除引用
       if (this.activeAdapterType === adapterType) {
-        console.log(`AdapterManager: Clearing active adapter reference for ${adapterType}`);
+        console.log(
+          `AdapterManager: Clearing active adapter reference for ${adapterType}`
+        );
         this.activeAdapter = null;
         this.activeAdapterType = null;
       }
@@ -221,11 +247,15 @@ class AdapterManager {
       // 从缓存中移除
       this.adapters.delete(adapterType);
 
-      console.log(`AdapterManager: ${adapterType} adapter destroyed and removed from cache`);
-      this.emit('adapter-destroyed', { type: adapterType });
-
+      console.log(
+        `AdapterManager: ${adapterType} adapter destroyed and removed from cache`
+      );
+      this.emit("adapter-destroyed", { type: adapterType });
     } catch (error) {
-      console.error(`AdapterManager: Failed to destroy ${adapterType} adapter:`, error);
+      console.error(
+        `AdapterManager: Failed to destroy ${adapterType} adapter:`,
+        error
+      );
 
       // 即使销毁失败，也要从缓存中移除以防止内存泄漏
       this.adapters.delete(adapterType);
@@ -236,7 +266,11 @@ class AdapterManager {
         this.activeAdapterType = null;
       }
 
-      this.emit('adapter-error', { type: adapterType, error, operation: 'destroy' });
+      this.emit("adapter-error", {
+        type: adapterType,
+        error,
+        operation: "destroy",
+      });
     }
   }
 
@@ -262,11 +296,13 @@ class AdapterManager {
     // 执行销毁操作
     const destroyOperation = new Promise((resolve, reject) => {
       try {
-        if (typeof adapter.destroy === 'function') {
+        if (typeof adapter.destroy === "function") {
           adapter.destroy();
           resolve();
         } else {
-          console.warn(`AdapterManager: ${adapterType} adapter has no destroy method`);
+          console.warn(
+            `AdapterManager: ${adapterType} adapter has no destroy method`
+          );
           resolve();
         }
       } catch (error) {
@@ -277,9 +313,14 @@ class AdapterManager {
     try {
       // 等待销毁完成或超时
       await Promise.race([destroyOperation, destroyTimeout]);
-      console.log(`AdapterManager: ${adapterType} adapter destroyed successfully`);
+      console.log(
+        `AdapterManager: ${adapterType} adapter destroyed successfully`
+      );
     } catch (error) {
-      console.error(`AdapterManager: Error during ${adapterType} adapter destruction:`, error);
+      console.error(
+        `AdapterManager: Error during ${adapterType} adapter destruction:`,
+        error
+      );
       throw error;
     }
   }
@@ -290,15 +331,22 @@ class AdapterManager {
    */
   async destroyAll() {
     const adapterTypes = Array.from(this.adapters.keys());
-    console.log(`AdapterManager: Starting destruction of all adapters: [${adapterTypes.join(', ')}]`);
+    console.log(
+      `AdapterManager: Starting destruction of all adapters: [${adapterTypes.join(
+        ", "
+      )}]`
+    );
 
     const destroyPromises = [];
     const errors = [];
 
     // 并行销毁所有适配器以提高性能
     for (const type of adapterTypes) {
-      const destroyPromise = this.destroyAdapter(type).catch(error => {
-        console.error(`AdapterManager: Failed to destroy ${type} adapter:`, error);
+      const destroyPromise = this.destroyAdapter(type).catch((error) => {
+        console.error(
+          `AdapterManager: Failed to destroy ${type} adapter:`,
+          error
+        );
         errors.push({ type, error });
         return null; // 继续处理其他适配器
       });
@@ -317,22 +365,24 @@ class AdapterManager {
       this.adapters.clear();
 
       if (errors.length > 0) {
-        console.warn(`AdapterManager: ${errors.length} adapters failed to destroy properly:`, errors);
-        this.emit('adapter-destruction-errors', { errors });
+        console.warn(
+          `AdapterManager: ${errors.length} adapters failed to destroy properly:`,
+          errors
+        );
+        this.emit("adapter-destruction-errors", { errors });
       }
 
-      console.log('AdapterManager: All adapters destruction completed');
-      this.emit('all-adapters-destroyed', { errors });
-
+      console.log("AdapterManager: All adapters destruction completed");
+      this.emit("all-adapters-destroyed", { errors });
     } catch (error) {
-      console.error('AdapterManager: Critical error during destroyAll:', error);
+      console.error("AdapterManager: Critical error during destroyAll:", error);
 
       // 紧急清理
       this.activeAdapter = null;
       this.activeAdapterType = null;
       this.adapters.clear();
 
-      this.emit('adapter-destruction-critical-error', { error });
+      this.emit("adapter-destruction-critical-error", { error });
       throw error;
     }
   }
@@ -346,17 +396,17 @@ class AdapterManager {
       totalAdapters: this.adapters.size,
       activeAdapterType: this.activeAdapterType,
       cachedAdapterTypes: this.getCachedAdapterTypes(),
-      adapterDetails: {}
+      adapterDetails: {},
     };
-    
+
     for (const [type, adapter] of this.adapters) {
       stats.adapterDetails[type] = {
         isInitialized: adapter.getIsInitialized(),
         isActive: type === this.activeAdapterType,
-        performanceMetrics: adapter.getPerformanceMetrics()
+        performanceMetrics: adapter.getPerformanceMetrics(),
       };
     }
-    
+
     return stats;
   }
 
@@ -395,7 +445,7 @@ class AdapterManager {
   emit(eventName, data = {}) {
     if (this.eventListeners.has(eventName)) {
       const listeners = this.eventListeners.get(eventName);
-      listeners.forEach(callback => {
+      listeners.forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
@@ -416,13 +466,27 @@ class AdapterManager {
   _setupAdapterEventListeners(adapter, type) {
     // 转发适配器事件
     const eventTypes = [
-      'image-loaded', 'resized', 'cropped', 'rotated', 'flipped',
-      'brightness-changed', 'contrast-changed', 'filter-applied', 'filter-removed',
-      'scaled', 'positioned', 'selected', 'deselected', 'state-saved', 'state-restored',
-      'reset', 'exported', 'error'
+      "image-loaded",
+      "resized",
+      "cropped",
+      "rotated",
+      "flipped",
+      "brightness-changed",
+      "contrast-changed",
+      "filter-applied",
+      "filter-removed",
+      "scaled",
+      "positioned",
+      "selected",
+      "deselected",
+      "state-saved",
+      "state-restored",
+      "reset",
+      "exported",
+      "error",
     ];
-    
-    eventTypes.forEach(eventType => {
+
+    eventTypes.forEach((eventType) => {
       adapter.on(eventType, (data) => {
         this.emit(`adapter-${eventType}`, { adapterType: type, ...data });
       });
@@ -437,14 +501,18 @@ class AdapterManager {
     if (this.adapters.size <= this.options.maxCachedAdapters) {
       return;
     }
-    
+
     // 获取非活动适配器
-    const inactiveAdapters = Array.from(this.adapters.entries())
-      .filter(([type]) => type !== this.activeAdapterType);
-    
+    const inactiveAdapters = Array.from(this.adapters.entries()).filter(
+      ([type]) => type !== this.activeAdapterType
+    );
+
     // 按最后使用时间排序（这里简化为按创建顺序）
-    const toDestroy = inactiveAdapters.slice(0, this.adapters.size - this.options.maxCachedAdapters);
-    
+    const toDestroy = inactiveAdapters.slice(
+      0,
+      this.adapters.size - this.options.maxCachedAdapters
+    );
+
     toDestroy.forEach(([type]) => {
       this.destroyAdapter(type);
     });

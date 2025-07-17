@@ -19,103 +19,105 @@ export default {
         x: 20, // 初始位置，会在mounted中重新计算
         y: 20,
         isSnapped: false,
-        snapEdge: null // 'top', 'bottom', 'left', 'right'
+        snapEdge: null, // 'top', 'bottom', 'left', 'right'
       },
-      
+
       // 边缘吸附配置
       snapConfig: {
         threshold: 50, // 距离边缘多少像素时开始吸附
         hiddenSize: 30, // 吸附后显示的大小
-        animationDuration: 300
+        animationDuration: 300,
       },
 
       // 边缘指示器状态
       edgeIndicator: {
         visible: false,
         edge: null, // 'top', 'bottom', 'left', 'right'
-        opacity: 0
+        opacity: 0,
       },
-      
+
       // 冲突检测
       conflictAvoidance: {
         enabled: true,
         minDistance: 20,
-        otherComponents: []
-      }
+        otherComponents: [],
+      },
     };
   },
-  
+
   computed: {
     /**
      * 计算组件样式
      */
     draggableStyle() {
       const style = {
-        position: 'fixed',
+        position: "fixed",
         transform: `translate(${this.position.x}px, ${this.position.y}px)`,
-        transition: this.isDragging ? 'none' : `transform ${this.snapConfig.animationDuration}ms ease-out`,
-        zIndex: this.isDragging ? 2000 : (this.position.isSnapped ? 1200 : 1500),
-        opacity: this.isDragging ? 0.8 : (this.position.isSnapped ? 0.9 : 1),
-        cursor: this.isDragging ? 'grabbing' : 'grab'
+        transition: this.isDragging
+          ? "none"
+          : `transform ${this.snapConfig.animationDuration}ms ease-out`,
+        zIndex: this.isDragging ? 2000 : this.position.isSnapped ? 1200 : 1500,
+        opacity: this.isDragging ? 0.8 : this.position.isSnapped ? 0.9 : 1,
+        cursor: this.isDragging ? "grabbing" : "grab",
       };
 
       return style;
     },
-    
+
     /**
      * 触发区域样式（用于吸附后的展开）
      */
     triggerAreaStyle() {
-      if (!this.position.isSnapped) return { display: 'none' };
+      if (!this.position.isSnapped) return { display: "none" };
 
       const size = this.snapConfig.hiddenSize;
       const componentWidth = this.getComponentWidth();
       const componentHeight = this.getComponentHeight();
 
       let style = {
-        position: 'fixed',
+        position: "fixed",
         zIndex: 1600,
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        cursor: 'pointer',
-        transition: `all ${this.snapConfig.animationDuration}ms ease-out`
+        backgroundColor: "rgba(0, 0, 0, 0.1)",
+        cursor: "pointer",
+        transition: `all ${this.snapConfig.animationDuration}ms ease-out`,
       };
 
       // 触发区域应该位于边缘，与吸附后的控件可见部分重叠
       switch (this.position.snapEdge) {
-        case 'top':
+        case "top":
           style = {
             ...style,
-            top: '0px',
+            top: "0px",
             left: `${Math.max(0, this.position.x)}px`,
             width: `${componentWidth}px`,
-            height: `${size}px`
+            height: `${size}px`,
           };
           break;
-        case 'bottom':
+        case "bottom":
           style = {
             ...style,
-            bottom: '0px',
+            bottom: "0px",
             left: `${Math.max(0, this.position.x)}px`,
             width: `${componentWidth}px`,
-            height: `${size}px`
+            height: `${size}px`,
           };
           break;
-        case 'left':
+        case "left":
           style = {
             ...style,
             top: `${Math.max(0, this.position.y)}px`,
-            left: '0px',
+            left: "0px",
             width: `${size}px`,
-            height: `${componentHeight}px`
+            height: `${componentHeight}px`,
           };
           break;
-        case 'right':
+        case "right":
           style = {
             ...style,
             top: `${Math.max(0, this.position.y)}px`,
-            right: '0px',
+            right: "0px",
             width: `${size}px`,
-            height: `${componentHeight}px`
+            height: `${componentHeight}px`,
           };
           break;
       }
@@ -128,7 +130,7 @@ export default {
      */
     edgeIndicatorStyle() {
       if (!this.edgeIndicator.visible || !this.edgeIndicator.edge) {
-        return { display: 'none' };
+        return { display: "none" };
       }
 
       const edge = this.edgeIndicator.edge;
@@ -138,52 +140,52 @@ export default {
       const componentHeight = this.getComponentHeight();
 
       let style = {
-        position: 'fixed',
+        position: "fixed",
         zIndex: 1900,
         backgroundColor: this.getEdgeIndicatorColor(edge),
         border: `2px dashed ${this.getEdgeIndicatorBorderColor(edge)}`,
         opacity: opacity,
-        transition: 'all 0.2s ease',
-        pointerEvents: 'none',
-        borderRadius: '4px'
+        transition: "all 0.2s ease",
+        pointerEvents: "none",
+        borderRadius: "4px",
       };
 
       // 根据边缘位置设置指示器尺寸和位置，显示控件吸附后的实际位置
       switch (edge) {
-        case 'top':
+        case "top":
           style = {
             ...style,
-            top: '0px',
+            top: "0px",
             left: `${this.position.x}px`,
             width: `${componentWidth}px`,
-            height: `${hiddenSize}px`
+            height: `${hiddenSize}px`,
           };
           break;
-        case 'bottom':
+        case "bottom":
           style = {
             ...style,
-            bottom: '0px',
+            bottom: "0px",
             left: `${this.position.x}px`,
             width: `${componentWidth}px`,
-            height: `${hiddenSize}px`
+            height: `${hiddenSize}px`,
           };
           break;
-        case 'left':
+        case "left":
           style = {
             ...style,
             top: `${this.position.y}px`,
-            left: '0px',
+            left: "0px",
             width: `${hiddenSize}px`,
-            height: `${componentHeight}px`
+            height: `${componentHeight}px`,
           };
           break;
-        case 'right':
+        case "right":
           style = {
             ...style,
             top: `${this.position.y}px`,
-            right: '0px',
+            right: "0px",
             width: `${hiddenSize}px`,
-            height: `${componentHeight}px`
+            height: `${componentHeight}px`,
           };
           break;
       }
@@ -196,47 +198,47 @@ export default {
      */
     snapStatusStyle() {
       if (!this.position.isSnapped) {
-        return { display: 'none' };
+        return { display: "none" };
       }
 
       return {
-        position: 'absolute',
-        top: '-8px',
-        right: '-8px',
+        position: "absolute",
+        top: "-8px",
+        right: "-8px",
         background: this.getEdgeIndicatorColor(this.position.snapEdge),
-        color: 'white',
-        fontSize: '10px',
-        padding: '2px 6px',
-        borderRadius: '10px',
+        color: "white",
+        fontSize: "10px",
+        padding: "2px 6px",
+        borderRadius: "10px",
         zIndex: 10,
-        whiteSpace: 'nowrap',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-        animation: 'snapStatusPulse 2s ease-in-out'
+        whiteSpace: "nowrap",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        animation: "snapStatusPulse 2s ease-in-out",
       };
-    }
+    },
   },
-  
+
   mounted() {
     this.initializeDraggable();
     this.setInitialPosition();
     this.loadPosition();
     this.registerComponent();
   },
-  
+
   beforeDestroy() {
     this.unregisterComponent();
     this.removeDragListeners();
     this.removeTouchListeners();
     this.removeElementListeners();
   },
-  
+
   methods: {
     /**
      * 设置初始位置
      */
     setInitialPosition() {
       // 如果已经有保存的位置，不重新设置
-      const key = `draggable-position-${this.$options.name || 'component'}`;
+      const key = `draggable-position-${this.$options.name || "component"}`;
       const saved = localStorage.getItem(key);
       if (saved) return;
 
@@ -247,13 +249,19 @@ export default {
       const componentHeight = 200; // 估算的组件高度
 
       // 根据组件类型设置不同的初始位置
-      const componentName = this.$options.name || '';
+      const componentName = this.$options.name || "";
 
-      if (componentName.includes('performance') || componentName.includes('Performance')) {
+      if (
+        componentName.includes("performance") ||
+        componentName.includes("Performance")
+      ) {
         // 性能监控器放在右上角
         this.position.x = Math.max(20, viewportWidth - componentWidth - 20);
         this.position.y = 80;
-      } else if (componentName.includes('health') || componentName.includes('Health')) {
+      } else if (
+        componentName.includes("health") ||
+        componentName.includes("Health")
+      ) {
         // 系统健康监控器放在右侧中间
         this.position.x = Math.max(20, viewportWidth - componentWidth - 20);
         this.position.y = Math.max(100, (viewportHeight - componentHeight) / 2);
@@ -275,15 +283,17 @@ export default {
       this.$nextTick(() => {
         const element = this.$el;
         if (element) {
-          element.addEventListener('mousedown', this.handleMouseDown);
-          element.addEventListener('touchstart', this.handleTouchStart, { passive: false });
+          element.addEventListener("mousedown", this.handleMouseDown);
+          element.addEventListener("touchstart", this.handleTouchStart, {
+            passive: false,
+          });
 
           // 防止默认的拖拽行为
-          element.addEventListener('dragstart', (e) => e.preventDefault());
+          element.addEventListener("dragstart", (e) => e.preventDefault());
         }
       });
     },
-    
+
     /**
      * 鼠标按下事件
      */
@@ -294,10 +304,10 @@ export default {
       // 不阻止默认行为，让点击事件正常触发
       this.prepareDrag(event.clientX, event.clientY);
 
-      document.addEventListener('mousemove', this.handleMouseMove);
-      document.addEventListener('mouseup', this.handleMouseUp);
+      document.addEventListener("mousemove", this.handleMouseMove);
+      document.addEventListener("mouseup", this.handleMouseUp);
     },
-    
+
     /**
      * 触摸开始事件
      */
@@ -309,10 +319,12 @@ export default {
       const touch = event.touches[0];
       this.prepareDrag(touch.clientX, touch.clientY);
 
-      document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-      document.addEventListener('touchend', this.handleTouchEnd);
+      document.addEventListener("touchmove", this.handleTouchMove, {
+        passive: false,
+      });
+      document.addEventListener("touchend", this.handleTouchEnd);
     },
-    
+
     /**
      * 准备拖拽（鼠标按下时调用）
      */
@@ -341,9 +353,9 @@ export default {
         this.unsnap();
       }
 
-      this.$emit('drag-start');
+      this.$emit("drag-start");
     },
-    
+
     /**
      * 鼠标移动事件
      */
@@ -388,7 +400,7 @@ export default {
 
       this.updatePosition(touch.clientX, touch.clientY);
     },
-    
+
     /**
      * 更新位置
      */
@@ -407,7 +419,7 @@ export default {
       // 更新边缘指示器
       this.updateEdgeIndicator();
     },
-    
+
     /**
      * 鼠标释放事件
      */
@@ -423,7 +435,7 @@ export default {
       this.endDrag();
       this.removeTouchListeners();
     },
-    
+
     /**
      * 结束拖拽
      */
@@ -448,24 +460,24 @@ export default {
         // 保存位置
         this.savePosition();
 
-        this.$emit('drag-end', { x: this.position.x, y: this.position.y });
+        this.$emit("drag-end", { x: this.position.x, y: this.position.y });
       }
     },
-    
+
     /**
      * 移除拖拽监听器
      */
     removeDragListeners() {
-      document.removeEventListener('mousemove', this.handleMouseMove);
-      document.removeEventListener('mouseup', this.handleMouseUp);
+      document.removeEventListener("mousemove", this.handleMouseMove);
+      document.removeEventListener("mouseup", this.handleMouseUp);
     },
-    
+
     /**
      * 移除触摸监听器
      */
     removeTouchListeners() {
-      document.removeEventListener('touchmove', this.handleTouchMove);
-      document.removeEventListener('touchend', this.handleTouchEnd);
+      document.removeEventListener("touchmove", this.handleTouchMove);
+      document.removeEventListener("touchend", this.handleTouchEnd);
     },
 
     /**
@@ -474,38 +486,43 @@ export default {
     removeElementListeners() {
       const element = this.$el;
       if (element) {
-        element.removeEventListener('mousedown', this.handleMouseDown);
-        element.removeEventListener('touchstart', this.handleTouchStart);
-        element.removeEventListener('dragstart', (e) => e.preventDefault());
+        element.removeEventListener("mousedown", this.handleMouseDown);
+        element.removeEventListener("touchstart", this.handleTouchStart);
+        element.removeEventListener("dragstart", (e) => e.preventDefault());
       }
     },
-    
+
     /**
      * 检查是否为拖拽手柄
      */
     isDragHandle(target) {
       // 首先检查是否是专门的拖拽手柄
-      const dragHandle = this.$el.querySelector('.drag-handle');
-      if (dragHandle && (dragHandle === target || dragHandle.contains(target))) {
+      const dragHandle = this.$el.querySelector(".drag-handle");
+      if (
+        dragHandle &&
+        (dragHandle === target || dragHandle.contains(target))
+      ) {
         return true;
       }
 
       // 检查是否是可拖拽的头部区域，但排除交互元素
-      const header = this.$el.querySelector('.monitor-header, .health-indicator');
+      const header = this.$el.querySelector(
+        ".monitor-header, .health-indicator"
+      );
       if (!header || !header.contains(target)) {
         return false;
       }
 
       // 排除按钮、切换箭头等交互元素
       const excludeSelectors = [
-        '.toggle-btn',
-        '.toggle-arrow',
-        'button',
-        'input',
-        'select',
-        'textarea',
+        ".toggle-btn",
+        ".toggle-arrow",
+        "button",
+        "input",
+        "select",
+        "textarea",
         '[role="button"]',
-        '.clickable'
+        ".clickable",
       ];
 
       for (const selector of excludeSelectors) {
@@ -517,33 +534,33 @@ export default {
 
       return true;
     },
-    
+
     /**
      * 获取组件尺寸
      */
     getComponentWidth() {
       return this.$el ? this.$el.offsetWidth : 300;
     },
-    
+
     getComponentHeight() {
       return this.$el ? this.$el.offsetHeight : 200;
     },
-    
+
     /**
      * 获取视口边界
      */
     getViewportBounds() {
       const width = this.getComponentWidth();
       const height = this.getComponentHeight();
-      
+
       return {
         minX: -width + this.snapConfig.hiddenSize,
         maxX: window.innerWidth - this.snapConfig.hiddenSize,
         minY: -height + this.snapConfig.hiddenSize,
-        maxY: window.innerHeight - this.snapConfig.hiddenSize
+        maxY: window.innerHeight - this.snapConfig.hiddenSize,
       };
     },
-    
+
     /**
      * 检查边缘吸附
      */
@@ -553,19 +570,19 @@ export default {
       const y = this.position.y;
       const width = this.getComponentWidth();
       const height = this.getComponentHeight();
-      
+
       // 检查各个边缘
       if (y <= threshold) {
-        this.snapToEdge('top');
+        this.snapToEdge("top");
       } else if (y >= window.innerHeight - height - threshold) {
-        this.snapToEdge('bottom');
+        this.snapToEdge("bottom");
       } else if (x <= threshold) {
-        this.snapToEdge('left');
+        this.snapToEdge("left");
       } else if (x >= window.innerWidth - width - threshold) {
-        this.snapToEdge('right');
+        this.snapToEdge("right");
       }
     },
-    
+
     /**
      * 吸附到边缘
      */
@@ -579,22 +596,22 @@ export default {
       const componentHeight = this.getComponentHeight();
 
       switch (edge) {
-        case 'top':
+        case "top":
           this.position.y = -(componentHeight - hiddenSize);
           break;
-        case 'bottom':
+        case "bottom":
           this.position.y = window.innerHeight - hiddenSize;
           break;
-        case 'left':
+        case "left":
           this.position.x = -(componentWidth - hiddenSize);
           break;
-        case 'right':
+        case "right":
           this.position.x = window.innerWidth - hiddenSize;
           break;
       }
-      this.$emit('snapped', edge);
+      this.$emit("snapped", edge);
     },
-    
+
     /**
      * 取消吸附
      */
@@ -608,41 +625,41 @@ export default {
 
       // 将控件移动到边缘内的合理位置
       switch (edge) {
-        case 'top':
+        case "top":
           this.position.y = margin;
           break;
-        case 'bottom':
+        case "bottom":
           this.position.y = window.innerHeight - componentHeight - margin;
           break;
-        case 'left':
+        case "left":
           this.position.x = margin;
           break;
-        case 'right':
+        case "right":
           this.position.x = window.innerWidth - componentWidth - margin;
           break;
       }
 
       this.position.isSnapped = false;
       this.position.snapEdge = null;
-      this.$emit('unsnapped');
+      this.$emit("unsnapped");
     },
-    
+
     /**
      * 处理触发区域点击
      */
     handleTriggerClick() {
       this.unsnap();
     },
-    
+
     /**
      * 冲突避免
      */
     avoidConflicts() {
       if (!this.conflictAvoidance.enabled) return;
-      
+
       const otherComponents = this.getOtherComponents();
       const myRect = this.getComponentRect();
-      
+
       for (const other of otherComponents) {
         const otherRect = other.getComponentRect();
         if (this.isOverlapping(myRect, otherRect)) {
@@ -651,15 +668,15 @@ export default {
         }
       }
     },
-    
+
     /**
      * 获取其他组件
      */
     getOtherComponents() {
       // 从全局注册表获取其他可拖拽组件
-      return window.draggableComponents?.filter(comp => comp !== this) || [];
+      return window.draggableComponents?.filter((comp) => comp !== this) || [];
     },
-    
+
     /**
      * 获取组件矩形
      */
@@ -668,21 +685,23 @@ export default {
         x: this.position.x,
         y: this.position.y,
         width: this.getComponentWidth(),
-        height: this.getComponentHeight()
+        height: this.getComponentHeight(),
       };
     },
-    
+
     /**
      * 检查是否重叠
      */
     isOverlapping(rect1, rect2) {
       const margin = this.conflictAvoidance.minDistance;
-      return !(rect1.x + rect1.width + margin < rect2.x ||
-               rect2.x + rect2.width + margin < rect1.x ||
-               rect1.y + rect1.height + margin < rect2.y ||
-               rect2.y + rect2.height + margin < rect1.y);
+      return !(
+        rect1.x + rect1.width + margin < rect2.x ||
+        rect2.x + rect2.width + margin < rect1.x ||
+        rect1.y + rect1.height + margin < rect2.y ||
+        rect2.y + rect2.height + margin < rect1.y
+      );
     },
-    
+
     /**
      * 解决冲突
      */
@@ -691,13 +710,13 @@ export default {
       const offset = this.conflictAvoidance.minDistance + 10;
       this.position.x += offset;
       this.position.y += offset;
-      
+
       // 确保仍在视口内
       const bounds = this.getViewportBounds();
       this.position.x = Math.min(this.position.x, bounds.maxX);
       this.position.y = Math.min(this.position.y, bounds.maxY);
     },
-    
+
     /**
      * 注册组件到全局列表
      */
@@ -707,7 +726,7 @@ export default {
       }
       window.draggableComponents.push(this);
     },
-    
+
     /**
      * 从全局列表注销组件
      */
@@ -719,25 +738,28 @@ export default {
         }
       }
     },
-    
+
     /**
      * 保存位置到本地存储
      */
     savePosition() {
-      const key = `draggable-position-${this.$options.name || 'component'}`;
-      localStorage.setItem(key, JSON.stringify({
-        x: this.position.x,
-        y: this.position.y,
-        isSnapped: this.position.isSnapped,
-        snapEdge: this.position.snapEdge
-      }));
+      const key = `draggable-position-${this.$options.name || "component"}`;
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          x: this.position.x,
+          y: this.position.y,
+          isSnapped: this.position.isSnapped,
+          snapEdge: this.position.snapEdge,
+        })
+      );
     },
-    
+
     /**
      * 从本地存储加载位置
      */
     loadPosition() {
-      const key = `draggable-position-${this.$options.name || 'component'}`;
+      const key = `draggable-position-${this.$options.name || "component"}`;
       const saved = localStorage.getItem(key);
 
       if (saved) {
@@ -745,7 +767,7 @@ export default {
           const position = JSON.parse(saved);
           this.position = { ...this.position, ...position };
         } catch (error) {
-          console.warn('加载组件位置失败:', error);
+          console.warn("加载组件位置失败:", error);
         }
       }
     },
@@ -755,12 +777,12 @@ export default {
      */
     getEdgeIndicatorColor(edge) {
       const colors = {
-        top: 'rgba(52, 152, 219, 0.2)',    // 蓝色
-        bottom: 'rgba(46, 204, 113, 0.2)', // 绿色
-        left: 'rgba(155, 89, 182, 0.2)',   // 紫色
-        right: 'rgba(231, 76, 60, 0.2)'    // 红色
+        top: "rgba(52, 152, 219, 0.2)", // 蓝色
+        bottom: "rgba(46, 204, 113, 0.2)", // 绿色
+        left: "rgba(155, 89, 182, 0.2)", // 紫色
+        right: "rgba(231, 76, 60, 0.2)", // 红色
       };
-      return colors[edge] || 'rgba(52, 152, 219, 0.2)';
+      return colors[edge] || "rgba(52, 152, 219, 0.2)";
     },
 
     /**
@@ -768,12 +790,12 @@ export default {
      */
     getEdgeIndicatorBorderColor(edge) {
       const colors = {
-        top: 'rgba(52, 152, 219, 0.6)',    // 蓝色
-        bottom: 'rgba(46, 204, 113, 0.6)', // 绿色
-        left: 'rgba(155, 89, 182, 0.6)',   // 紫色
-        right: 'rgba(231, 76, 60, 0.6)'    // 红色
+        top: "rgba(52, 152, 219, 0.6)", // 蓝色
+        bottom: "rgba(46, 204, 113, 0.6)", // 绿色
+        left: "rgba(155, 89, 182, 0.6)", // 紫色
+        right: "rgba(231, 76, 60, 0.6)", // 红色
       };
-      return colors[edge] || 'rgba(52, 152, 219, 0.6)';
+      return colors[edge] || "rgba(52, 152, 219, 0.6)";
     },
 
     /**
@@ -781,12 +803,12 @@ export default {
      */
     getEdgeDisplayName(edge) {
       const names = {
-        top: '顶部',
-        bottom: '底部',
-        left: '左侧',
-        right: '右侧'
+        top: "顶部",
+        bottom: "底部",
+        left: "左侧",
+        right: "右侧",
       };
-      return names[edge] || '';
+      return names[edge] || "";
     },
 
     /**
@@ -809,10 +831,10 @@ export default {
 
       // 检查各个边缘的距离
       const edges = [
-        { edge: 'top', distance: y },
-        { edge: 'bottom', distance: window.innerHeight - (y + height) },
-        { edge: 'left', distance: x },
-        { edge: 'right', distance: window.innerWidth - (x + width) }
+        { edge: "top", distance: y },
+        { edge: "bottom", distance: window.innerHeight - (y + height) },
+        { edge: "left", distance: x },
+        { edge: "right", distance: window.innerWidth - (x + width) },
       ];
 
       // 找到最近的边缘
@@ -838,10 +860,10 @@ export default {
       this.edgeIndicator.edge = edge;
 
       // 根据距离计算透明度（距离越近透明度越高）
-      const opacity = Math.max(0.3, 1 - (distance / this.snapConfig.threshold));
+      const opacity = Math.max(0.3, 1 - distance / this.snapConfig.threshold);
       this.edgeIndicator.opacity = opacity;
 
-      this.$emit('edge-indicator-show', { edge, distance, opacity });
+      this.$emit("edge-indicator-show", { edge, distance, opacity });
     },
 
     /**
@@ -852,8 +874,8 @@ export default {
         this.edgeIndicator.visible = false;
         this.edgeIndicator.edge = null;
         this.edgeIndicator.opacity = 0;
-        this.$emit('edge-indicator-hide');
+        this.$emit("edge-indicator-hide");
       }
-    }
-  }
+    },
+  },
 };

@@ -5,17 +5,17 @@
       <div class="toolbar-section">
         <h3 class="toolbar-title">{{ title }}</h3>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 字体选择 -->
         <div class="font-selector">
-          <select 
+          <select
             v-model="selectedFont"
             @change="handleFontChange"
             :disabled="disabled || !activeText"
           >
-            <option 
-              v-for="font in availableFonts" 
+            <option
+              v-for="font in availableFonts"
               :key="font.value"
               :value="font.value"
             >
@@ -23,51 +23,47 @@
             </option>
           </select>
         </div>
-        
+
         <!-- 字号选择 -->
         <div class="font-size-selector">
-          <select 
+          <select
             v-model="fontSize"
             @change="handleFontSizeChange"
             :disabled="disabled || !activeText"
           >
-            <option 
-              v-for="size in fontSizes" 
-              :key="size"
-              :value="size"
-            >
+            <option v-for="size in fontSizes" :key="size" :value="size">
               {{ size }}px
             </option>
           </select>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 文本样式 -->
         <div class="text-style-controls">
-          <button 
+          <button
             class="style-button"
-            :class="{ 'active': textStyle.bold }"
+            :class="{ active: textStyle.bold }"
             @click="toggleStyle('bold')"
             :disabled="disabled || !activeText"
             title="粗体"
           >
             <i class="icon-bold"></i>
           </button>
-          
-          <button 
+
+          <button
             class="style-button"
-            :class="{ 'active': textStyle.italic }"
+            :class="{ active: textStyle.italic }"
             @click="toggleStyle('italic')"
             :disabled="disabled || !activeText"
             title="斜体"
           >
             <i class="icon-italic"></i>
           </button>
-          
-          <button 
+
+          <button
             class="style-button"
-            :class="{ 'active': textStyle.underline }"
+            :class="{ active: textStyle.underline }"
             @click="toggleStyle('underline')"
             :disabled="disabled || !activeText"
             title="下划线"
@@ -75,32 +71,32 @@
             <i class="icon-underline"></i>
           </button>
         </div>
-        
+
         <!-- 文本对齐 -->
         <div class="text-align-controls">
-          <button 
+          <button
             class="align-button"
-            :class="{ 'active': textAlign === 'left' }"
+            :class="{ active: textAlign === 'left' }"
             @click="setTextAlign('left')"
             :disabled="disabled || !activeText"
             title="左对齐"
           >
             <i class="icon-align-left"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
-            :class="{ 'active': textAlign === 'center' }"
+            :class="{ active: textAlign === 'center' }"
             @click="setTextAlign('center')"
             :disabled="disabled || !activeText"
             title="居中对齐"
           >
             <i class="icon-align-center"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
-            :class="{ 'active': textAlign === 'right' }"
+            :class="{ active: textAlign === 'right' }"
             @click="setTextAlign('right')"
             :disabled="disabled || !activeText"
             title="右对齐"
@@ -109,12 +105,16 @@
           </button>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 颜色选择 -->
         <div class="color-selector">
           <label>颜色:</label>
-          <div class="color-preview" :style="{ backgroundColor: textColor }" @click="toggleColorPicker"></div>
+          <div
+            class="color-preview"
+            :style="{ backgroundColor: textColor }"
+            @click="toggleColorPicker"
+          ></div>
           <div v-if="showColorPicker" class="color-picker-container">
             <color-picker
               v-model="textColor"
@@ -124,11 +124,11 @@
           </div>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 操作按钮 -->
         <div class="action-buttons">
-          <button 
+          <button
             class="add-button"
             @click="handleAddText"
             :disabled="disabled"
@@ -136,8 +136,8 @@
             <i class="icon-add"></i>
             <span>添加文本</span>
           </button>
-          
-          <button 
+
+          <button
             class="delete-button"
             @click="handleDeleteText"
             :disabled="disabled || !activeText"
@@ -148,27 +148,27 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 编辑区域 -->
-    <div 
+    <div
       class="text-editor-container"
       ref="editorContainer"
       @click="handleContainerClick"
     >
       <!-- 背景图像 -->
-      <img 
+      <img
         v-if="backgroundImage"
         :src="backgroundImage"
         class="background-image"
         alt="背景图像"
       />
-      
+
       <!-- 文本元素 -->
-      <div 
-        v-for="(text, index) in textElements" 
+      <div
+        v-for="(text, index) in textElements"
         :key="text.id"
         class="text-element"
-        :class="{ 'active': activeTextId === text.id }"
+        :class="{ active: activeTextId === text.id }"
         :style="getTextElementStyle(text)"
         @click.stop="handleTextClick(text)"
         @dblclick.stop="handleTextDoubleClick(text)"
@@ -176,7 +176,7 @@
         @touchstart.stop="handleTextTouchStart(text, $event)"
       >
         <!-- 编辑模式 -->
-        <textarea 
+        <textarea
           v-if="editingTextId === text.id"
           v-model="editingContent"
           class="text-editor"
@@ -186,23 +186,30 @@
           @keydown.esc="handleTextEditCancel"
           ref="textEditor"
         ></textarea>
-        
+
         <!-- 显示模式 -->
-        <div v-else class="text-content" v-html="formatTextContent(text.content)"></div>
-        
+        <div
+          v-else
+          class="text-content"
+          v-html="formatTextContent(text.content)"
+        ></div>
+
         <!-- 变换控制 -->
-        <div v-if="activeTextId === text.id && !editingTextId" class="transform-controls">
+        <div
+          v-if="activeTextId === text.id && !editingTextId"
+          class="transform-controls"
+        >
           <!-- 旋转手柄 -->
-          <div 
+          <div
             class="rotate-handle"
             @mousedown.stop="handleRotateStart($event)"
             @touchstart.stop="handleRotateStart($event)"
           >
             <i class="icon-rotate"></i>
           </div>
-          
+
           <!-- 调整大小手柄 -->
-          <div 
+          <div
             class="resize-handle"
             @mousedown.stop="handleResizeStart($event)"
             @touchstart.stop="handleResizeStart($event)"
@@ -211,90 +218,88 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 空状态 -->
       <div v-if="textElements.length === 0" class="empty-state">
         <i class="icon-text"></i>
         <p>{{ emptyText }}</p>
-        <button class="add-text-button" @click="handleAddText">
-          添加文本
-        </button>
+        <button class="add-text-button" @click="handleAddText">添加文本</button>
       </div>
     </div>
-    
+
     <!-- 文本效果面板 -->
     <div v-if="showEffects && activeText" class="text-effects-panel">
       <h4 class="effects-title">文本效果</h4>
-      
+
       <!-- 阴影效果 -->
       <div class="effect-group">
         <div class="effect-header">
           <label>
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               v-model="textEffects.shadow.enabled"
               @change="handleEffectChange"
             />
             文字阴影
           </label>
         </div>
-        
+
         <div v-if="textEffects.shadow.enabled" class="effect-controls">
           <div class="effect-control">
             <label>模糊:</label>
-            <input 
-              type="range" 
+            <input
+              type="range"
               v-model.number="textEffects.shadow.blur"
-              min="0" 
-              max="20" 
+              min="0"
+              max="20"
               step="1"
               @input="handleEffectChange"
             />
             <span>{{ textEffects.shadow.blur }}px</span>
           </div>
-          
+
           <div class="effect-control">
             <label>颜色:</label>
-            <input 
-              type="color" 
+            <input
+              type="color"
               v-model="textEffects.shadow.color"
               @input="handleEffectChange"
             />
           </div>
         </div>
       </div>
-      
+
       <!-- 描边效果 -->
       <div class="effect-group">
         <div class="effect-header">
           <label>
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               v-model="textEffects.stroke.enabled"
               @change="handleEffectChange"
             />
             文字描边
           </label>
         </div>
-        
+
         <div v-if="textEffects.stroke.enabled" class="effect-controls">
           <div class="effect-control">
             <label>宽度:</label>
-            <input 
-              type="range" 
+            <input
+              type="range"
               v-model.number="textEffects.stroke.width"
-              min="1" 
-              max="10" 
+              min="1"
+              max="10"
               step="1"
               @input="handleEffectChange"
             />
             <span>{{ textEffects.stroke.width }}px</span>
           </div>
-          
+
           <div class="effect-control">
             <label>颜色:</label>
-            <input 
-              type="color" 
+            <input
+              type="color"
               v-model="textEffects.stroke.color"
               @input="handleEffectChange"
             />
@@ -306,60 +311,60 @@
 </template>
 
 <script>
-import ColorPicker from './ColorPicker.vue';
+import ColorPicker from "./ColorPicker.vue";
 
 export default {
-  name: 'TextTool',
+  name: "TextTool",
   components: {
-    ColorPicker
+    ColorPicker,
   },
-  
+
   props: {
     // 工具标题
     title: {
       type: String,
-      default: '文本工具'
+      default: "文本工具",
     },
-    
+
     // 背景图像
     backgroundImage: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 初始文本元素
     initialTextElements: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 显示选项
     showToolbar: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showEffects: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 文本选项
     emptyText: {
       type: String,
-      default: '暂无文本元素'
+      default: "暂无文本元素",
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'minimal', 'compact'].includes(value)
+      default: "default",
+      validator: (value) => ["default", "minimal", "compact"].includes(value),
     },
 
     // 适配器实例
@@ -367,70 +372,71 @@ export default {
       type: Object,
       required: true,
       validator(value) {
-        return value && typeof value.addText === 'function';
-      }
+        return value && typeof value.addText === "function";
+      },
     },
 
     // 适配器类型
     adapterType: {
       type: String,
-      default: 'fabric',
-      validator: value => ['fabric', 'konva', 'tui', 'cropper', 'jimp'].includes(value)
-    }
+      default: "fabric",
+      validator: (value) =>
+        ["fabric", "konva", "tui", "cropper", "jimp"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 文本元素
       textElements: [],
-      
+
       // 活动文本
-      activeTextId: '',
-      
+      activeTextId: "",
+
       // 编辑状态
-      editingTextId: '',
-      editingContent: '',
-      
+      editingTextId: "",
+      editingContent: "",
+
       // 字体设置
-      selectedFont: 'Arial',
+      selectedFont: "Arial",
       fontSize: 24,
-      textColor: '#000000',
-      textAlign: 'left',
+      textColor: "#000000",
+      textAlign: "left",
       textStyle: {
         bold: false,
         italic: false,
-        underline: false
+        underline: false,
       },
-      
+
       // 文本效果
       textEffects: {
         shadow: {
           enabled: false,
           blur: 4,
-          color: '#000000'
+          color: "#000000",
         },
         stroke: {
           enabled: false,
           width: 2,
-          color: '#ffffff'
-        }
+          color: "#ffffff",
+        },
       },
-      
+
       // 可用字体
       availableFonts: [
-        { name: 'Arial', value: 'Arial' },
-        { name: '黑体', value: 'SimHei' },
-        { name: '宋体', value: 'SimSun' },
-        { name: '微软雅黑', value: 'Microsoft YaHei' },
-        { name: 'Times New Roman', value: 'Times New Roman' },
-        { name: 'Courier New', value: 'Courier New' },
-        { name: 'Georgia', value: 'Georgia' },
-        { name: 'Verdana', value: 'Verdana' }
+        { name: "Arial", value: "Arial" },
+        { name: "黑体", value: "SimHei" },
+        { name: "宋体", value: "SimSun" },
+        { name: "微软雅黑", value: "Microsoft YaHei" },
+        { name: "Times New Roman", value: "Times New Roman" },
+        { name: "Courier New", value: "Courier New" },
+        { name: "Georgia", value: "Georgia" },
+        { name: "Verdana", value: "Verdana" },
       ],
-      
+
       // 字号选项
       fontSizes: [12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72],
-      
+
       // 交互状态
       isDragging: false,
       isRotating: false,
@@ -440,9 +446,9 @@ export default {
       interactionStartRotation: 0,
       interactionStartScale: 1,
       interactionStartPosition: { x: 0, y: 0 },
-      
+
       // 颜色选择器
-      showColorPicker: false
+      showColorPicker: false,
     };
   },
 
@@ -450,14 +456,16 @@ export default {
     textClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
     },
 
     // 当前活动文本
     activeText() {
-      return this.textElements.find(text => text.id === this.activeTextId) || null;
-    }
+      return (
+        this.textElements.find((text) => text.id === this.activeTextId) || null
+      );
+    },
   },
 
   watch: {
@@ -466,54 +474,56 @@ export default {
       deep: true,
       handler(newElements) {
         this.textElements = [...newElements];
-      }
+      },
     },
 
     textElements: {
       deep: true,
       handler(newElements) {
-        this.$emit('text-elements-change', newElements);
-      }
+        this.$emit("text-elements-change", newElements);
+      },
     },
 
     activeText: {
       immediate: true,
       handler(newText) {
         if (newText) {
-          this.selectedFont = newText.fontFamily || 'Arial';
+          this.selectedFont = newText.fontFamily || "Arial";
           this.fontSize = newText.fontSize || 24;
-          this.textColor = newText.color || '#000000';
-          this.textAlign = newText.textAlign || 'left';
+          this.textColor = newText.color || "#000000";
+          this.textAlign = newText.textAlign || "left";
           this.textStyle = {
-            bold: newText.fontWeight === 'bold',
-            italic: newText.fontStyle === 'italic',
-            underline: newText.textDecoration === 'underline'
+            bold: newText.fontWeight === "bold",
+            italic: newText.fontStyle === "italic",
+            underline: newText.textDecoration === "underline",
           };
           this.textEffects = newText.effects || {
-            shadow: { enabled: false, blur: 4, color: '#000000' },
-            stroke: { enabled: false, width: 2, color: '#ffffff' }
+            shadow: { enabled: false, blur: 4, color: "#000000" },
+            stroke: { enabled: false, width: 2, color: "#ffffff" },
           };
         }
-      }
-    }
+      },
+    },
   },
 
   mounted() {
     // 监听全局鼠标和触摸事件
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd);
-    document.addEventListener('click', this.handleDocumentClick);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("touchmove", this.handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.handleTouchEnd);
+    document.addEventListener("click", this.handleDocumentClick);
   },
 
   beforeDestroy() {
     // 移除事件监听器
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
-    document.removeEventListener('click', this.handleDocumentClick);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("touchmove", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
+    document.removeEventListener("click", this.handleDocumentClick);
   },
 
   methods: {
@@ -526,22 +536,22 @@ export default {
       try {
         const newText = {
           id: `text-${Date.now()}`,
-          content: '双击编辑文本',
+          content: "双击编辑文本",
           x: 100,
           y: 100,
           fontFamily: this.selectedFont,
           fontSize: this.fontSize,
           color: this.textColor,
           textAlign: this.textAlign,
-          fontWeight: this.textStyle.bold ? 'bold' : 'normal',
-          fontStyle: this.textStyle.italic ? 'italic' : 'normal',
-          textDecoration: this.textStyle.underline ? 'underline' : 'none',
+          fontWeight: this.textStyle.bold ? "bold" : "normal",
+          fontStyle: this.textStyle.italic ? "italic" : "normal",
+          textDecoration: this.textStyle.underline ? "underline" : "none",
           rotation: 0,
           scale: 1,
           effects: {
             shadow: { ...this.textEffects.shadow },
-            stroke: { ...this.textEffects.stroke }
-          }
+            stroke: { ...this.textEffects.stroke },
+          },
         };
 
         // 调用适配器添加文本
@@ -553,13 +563,13 @@ export default {
         this.textElements.push(newText);
         this.activeTextId = newText.id;
 
-        this.$emit('text-add', newText);
+        this.$emit("text-add", newText);
       } catch (error) {
-        console.error('Failed to add text:', error);
-        this.$emit('error', {
-          type: 'text-add-failed',
-          message: '添加文本失败',
-          error
+        console.error("Failed to add text:", error);
+        this.$emit("error", {
+          type: "text-add-failed",
+          message: "添加文本失败",
+          error,
         });
       }
     },
@@ -571,7 +581,9 @@ export default {
       if (this.disabled || !this.activeText || !this.adapter) return;
 
       try {
-        const index = this.textElements.findIndex(text => text.id === this.activeTextId);
+        const index = this.textElements.findIndex(
+          (text) => text.id === this.activeTextId
+        );
         if (index !== -1) {
           const deletedText = this.textElements[index];
 
@@ -581,16 +593,16 @@ export default {
           }
 
           this.textElements.splice(index, 1);
-          this.activeTextId = '';
+          this.activeTextId = "";
 
-          this.$emit('text-delete', deletedText);
+          this.$emit("text-delete", deletedText);
         }
       } catch (error) {
-        console.error('Failed to delete text:', error);
-        this.$emit('error', {
-          type: 'text-delete-failed',
-          message: '删除文本失败',
-          error
+        console.error("Failed to delete text:", error);
+        this.$emit("error", {
+          type: "text-delete-failed",
+          message: "删除文本失败",
+          error,
         });
       }
     },
@@ -602,7 +614,7 @@ export default {
       if (this.disabled) return;
 
       this.activeTextId = text.id;
-      this.$emit('text-select', text);
+      this.$emit("text-select", text);
     },
 
     /**
@@ -627,35 +639,35 @@ export default {
      */
     async handleTextEditComplete() {
       if (this.editingTextId && this.editingContent.trim()) {
-        const text = this.textElements.find(t => t.id === this.editingTextId);
+        const text = this.textElements.find((t) => t.id === this.editingTextId);
         if (text) {
           text.content = this.editingContent.trim();
 
           // 同步到适配器
           try {
             await this._updateTextInAdapter(text);
-            this.$emit('text-content-change', text);
+            this.$emit("text-content-change", text);
           } catch (error) {
-            console.error('Failed to update text content:', error);
-            this.$emit('error', {
-              type: 'text-update-failed',
-              message: '更新文本内容失败',
-              error
+            console.error("Failed to update text content:", error);
+            this.$emit("error", {
+              type: "text-update-failed",
+              message: "更新文本内容失败",
+              error,
             });
           }
         }
       }
 
-      this.editingTextId = '';
-      this.editingContent = '';
+      this.editingTextId = "";
+      this.editingContent = "";
     },
 
     /**
      * 处理文本编辑取消
      */
     handleTextEditCancel() {
-      this.editingTextId = '';
-      this.editingContent = '';
+      this.editingTextId = "";
+      this.editingContent = "";
     },
 
     /**
@@ -665,7 +677,7 @@ export default {
       if (this.disabled) return;
 
       // 点击空白区域取消选择
-      this.activeTextId = '';
+      this.activeTextId = "";
       this.showColorPicker = false;
     },
 
@@ -674,7 +686,10 @@ export default {
      */
     handleDocumentClick(event) {
       // 关闭颜色选择器
-      if (this.showColorPicker && !event.target.closest('.color-picker-container')) {
+      if (
+        this.showColorPicker &&
+        !event.target.closest(".color-picker-container")
+      ) {
         this.showColorPicker = false;
       }
     },
@@ -689,13 +704,13 @@ export default {
 
       try {
         await this._updateTextInAdapter(this.activeText);
-        this.$emit('text-style-change', this.activeText);
+        this.$emit("text-style-change", this.activeText);
       } catch (error) {
-        console.error('Failed to update font:', error);
-        this.$emit('error', {
-          type: 'text-style-update-failed',
-          message: '更新字体失败',
-          error
+        console.error("Failed to update font:", error);
+        this.$emit("error", {
+          type: "text-style-update-failed",
+          message: "更新字体失败",
+          error,
         });
       }
     },
@@ -710,13 +725,13 @@ export default {
 
       try {
         await this._updateTextInAdapter(this.activeText);
-        this.$emit('text-style-change', this.activeText);
+        this.$emit("text-style-change", this.activeText);
       } catch (error) {
-        console.error('Failed to update font size:', error);
-        this.$emit('error', {
-          type: 'text-style-update-failed',
-          message: '更新字号失败',
-          error
+        console.error("Failed to update font size:", error);
+        this.$emit("error", {
+          type: "text-style-update-failed",
+          message: "更新字号失败",
+          error,
         });
       }
     },
@@ -730,18 +745,22 @@ export default {
       this.textStyle[style] = !this.textStyle[style];
 
       switch (style) {
-        case 'bold':
-          this.activeText.fontWeight = this.textStyle.bold ? 'bold' : 'normal';
+        case "bold":
+          this.activeText.fontWeight = this.textStyle.bold ? "bold" : "normal";
           break;
-        case 'italic':
-          this.activeText.fontStyle = this.textStyle.italic ? 'italic' : 'normal';
+        case "italic":
+          this.activeText.fontStyle = this.textStyle.italic
+            ? "italic"
+            : "normal";
           break;
-        case 'underline':
-          this.activeText.textDecoration = this.textStyle.underline ? 'underline' : 'none';
+        case "underline":
+          this.activeText.textDecoration = this.textStyle.underline
+            ? "underline"
+            : "none";
           break;
       }
 
-      this.$emit('text-style-change', this.activeText);
+      this.$emit("text-style-change", this.activeText);
     },
 
     /**
@@ -753,7 +772,7 @@ export default {
       this.textAlign = align;
       this.activeText.textAlign = align;
 
-      this.$emit('text-style-change', this.activeText);
+      this.$emit("text-style-change", this.activeText);
     },
 
     /**
@@ -772,7 +791,7 @@ export default {
       this.textColor = color;
       this.activeText.color = color;
 
-      this.$emit('text-style-change', this.activeText);
+      this.$emit("text-style-change", this.activeText);
     },
 
     /**
@@ -783,10 +802,10 @@ export default {
 
       this.activeText.effects = {
         shadow: { ...this.textEffects.shadow },
-        stroke: { ...this.textEffects.stroke }
+        stroke: { ...this.textEffects.stroke },
       };
 
-      this.$emit('text-effects-change', this.activeText);
+      this.$emit("text-effects-change", this.activeText);
     },
 
     /**
@@ -830,8 +849,10 @@ export default {
 
       this.isRotating = true;
 
-      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+      const clientX =
+        event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY =
+        event.clientY || (event.touches && event.touches[0].clientY);
 
       this.interactionStartX = clientX;
       this.interactionStartY = clientY;
@@ -848,8 +869,10 @@ export default {
 
       this.isResizing = true;
 
-      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+      const clientX =
+        event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY =
+        event.clientY || (event.touches && event.touches[0].clientY);
 
       this.interactionStartX = clientX;
       this.interactionStartY = clientY;
@@ -904,7 +927,7 @@ export default {
       this.activeText.x = this.interactionStartPosition.x + deltaX;
       this.activeText.y = this.interactionStartPosition.y + deltaY;
 
-      this.$emit('text-move', this.activeText);
+      this.$emit("text-move", this.activeText);
     },
 
     /**
@@ -924,10 +947,7 @@ export default {
         this.interactionStartX - centerX
       );
 
-      const currentAngle = Math.atan2(
-        clientY - centerY,
-        clientX - centerX
-      );
+      const currentAngle = Math.atan2(clientY - centerY, clientX - centerX);
 
       // 计算角度差（弧度）
       let angleDiff = currentAngle - startAngle;
@@ -938,7 +958,7 @@ export default {
       // 更新旋转角度
       this.activeText.rotation = this.interactionStartRotation + angleDiff;
 
-      this.$emit('text-rotate', this.activeText);
+      this.$emit("text-rotate", this.activeText);
     },
 
     /**
@@ -950,12 +970,12 @@ export default {
       // 计算距离变化
       const startDistance = Math.sqrt(
         Math.pow(this.interactionStartX - this.activeText.x, 2) +
-        Math.pow(this.interactionStartY - this.activeText.y, 2)
+          Math.pow(this.interactionStartY - this.activeText.y, 2)
       );
 
       const currentDistance = Math.sqrt(
         Math.pow(clientX - this.activeText.x, 2) +
-        Math.pow(clientY - this.activeText.y, 2)
+          Math.pow(clientY - this.activeText.y, 2)
       );
 
       // 计算缩放比例
@@ -968,7 +988,7 @@ export default {
       if (this.activeText.scale < 0.2) this.activeText.scale = 0.2;
       if (this.activeText.scale > 5) this.activeText.scale = 5;
 
-      this.$emit('text-resize', this.activeText);
+      this.$emit("text-resize", this.activeText);
     },
 
     /**
@@ -996,14 +1016,14 @@ export default {
       const style = {
         left: `${text.x}px`,
         top: `${text.y}px`,
-        fontFamily: text.fontFamily || 'Arial',
+        fontFamily: text.fontFamily || "Arial",
         fontSize: `${text.fontSize || 24}px`,
-        color: text.color || '#000000',
-        textAlign: text.textAlign || 'left',
-        fontWeight: text.fontWeight || 'normal',
-        fontStyle: text.fontStyle || 'normal',
-        textDecoration: text.textDecoration || 'none',
-        transform: `rotate(${text.rotation || 0}deg) scale(${text.scale || 1})`
+        color: text.color || "#000000",
+        textAlign: text.textAlign || "left",
+        fontWeight: text.fontWeight || "normal",
+        fontStyle: text.fontStyle || "normal",
+        textDecoration: text.textDecoration || "none",
+        transform: `rotate(${text.rotation || 0}deg) scale(${text.scale || 1})`,
       };
 
       // 添加文本阴影
@@ -1025,13 +1045,13 @@ export default {
      */
     getTextEditorStyle(text) {
       return {
-        fontFamily: text.fontFamily || 'Arial',
+        fontFamily: text.fontFamily || "Arial",
         fontSize: `${text.fontSize || 24}px`,
-        color: text.color || '#000000',
-        textAlign: text.textAlign || 'left',
-        fontWeight: text.fontWeight || 'normal',
-        fontStyle: text.fontStyle || 'normal',
-        textDecoration: text.textDecoration || 'none'
+        color: text.color || "#000000",
+        textAlign: text.textAlign || "left",
+        fontWeight: text.fontWeight || "normal",
+        fontStyle: text.fontStyle || "normal",
+        textDecoration: text.textDecoration || "none",
       };
     },
 
@@ -1039,10 +1059,10 @@ export default {
      * 格式化文本内容
      */
     formatTextContent(content) {
-      if (!content) return '';
+      if (!content) return "";
 
       // 将换行符转换为<br>标签
-      return content.replace(/\n/g, '<br>');
+      return content.replace(/\n/g, "<br>");
     },
 
     // ========== 适配器集成方法 ==========
@@ -1053,8 +1073,8 @@ export default {
      * @returns {Promise<string>} 适配器中的文本ID
      */
     async _addTextToAdapter(textData) {
-      if (!this.adapter || typeof this.adapter.addText !== 'function') {
-        console.warn('Adapter does not support addText method');
+      if (!this.adapter || typeof this.adapter.addText !== "function") {
+        console.warn("Adapter does not support addText method");
         return null;
       }
 
@@ -1072,7 +1092,7 @@ export default {
 
         return result;
       } catch (error) {
-        console.error('Failed to add text to adapter:', error);
+        console.error("Failed to add text to adapter:", error);
         throw error;
       }
     },
@@ -1089,17 +1109,17 @@ export default {
 
       try {
         // 根据适配器类型选择删除方法
-        if (typeof this.adapter.removeText === 'function') {
+        if (typeof this.adapter.removeText === "function") {
           await this.adapter.removeText(textData.adapterId);
-        } else if (typeof this.adapter.removeObject === 'function') {
+        } else if (typeof this.adapter.removeObject === "function") {
           await this.adapter.removeObject(textData.adapterId);
-        } else if (typeof this.adapter.deleteObject === 'function') {
+        } else if (typeof this.adapter.deleteObject === "function") {
           await this.adapter.deleteObject(textData.adapterId);
         } else {
-          console.warn('Adapter does not support text removal');
+          console.warn("Adapter does not support text removal");
         }
       } catch (error) {
-        console.error('Failed to remove text from adapter:', error);
+        console.error("Failed to remove text from adapter:", error);
         throw error;
       }
     },
@@ -1118,9 +1138,9 @@ export default {
         const adapterOptions = this._convertToAdapterFormat(textData);
 
         // 根据适配器类型选择更新方法
-        if (typeof this.adapter.updateText === 'function') {
+        if (typeof this.adapter.updateText === "function") {
           await this.adapter.updateText(textData.adapterId, adapterOptions);
-        } else if (typeof this.adapter.updateObject === 'function') {
+        } else if (typeof this.adapter.updateObject === "function") {
           await this.adapter.updateObject(textData.adapterId, adapterOptions);
         } else {
           // 如果没有更新方法，先删除再添加
@@ -1129,7 +1149,7 @@ export default {
           textData.adapterId = newId;
         }
       } catch (error) {
-        console.error('Failed to update text in adapter:', error);
+        console.error("Failed to update text in adapter:", error);
         throw error;
       }
     },
@@ -1147,12 +1167,12 @@ export default {
         textAlign: textData.textAlign,
         fontWeight: textData.fontWeight,
         fontStyle: textData.fontStyle,
-        textDecoration: textData.textDecoration
+        textDecoration: textData.textDecoration,
       };
 
       // 根据适配器类型调整格式
       switch (this.adapterType) {
-        case 'fabric':
+        case "fabric":
           return {
             ...baseOptions,
             left: textData.x,
@@ -1160,17 +1180,23 @@ export default {
             angle: textData.rotation || 0,
             scaleX: textData.scale || 1,
             scaleY: textData.scale || 1,
-            shadow: textData.effects?.shadow?.enabled ? {
-              color: textData.effects.shadow.color,
-              blur: textData.effects.shadow.blur,
-              offsetX: textData.effects.shadow.offsetX || 2,
-              offsetY: textData.effects.shadow.offsetY || 2
-            } : null,
-            stroke: textData.effects?.stroke?.enabled ? textData.effects.stroke.color : null,
-            strokeWidth: textData.effects?.stroke?.enabled ? textData.effects.stroke.width : 0
+            shadow: textData.effects?.shadow?.enabled
+              ? {
+                  color: textData.effects.shadow.color,
+                  blur: textData.effects.shadow.blur,
+                  offsetX: textData.effects.shadow.offsetX || 2,
+                  offsetY: textData.effects.shadow.offsetY || 2,
+                }
+              : null,
+            stroke: textData.effects?.stroke?.enabled
+              ? textData.effects.stroke.color
+              : null,
+            strokeWidth: textData.effects?.stroke?.enabled
+              ? textData.effects.stroke.width
+              : 0,
           };
 
-        case 'konva':
+        case "konva":
           return {
             ...baseOptions,
             x: textData.x,
@@ -1178,30 +1204,46 @@ export default {
             rotation: textData.rotation || 0,
             scaleX: textData.scale || 1,
             scaleY: textData.scale || 1,
-            shadowColor: textData.effects?.shadow?.enabled ? textData.effects.shadow.color : null,
-            shadowBlur: textData.effects?.shadow?.enabled ? textData.effects.shadow.blur : 0,
-            shadowOffsetX: textData.effects?.shadow?.enabled ? (textData.effects.shadow.offsetX || 2) : 0,
-            shadowOffsetY: textData.effects?.shadow?.enabled ? (textData.effects.shadow.offsetY || 2) : 0,
-            stroke: textData.effects?.stroke?.enabled ? textData.effects.stroke.color : null,
-            strokeWidth: textData.effects?.stroke?.enabled ? textData.effects.stroke.width : 0
+            shadowColor: textData.effects?.shadow?.enabled
+              ? textData.effects.shadow.color
+              : null,
+            shadowBlur: textData.effects?.shadow?.enabled
+              ? textData.effects.shadow.blur
+              : 0,
+            shadowOffsetX: textData.effects?.shadow?.enabled
+              ? textData.effects.shadow.offsetX || 2
+              : 0,
+            shadowOffsetY: textData.effects?.shadow?.enabled
+              ? textData.effects.shadow.offsetY || 2
+              : 0,
+            stroke: textData.effects?.stroke?.enabled
+              ? textData.effects.stroke.color
+              : null,
+            strokeWidth: textData.effects?.stroke?.enabled
+              ? textData.effects.stroke.width
+              : 0,
           };
 
-        case 'tui':
+        case "tui":
           return {
             styles: {
               ...baseOptions,
-              textShadow: textData.effects?.shadow?.enabled ?
-                `${textData.effects.shadow.offsetX || 2}px ${textData.effects.shadow.offsetY || 2}px ${textData.effects.shadow.blur}px ${textData.effects.shadow.color}` :
-                'none'
+              textShadow: textData.effects?.shadow?.enabled
+                ? `${textData.effects.shadow.offsetX || 2}px ${
+                    textData.effects.shadow.offsetY || 2
+                  }px ${textData.effects.shadow.blur}px ${
+                    textData.effects.shadow.color
+                  }`
+                : "none",
             },
-            position: { x: textData.x, y: textData.y }
+            position: { x: textData.x, y: textData.y },
           };
 
         default:
           return baseOptions;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1649,17 +1691,50 @@ export default {
 }
 
 /* 图标样式 */
-.icon-bold::before { content: 'B'; font-weight: bold; }
-.icon-italic::before { content: 'I'; font-style: italic; }
-.icon-underline::before { content: 'U'; text-decoration: underline; }
-.icon-align-left::before { content: '≡'; }
-.icon-align-center::before { content: '≣'; }
-.icon-align-right::before { content: '≡'; transform: scaleX(-1); }
-.icon-add::before { content: '+'; font-size: 16px; font-weight: bold; }
-.icon-delete::before { content: '✕'; font-size: 14px; }
-.icon-text::before { content: 'T'; font-size: 24px; font-weight: bold; }
-.icon-rotate::before { content: '↻'; font-size: 12px; }
-.icon-resize::before { content: '⤢'; font-size: 12px; }
+.icon-bold::before {
+  content: "B";
+  font-weight: bold;
+}
+.icon-italic::before {
+  content: "I";
+  font-style: italic;
+}
+.icon-underline::before {
+  content: "U";
+  text-decoration: underline;
+}
+.icon-align-left::before {
+  content: "≡";
+}
+.icon-align-center::before {
+  content: "≣";
+}
+.icon-align-right::before {
+  content: "≡";
+  transform: scaleX(-1);
+}
+.icon-add::before {
+  content: "+";
+  font-size: 16px;
+  font-weight: bold;
+}
+.icon-delete::before {
+  content: "✕";
+  font-size: 14px;
+}
+.icon-text::before {
+  content: "T";
+  font-size: 24px;
+  font-weight: bold;
+}
+.icon-rotate::before {
+  content: "↻";
+  font-size: 12px;
+}
+.icon-resize::before {
+  content: "⤢";
+  font-size: 12px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

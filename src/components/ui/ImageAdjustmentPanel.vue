@@ -3,8 +3,8 @@
     <div class="panel-header" v-if="showHeader">
       <h3 class="panel-title">{{ title }}</h3>
       <div class="panel-actions">
-        <button 
-          v-if="showResetAll" 
+        <button
+          v-if="showResetAll"
           class="reset-all-button"
           @click="resetAll"
           :disabled="disabled"
@@ -14,7 +14,7 @@
         </button>
       </div>
     </div>
-    
+
     <div class="panel-content">
       <!-- 亮度调整 -->
       <div v-if="showBrightness" class="adjustment-item">
@@ -30,7 +30,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 对比度调整 -->
       <div v-if="showContrast" class="adjustment-item">
         <slider-control
@@ -45,7 +45,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 饱和度调整 -->
       <div v-if="showSaturation" class="adjustment-item">
         <slider-control
@@ -60,7 +60,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 色调调整 -->
       <div v-if="showHue" class="adjustment-item">
         <slider-control
@@ -75,7 +75,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 曝光度调整 -->
       <div v-if="showExposure" class="adjustment-item">
         <slider-control
@@ -90,7 +90,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 高光调整 -->
       <div v-if="showHighlights" class="adjustment-item">
         <slider-control
@@ -105,7 +105,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 阴影调整 -->
       <div v-if="showShadows" class="adjustment-item">
         <slider-control
@@ -120,7 +120,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 色温调整 -->
       <div v-if="showTemperature" class="adjustment-item">
         <slider-control
@@ -135,7 +135,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 色调调整 -->
       <div v-if="showTint" class="adjustment-item">
         <slider-control
@@ -150,7 +150,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 锐化调整 -->
       <div v-if="showSharpness" class="adjustment-item">
         <slider-control
@@ -165,7 +165,7 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 噪点调整 -->
       <div v-if="showNoise" class="adjustment-item">
         <slider-control
@@ -180,20 +180,20 @@
           @change-complete="handleAdjustmentComplete"
         />
       </div>
-      
+
       <!-- 自定义调整项 -->
       <slot name="custom-adjustments"></slot>
     </div>
-    
+
     <!-- 预设 -->
     <div v-if="showPresets && presets.length > 0" class="panel-presets">
       <h4 class="presets-title">预设</h4>
       <div class="presets-grid">
-        <button 
-          v-for="(preset, index) in presets" 
+        <button
+          v-for="(preset, index) in presets"
           :key="index"
           class="preset-button"
-          :class="{ 'active': activePreset === preset.id }"
+          :class="{ active: activePreset === preset.id }"
           @click="applyPreset(preset)"
           :disabled="disabled"
         >
@@ -205,101 +205,101 @@
 </template>
 
 <script>
-import SliderControl from './SliderControl.vue';
+import SliderControl from "./SliderControl.vue";
 
 export default {
-  name: 'ImageAdjustmentPanel',
+  name: "ImageAdjustmentPanel",
   components: {
-    SliderControl
+    SliderControl,
   },
-  
+
   props: {
     // 面板标题
     title: {
       type: String,
-      default: '图像调整'
+      default: "图像调整",
     },
-    
+
     // 显示选项
     showHeader: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showResetAll: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 调整项显示控制
     showBrightness: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showContrast: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showSaturation: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showHue: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showExposure: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showHighlights: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showShadows: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showTemperature: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showTint: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showSharpness: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showNoise: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 预设
     showPresets: {
       type: Boolean,
-      default: false
+      default: false,
     },
     presets: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'compact', 'minimal'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "compact", "minimal"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 调整值
@@ -314,128 +314,128 @@ export default {
       tintValue: 0,
       sharpnessValue: 0,
       noiseValue: 0,
-      
+
       // 活动预设
-      activePreset: null
+      activePreset: null,
     };
   },
-  
+
   computed: {
     panelClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
-    }
+    },
   },
-  
+
   methods: {
     /**
      * 处理亮度变化
      */
     handleBrightnessChange(value) {
       this.brightnessValue = value;
-      this.$emit('brightness-change', value);
+      this.$emit("brightness-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理对比度变化
      */
     handleContrastChange(value) {
       this.contrastValue = value;
-      this.$emit('contrast-change', value);
+      this.$emit("contrast-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理饱和度变化
      */
     handleSaturationChange(value) {
       this.saturationValue = value;
-      this.$emit('saturation-change', value);
+      this.$emit("saturation-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理色调变化
      */
     handleHueChange(value) {
       this.hueValue = value;
-      this.$emit('hue-change', value);
+      this.$emit("hue-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理曝光度变化
      */
     handleExposureChange(value) {
       this.exposureValue = value;
-      this.$emit('exposure-change', value);
+      this.$emit("exposure-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理高光变化
      */
     handleHighlightsChange(value) {
       this.highlightsValue = value;
-      this.$emit('highlights-change', value);
+      this.$emit("highlights-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理阴影变化
      */
     handleShadowsChange(value) {
       this.shadowsValue = value;
-      this.$emit('shadows-change', value);
+      this.$emit("shadows-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理色温变化
      */
     handleTemperatureChange(value) {
       this.temperatureValue = value;
-      this.$emit('temperature-change', value);
+      this.$emit("temperature-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理色调变化
      */
     handleTintChange(value) {
       this.tintValue = value;
-      this.$emit('tint-change', value);
+      this.$emit("tint-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理锐化变化
      */
     handleSharpnessChange(value) {
       this.sharpnessValue = value;
-      this.$emit('sharpness-change', value);
+      this.$emit("sharpness-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理噪点变化
      */
     handleNoiseChange(value) {
       this.noiseValue = value;
-      this.$emit('noise-change', value);
+      this.$emit("noise-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理调整完成
      */
     handleAdjustmentComplete() {
-      this.$emit('adjustment-complete', this.getAdjustmentValues());
+      this.$emit("adjustment-complete", this.getAdjustmentValues());
     },
-    
+
     /**
      * 重置所有调整
      */
@@ -451,83 +451,83 @@ export default {
       this.tintValue = 0;
       this.sharpnessValue = 0;
       this.noiseValue = 0;
-      
+
       this.activePreset = null;
-      
-      this.$emit('reset-all');
-      this.$emit('adjustment-complete', this.getAdjustmentValues());
+
+      this.$emit("reset-all");
+      this.$emit("adjustment-complete", this.getAdjustmentValues());
     },
-    
+
     /**
      * 应用预设
      */
     applyPreset(preset) {
       // 更新活动预设
       this.activePreset = preset.id;
-      
+
       // 应用预设值
       if (preset.values) {
         if (preset.values.brightness !== undefined) {
           this.brightnessValue = preset.values.brightness;
-          this.$emit('brightness-change', this.brightnessValue);
+          this.$emit("brightness-change", this.brightnessValue);
         }
-        
+
         if (preset.values.contrast !== undefined) {
           this.contrastValue = preset.values.contrast;
-          this.$emit('contrast-change', this.contrastValue);
+          this.$emit("contrast-change", this.contrastValue);
         }
-        
+
         if (preset.values.saturation !== undefined) {
           this.saturationValue = preset.values.saturation;
-          this.$emit('saturation-change', this.saturationValue);
+          this.$emit("saturation-change", this.saturationValue);
         }
-        
+
         if (preset.values.hue !== undefined) {
           this.hueValue = preset.values.hue;
-          this.$emit('hue-change', this.hueValue);
+          this.$emit("hue-change", this.hueValue);
         }
-        
+
         if (preset.values.exposure !== undefined) {
           this.exposureValue = preset.values.exposure;
-          this.$emit('exposure-change', this.exposureValue);
+          this.$emit("exposure-change", this.exposureValue);
         }
-        
+
         if (preset.values.highlights !== undefined) {
           this.highlightsValue = preset.values.highlights;
-          this.$emit('highlights-change', this.highlightsValue);
+          this.$emit("highlights-change", this.highlightsValue);
         }
-        
+
         if (preset.values.shadows !== undefined) {
           this.shadowsValue = preset.values.shadows;
-          this.$emit('shadows-change', this.shadowsValue);
+          this.$emit("shadows-change", this.shadowsValue);
         }
-        
+
         if (preset.values.temperature !== undefined) {
           this.temperatureValue = preset.values.temperature;
-          this.$emit('temperature-change', this.temperatureValue);
+          this.$emit("temperature-change", this.temperatureValue);
         }
-        
+
         if (preset.values.tint !== undefined) {
           this.tintValue = preset.values.tint;
-          this.$emit('tint-change', this.tintValue);
+          this.$emit("tint-change", this.tintValue);
         }
-        
+
         if (preset.values.sharpness !== undefined) {
           this.sharpnessValue = preset.values.sharpness;
-          this.$emit('sharpness-change', this.sharpnessValue);
+          this.$emit("sharpness-change", this.sharpnessValue);
         }
-        
+
         if (preset.values.noise !== undefined) {
           this.noiseValue = preset.values.noise;
-          this.$emit('noise-change', this.noiseValue);
+          this.$emit("noise-change", this.noiseValue);
         }
       }
-      
+
       // 触发预设应用事件
-      this.$emit('preset-applied', preset);
-      this.$emit('adjustment-complete', this.getAdjustmentValues());
+      this.$emit("preset-applied", preset);
+      this.$emit("adjustment-complete", this.getAdjustmentValues());
     },
-    
+
     /**
      * 获取所有调整值
      */
@@ -543,61 +543,61 @@ export default {
         temperature: this.temperatureValue,
         tint: this.tintValue,
         sharpness: this.sharpnessValue,
-        noise: this.noiseValue
+        noise: this.noiseValue,
       };
     },
-    
+
     /**
      * 设置调整值
      */
     setAdjustmentValues(values) {
       if (!values) return;
-      
+
       if (values.brightness !== undefined) {
         this.brightnessValue = values.brightness;
       }
-      
+
       if (values.contrast !== undefined) {
         this.contrastValue = values.contrast;
       }
-      
+
       if (values.saturation !== undefined) {
         this.saturationValue = values.saturation;
       }
-      
+
       if (values.hue !== undefined) {
         this.hueValue = values.hue;
       }
-      
+
       if (values.exposure !== undefined) {
         this.exposureValue = values.exposure;
       }
-      
+
       if (values.highlights !== undefined) {
         this.highlightsValue = values.highlights;
       }
-      
+
       if (values.shadows !== undefined) {
         this.shadowsValue = values.shadows;
       }
-      
+
       if (values.temperature !== undefined) {
         this.temperatureValue = values.temperature;
       }
-      
+
       if (values.tint !== undefined) {
         this.tintValue = values.tint;
       }
-      
+
       if (values.sharpness !== undefined) {
         this.sharpnessValue = values.sharpness;
       }
-      
+
       if (values.noise !== undefined) {
         this.noiseValue = values.noise;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -673,7 +673,7 @@ export default {
 }
 
 .icon-reset::before {
-  content: '↺';
+  content: "↺";
   font-size: 14px;
 }
 

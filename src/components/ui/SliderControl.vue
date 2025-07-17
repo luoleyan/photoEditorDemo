@@ -1,8 +1,5 @@
 <template>
-  <div 
-    class="slider-control" 
-    :class="sliderClasses"
-  >
+  <div class="slider-control" :class="sliderClasses">
     <!-- 标签和值显示 -->
     <div class="slider-header">
       <div class="slider-label" v-if="label">
@@ -11,10 +8,10 @@
           <i class="icon-info"></i>
         </span>
       </div>
-      
+
       <div class="slider-value-display">
         <!-- 数值输入框 -->
-        <input 
+        <input
           v-if="showInput"
           type="number"
           class="value-input"
@@ -26,15 +23,13 @@
           @blur="handleInputBlur"
           :disabled="disabled"
         />
-        
+
         <!-- 数值显示 -->
-        <span v-else class="value-text">
-          {{ displayValue }}{{ unit }}
-        </span>
-        
+        <span v-else class="value-text"> {{ displayValue }}{{ unit }} </span>
+
         <!-- 重置按钮 -->
-        <button 
-          v-if="showResetButton && !disabled && value !== defaultValue" 
+        <button
+          v-if="showResetButton && !disabled && value !== defaultValue"
           class="reset-button"
           @click="resetValue"
           title="重置为默认值"
@@ -43,24 +38,24 @@
         </button>
       </div>
     </div>
-    
+
     <!-- 滑块控制区域 -->
     <div class="slider-track-container">
       <!-- 滑块轨道 -->
-      <div 
+      <div
         class="slider-track"
         ref="track"
         @mousedown="handleTrackMouseDown"
         @touchstart="handleTrackTouchStart"
       >
         <!-- 已填充部分 -->
-        <div 
+        <div
           class="slider-track-fill"
           :style="{ width: fillPercentage + '%' }"
         ></div>
-        
+
         <!-- 滑块手柄 -->
-        <div 
+        <div
           class="slider-handle"
           :style="{ left: fillPercentage + '%' }"
           @mousedown="handleHandleMouseDown"
@@ -69,14 +64,14 @@
           @keydown="handleHandleKeyDown"
           ref="handle"
         ></div>
-        
+
         <!-- 刻度标记 -->
         <div v-if="showTicks" class="slider-ticks">
-          <div 
-            v-for="tick in ticks" 
+          <div
+            v-for="tick in ticks"
             :key="tick.value"
             class="slider-tick"
-            :class="{ 'active': value >= tick.value }"
+            :class="{ active: value >= tick.value }"
             :style="{ left: tick.percentage + '%' }"
             @click="setValueFromTick(tick.value)"
           >
@@ -86,14 +81,14 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 预设值 -->
     <div v-if="showPresets && presets.length > 0" class="slider-presets">
-      <button 
-        v-for="preset in presets" 
+      <button
+        v-for="preset in presets"
         :key="preset.value"
         class="preset-button"
-        :class="{ 'active': value === preset.value }"
+        :class="{ active: value === preset.value }"
         @click="setValue(preset.value)"
         :disabled="disabled"
       >
@@ -105,277 +100,283 @@
 
 <script>
 export default {
-  name: 'SliderControl',
+  name: "SliderControl",
   props: {
     // 基本属性
     value: {
       type: Number,
-      required: true
+      required: true,
     },
     min: {
       type: Number,
-      default: 0
+      default: 0,
     },
     max: {
       type: Number,
-      default: 100
+      default: 100,
     },
     step: {
       type: Number,
-      default: 1
+      default: 1,
     },
     defaultValue: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    
+
     // 显示选项
     label: {
       type: String,
-      default: ''
+      default: "",
     },
     tooltip: {
       type: String,
-      default: ''
+      default: "",
     },
     unit: {
       type: String,
-      default: ''
+      default: "",
     },
     showInput: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showResetButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showTooltip: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 刻度选项
     showTicks: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showTickLabels: {
       type: Boolean,
-      default: true
+      default: true,
     },
     tickCount: {
       type: Number,
-      default: 5
+      default: 5,
     },
     tickValues: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 预设值
     presets: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     showPresets: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 格式化选项
     valueFormatter: {
       type: Function,
-      default: null
+      default: null,
     },
     precision: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'primary', 'success', 'warning', 'danger'].includes(value)
+      default: "default",
+      validator: (value) =>
+        ["default", "primary", "success", "warning", "danger"].includes(value),
     },
     size: {
       type: String,
-      default: 'medium',
-      validator: value => ['small', 'medium', 'large'].includes(value)
-    }
+      default: "medium",
+      validator: (value) => ["small", "medium", "large"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       isDragging: false,
       inputValue: null,
-      isInputFocused: false
+      isInputFocused: false,
     };
   },
-  
+
   computed: {
     sliderClasses() {
       return {
         [`variant-${this.variant}`]: true,
         [`size-${this.size}`]: true,
-        'disabled': this.disabled,
-        'dragging': this.isDragging,
-        'with-ticks': this.showTicks,
-        'with-presets': this.showPresets && this.presets.length > 0
+        disabled: this.disabled,
+        dragging: this.isDragging,
+        "with-ticks": this.showTicks,
+        "with-presets": this.showPresets && this.presets.length > 0,
       };
     },
-    
+
     // 填充百分比
     fillPercentage() {
       const range = this.max - this.min;
       if (range === 0) return 0;
-      
+
       const percentage = ((this.value - this.min) / range) * 100;
       return Math.min(Math.max(percentage, 0), 100);
     },
-    
+
     // 显示值
     displayValue() {
       if (this.isInputFocused && this.inputValue !== null) {
         return this.inputValue;
       }
-      
+
       if (this.valueFormatter) {
         return this.valueFormatter(this.value);
       }
-      
+
       if (this.precision === 0) {
         return Math.round(this.value);
       }
-      
+
       return this.value.toFixed(this.precision);
     },
-    
+
     // 刻度标记
     ticks() {
       // 如果提供了自定义刻度值，使用它们
       if (this.tickValues && this.tickValues.length > 0) {
-        return this.tickValues.map(tick => {
-          const value = typeof tick === 'object' ? tick.value : tick;
-          const label = typeof tick === 'object' ? tick.label : value.toString();
-          
+        return this.tickValues.map((tick) => {
+          const value = typeof tick === "object" ? tick.value : tick;
+          const label =
+            typeof tick === "object" ? tick.label : value.toString();
+
           const range = this.max - this.min;
           const percentage = ((value - this.min) / range) * 100;
-          
+
           return {
             value,
             label,
-            percentage: Math.min(Math.max(percentage, 0), 100)
+            percentage: Math.min(Math.max(percentage, 0), 100),
           };
         });
       }
-      
+
       // 否则生成均匀分布的刻度
       const ticks = [];
       const count = Math.max(2, this.tickCount);
       const range = this.max - this.min;
-      
+
       for (let i = 0; i < count; i++) {
         const value = this.min + (range * i) / (count - 1);
         const roundedValue = Number(value.toFixed(this.precision));
         const percentage = (i / (count - 1)) * 100;
-        
+
         ticks.push({
           value: roundedValue,
-          label: this.valueFormatter ? this.valueFormatter(roundedValue) : roundedValue.toString(),
-          percentage
+          label: this.valueFormatter
+            ? this.valueFormatter(roundedValue)
+            : roundedValue.toString(),
+          percentage,
         });
       }
-      
+
       return ticks;
-    }
+    },
   },
-  
+
   mounted() {
     // 添加全局事件监听器
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("touchmove", this.handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.handleTouchEnd);
   },
-  
+
   beforeDestroy() {
     // 移除全局事件监听器
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("touchmove", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
   },
-  
+
   methods: {
     /**
      * 从事件位置计算值
      */
     getValueFromPosition(clientX) {
       if (!this.$refs.track) return this.value;
-      
+
       const trackRect = this.$refs.track.getBoundingClientRect();
       const trackWidth = trackRect.width;
       const trackLeft = trackRect.left;
-      
+
       // 计算相对位置（0-1）
       let relativePosition = (clientX - trackLeft) / trackWidth;
       relativePosition = Math.min(Math.max(relativePosition, 0), 1);
-      
+
       // 计算值
       const range = this.max - this.min;
       let newValue = this.min + range * relativePosition;
-      
+
       // 应用步长
       if (this.step > 0) {
         newValue = Math.round(newValue / this.step) * this.step;
       }
-      
+
       // 确保在范围内
       newValue = Math.min(Math.max(newValue, this.min), this.max);
-      
+
       // 应用精度
       if (this.precision >= 0) {
         newValue = Number(newValue.toFixed(this.precision));
       }
-      
+
       return newValue;
     },
-    
+
     /**
      * 设置值
      */
     setValue(newValue) {
       if (this.disabled) return;
-      
+
       // 确保在范围内
       newValue = Math.min(Math.max(newValue, this.min), this.max);
-      
+
       // 应用步长
       if (this.step > 0) {
         newValue = Math.round(newValue / this.step) * this.step;
       }
-      
+
       // 应用精度
       if (this.precision >= 0) {
         newValue = Number(newValue.toFixed(this.precision));
       }
-      
+
       // 如果值没有变化，不触发事件
       if (newValue === this.value) return;
-      
+
       // 触发事件
-      this.$emit('input', newValue);
-      this.$emit('change', newValue);
+      this.$emit("input", newValue);
+      this.$emit("change", newValue);
     },
-    
+
     /**
      * 从刻度设置值
      */
@@ -383,201 +384,201 @@ export default {
       if (this.disabled) return;
       this.setValue(tickValue);
     },
-    
+
     /**
      * 重置为默认值
      */
     resetValue() {
       if (this.disabled) return;
       this.setValue(this.defaultValue);
-      this.$emit('reset');
+      this.$emit("reset");
     },
-    
+
     /**
      * 处理轨道鼠标按下事件
      */
     handleTrackMouseDown(event) {
       if (this.disabled) return;
-      
+
       // 设置值
       const newValue = this.getValueFromPosition(event.clientX);
       this.setValue(newValue);
-      
+
       // 开始拖动
       this.isDragging = true;
-      
+
       // 阻止默认行为和冒泡
       event.preventDefault();
       event.stopPropagation();
     },
-    
+
     /**
      * 处理手柄鼠标按下事件
      */
     handleHandleMouseDown(event) {
       if (this.disabled) return;
-      
+
       // 开始拖动
       this.isDragging = true;
-      
+
       // 阻止默认行为和冒泡
       event.preventDefault();
       event.stopPropagation();
     },
-    
+
     /**
      * 处理鼠标移动事件
      */
     handleMouseMove(event) {
       if (!this.isDragging) return;
-      
+
       // 设置值
       const newValue = this.getValueFromPosition(event.clientX);
       this.setValue(newValue);
-      
+
       // 阻止默认行为
       event.preventDefault();
     },
-    
+
     /**
      * 处理鼠标松开事件
      */
     handleMouseUp() {
       if (!this.isDragging) return;
-      
+
       // 结束拖动
       this.isDragging = false;
-      
+
       // 触发完成事件
-      this.$emit('change-complete', this.value);
+      this.$emit("change-complete", this.value);
     },
-    
+
     /**
      * 处理轨道触摸开始事件
      */
     handleTrackTouchStart(event) {
       if (this.disabled) return;
-      
+
       // 设置值
       const touch = event.touches[0];
       const newValue = this.getValueFromPosition(touch.clientX);
       this.setValue(newValue);
-      
+
       // 开始拖动
       this.isDragging = true;
-      
+
       // 阻止默认行为
       event.preventDefault();
     },
-    
+
     /**
      * 处理手柄触摸开始事件
      */
     handleHandleTouchStart(event) {
       if (this.disabled) return;
-      
+
       // 开始拖动
       this.isDragging = true;
-      
+
       // 阻止默认行为
       event.preventDefault();
     },
-    
+
     /**
      * 处理触摸移动事件
      */
     handleTouchMove(event) {
       if (!this.isDragging) return;
-      
+
       // 设置值
       const touch = event.touches[0];
       const newValue = this.getValueFromPosition(touch.clientX);
       this.setValue(newValue);
-      
+
       // 阻止默认行为
       event.preventDefault();
     },
-    
+
     /**
      * 处理触摸结束事件
      */
     handleTouchEnd() {
       if (!this.isDragging) return;
-      
+
       // 结束拖动
       this.isDragging = false;
-      
+
       // 触发完成事件
-      this.$emit('change-complete', this.value);
+      this.$emit("change-complete", this.value);
     },
-    
+
     /**
      * 处理手柄键盘事件
      */
     handleHandleKeyDown(event) {
       if (this.disabled) return;
-      
+
       let newValue = this.value;
-      
+
       switch (event.key) {
-        case 'ArrowLeft':
-        case 'ArrowDown':
+        case "ArrowLeft":
+        case "ArrowDown":
           newValue = Math.max(this.value - this.step, this.min);
           break;
-        case 'ArrowRight':
-        case 'ArrowUp':
+        case "ArrowRight":
+        case "ArrowUp":
           newValue = Math.min(this.value + this.step, this.max);
           break;
-        case 'Home':
+        case "Home":
           newValue = this.min;
           break;
-        case 'End':
+        case "End":
           newValue = this.max;
           break;
-        case 'PageDown':
+        case "PageDown":
           newValue = Math.max(this.value - this.step * 10, this.min);
           break;
-        case 'PageUp':
+        case "PageUp":
           newValue = Math.min(this.value + this.step * 10, this.max);
           break;
         default:
           return;
       }
-      
+
       // 设置值
       this.setValue(newValue);
-      
+
       // 阻止默认行为
       event.preventDefault();
     },
-    
+
     /**
      * 处理输入框变化事件
      */
     handleInputChange(event) {
       this.isInputFocused = true;
       this.inputValue = event.target.value;
-      
+
       // 尝试转换为数字
       const newValue = parseFloat(event.target.value);
-      
+
       // 如果是有效数字，设置值
       if (!isNaN(newValue)) {
         this.setValue(newValue);
       }
     },
-    
+
     /**
      * 处理输入框失焦事件
      */
     handleInputBlur() {
       this.isInputFocused = false;
       this.inputValue = null;
-      
+
       // 触发完成事件
-      this.$emit('change-complete', this.value);
-    }
-  }
+      this.$emit("change-complete", this.value);
+    },
+  },
 };
 </script>
 
@@ -857,12 +858,12 @@ export default {
 
 /* 图标样式 */
 .icon-info::before {
-  content: 'ⓘ';
+  content: "ⓘ";
   font-size: 12px;
 }
 
 .icon-reset::before {
-  content: '↺';
+  content: "↺";
   font-size: 14px;
 }
 </style>

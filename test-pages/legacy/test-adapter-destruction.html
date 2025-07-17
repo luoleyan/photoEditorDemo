@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +12,21 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .test-container {
             border: 1px solid #ddd;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
         }
+
         .controls {
             margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
         button {
             padding: 10px 15px;
             background: #007bff;
@@ -32,23 +36,29 @@
             cursor: pointer;
             min-width: 120px;
         }
+
         button:hover {
             background: #0056b3;
         }
+
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
+
         button.success {
             background: #28a745;
         }
+
         button.error {
             background: #dc3545;
         }
+
         button.warning {
             background: #ffc107;
             color: #212529;
         }
+
         .log {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -61,62 +71,75 @@
             overflow-y: auto;
             font-size: 12px;
         }
+
         .error {
             color: #dc3545;
         }
+
         .success {
             color: #28a745;
         }
+
         .warning {
             color: #ffc107;
         }
+
         .info {
             color: #17a2b8;
         }
+
         .adapter-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
+
         .adapter-card {
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 5px;
             text-align: center;
         }
+
         .adapter-card.success {
             border-color: #28a745;
             background-color: #d4edda;
         }
+
         .adapter-card.error {
             border-color: #dc3545;
             background-color: #f8d7da;
         }
+
         .adapter-card.pending {
             border-color: #ffc107;
             background-color: #fff3cd;
         }
+
         .adapter-card.destroyed {
             border-color: #6c757d;
             background-color: #e9ecef;
         }
+
         .test-summary {
             background: #e9ecef;
             padding: 15px;
             border-radius: 5px;
             margin: 20px 0;
         }
+
         .destruction-status {
             font-weight: bold;
             margin: 5px 0;
         }
     </style>
 </head>
+
 <body>
     <h1>Adapter Destruction Test</h1>
     <p>这个测试页面专门验证所有适配器的销毁功能，特别是JimpAdapter的修复效果。</p>
-    
+
     <div class="test-container">
         <h3>测试说明</h3>
         <p>本测试将验证以下功能：</p>
@@ -126,7 +149,7 @@
             <li><strong>错误处理</strong>: 销毁过程中的错误不会影响其他适配器</li>
             <li><strong>内存管理</strong>: 确保所有资源都被正确释放</li>
         </ul>
-        
+
         <div class="controls">
             <button id="openProject">打开项目 (localhost:8081)</button>
             <button id="testJimpDestruction">测试Jimp销毁</button>
@@ -135,12 +158,12 @@
             <button id="testMemoryCleanup">测试内存清理</button>
             <button id="clearLog">清除日志</button>
         </div>
-        
+
         <div class="test-summary" id="testSummary">
             <h4>销毁测试摘要</h4>
             <div id="summaryContent">等待测试开始...</div>
         </div>
-        
+
         <div class="adapter-grid" id="adapterGrid">
             <div class="adapter-card pending" id="card-jimp">
                 <h4>JimpAdapter</h4>
@@ -168,7 +191,7 @@
                 <div class="method">Editor.destroy()</div>
             </div>
         </div>
-        
+
         <div class="log" id="log">等待测试开始...</div>
     </div>
 
@@ -181,7 +204,7 @@
             cropper: document.getElementById('card-cropper'),
             tui: document.getElementById('card-tui')
         };
-        
+
         let testResults = {
             jimp: { status: 'pending', errors: [] },
             fabric: { status: 'pending', errors: [] },
@@ -189,29 +212,29 @@
             cropper: { status: 'pending', errors: [] },
             tui: { status: 'pending', errors: [] }
         };
-        
+
         function addLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
             log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
             log.scrollTop = log.scrollHeight;
         }
-        
+
         function clearLog() {
             log.innerHTML = '';
         }
-        
+
         function updateAdapterCard(adapter, status, message) {
             const card = adapterCards[adapter];
             if (!card) return;
-            
+
             card.className = `adapter-card ${status}`;
             const statusDiv = card.querySelector('.destruction-status');
             statusDiv.textContent = message;
-            
+
             testResults[adapter].status = status;
         }
-        
+
         function updateTestSummary() {
             const summary = document.getElementById('summaryContent');
             const total = Object.keys(testResults).length;
@@ -219,7 +242,7 @@
             const destroyed = Object.values(testResults).filter(r => r.status === 'destroyed').length;
             const error = Object.values(testResults).filter(r => r.status === 'error').length;
             const pending = Object.values(testResults).filter(r => r.status === 'pending').length;
-            
+
             summary.innerHTML = `
                 <strong>总计:</strong> ${total} 个适配器<br>
                 <strong>成功销毁:</strong> ${success + destroyed} 个 | 
@@ -227,37 +250,37 @@
                 <strong>待测试:</strong> ${pending} 个
             `;
         }
-        
+
         // 测试Jimp适配器销毁
         async function testJimpDestruction() {
             addLog('开始测试JimpAdapter销毁功能...', 'info');
             updateAdapterCard('jimp', 'pending', '测试中...');
-            
+
             try {
                 // 检查项目连接
                 const response = await fetch('http://localhost:8081/');
                 if (!response.ok) {
                     throw new Error('项目未运行');
                 }
-                
+
                 addLog('项目连接成功，开始Jimp销毁测试', 'success');
-                
+
                 // 模拟Jimp销毁测试步骤
                 await new Promise(resolve => setTimeout(resolve, 300));
                 addLog('1. 检查 stateHistory 对象状态...', 'info');
-                
+
                 await new Promise(resolve => setTimeout(resolve, 200));
                 addLog('2. 执行安全清理机制...', 'info');
-                
+
                 await new Promise(resolve => setTimeout(resolve, 400));
                 addLog('3. 清理Canvas元素和DOM引用...', 'info');
-                
+
                 await new Promise(resolve => setTimeout(resolve, 300));
                 addLog('4. 释放Jimp实例和内存...', 'info');
-                
+
                 await new Promise(resolve => setTimeout(resolve, 200));
                 addLog('5. 验证销毁完成状态...', 'info');
-                
+
                 // 模拟成功
                 if (Math.random() > 0.05) { // 95%成功率
                     updateAdapterCard('jimp', 'destroyed', '销毁成功');
@@ -267,20 +290,20 @@
                 } else {
                     throw new Error('模拟的Jimp销毁失败');
                 }
-                
+
             } catch (error) {
                 updateAdapterCard('jimp', 'error', `销毁失败: ${error.message}`);
                 addLog(`JimpAdapter销毁测试失败: ${error.message}`, 'error');
                 testResults.jimp.errors.push(error.message);
             }
-            
+
             updateTestSummary();
         }
-        
+
         // 测试所有适配器销毁
         async function testAllDestruction() {
             addLog('开始测试所有适配器销毁功能...', 'info');
-            
+
             const adapters = [
                 { name: 'jimp', method: '安全清理机制' },
                 { name: 'fabric', method: 'Canvas.dispose()' },
@@ -288,17 +311,17 @@
                 { name: 'cropper', method: 'Cropper.destroy()' },
                 { name: 'tui', method: 'Editor.destroy()' }
             ];
-            
+
             for (const adapter of adapters) {
                 updateAdapterCard(adapter.name, 'pending', '销毁中...');
                 addLog(`销毁 ${adapter.name} 适配器...`, 'info');
-                
+
                 try {
                     await new Promise(resolve => setTimeout(resolve, 400));
                     addLog(`${adapter.name}: 使用 ${adapter.method}`, 'info');
-                    
+
                     await new Promise(resolve => setTimeout(resolve, 300));
-                    
+
                     // 模拟成功率（Jimp有更高成功率）
                     const successRate = adapter.name === 'jimp' ? 0.98 : 0.92;
                     if (Math.random() < successRate) {
@@ -307,70 +330,70 @@
                     } else {
                         throw new Error(`${adapter.name} 销毁过程中出现错误`);
                     }
-                    
+
                 } catch (error) {
                     updateAdapterCard(adapter.name, 'error', `销毁失败: ${error.message}`);
                     addLog(`✗ ${adapter.name} 适配器销毁失败: ${error.message}`, 'error');
                     testResults[adapter.name].errors.push(error.message);
                 }
-                
+
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
-            
+
             updateTestSummary();
             addLog('所有适配器销毁测试完成', 'info');
         }
-        
+
         // 测试导航清理
         async function testNavigationCleanup() {
             addLog('开始测试导航清理功能...', 'info');
-            
+
             addLog('模拟Vue组件销毁过程...', 'info');
             await new Promise(resolve => setTimeout(resolve, 300));
-            
+
             addLog('1. beforeDestroy 钩子触发...', 'info');
             await new Promise(resolve => setTimeout(resolve, 200));
-            
+
             addLog('2. AdapterManager.destroyAll() 调用...', 'info');
             await new Promise(resolve => setTimeout(resolve, 400));
-            
+
             addLog('3. 各适配器依次销毁...', 'info');
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             addLog('4. 内存清理和事件监听器移除...', 'info');
             await new Promise(resolve => setTimeout(resolve, 300));
-            
+
             addLog('导航清理测试完成：组件销毁成功', 'success');
         }
-        
+
         // 测试内存清理
         async function testMemoryCleanup() {
             addLog('开始测试内存清理功能...', 'info');
-            
+
             addLog('检查内存管理器状态...', 'info');
             await new Promise(resolve => setTimeout(resolve, 200));
-            
+
             addLog('执行强制垃圾回收...', 'info');
             await new Promise(resolve => setTimeout(resolve, 300));
-            
+
             addLog('验证内存泄漏检测...', 'info');
             await new Promise(resolve => setTimeout(resolve, 400));
-            
+
             addLog('内存清理测试完成：无内存泄漏', 'success');
         }
-        
+
         // 事件监听
         document.getElementById('openProject').addEventListener('click', () => {
             window.open('http://localhost:8081/', '_blank');
             addLog('已打开项目页面，请在新窗口中测试适配器销毁功能');
         });
-        
+
         document.getElementById('testJimpDestruction').addEventListener('click', testJimpDestruction);
         document.getElementById('testAllDestruction').addEventListener('click', testAllDestruction);
         document.getElementById('testNavigationCleanup').addEventListener('click', testNavigationCleanup);
         document.getElementById('testMemoryCleanup').addEventListener('click', testMemoryCleanup);
         document.getElementById('clearLog').addEventListener('click', clearLog);
-        
+
         // 初始化
         addLog('适配器销毁测试页面已加载');
         addLog('点击"打开项目"按钮访问实际项目进行测试');
@@ -378,4 +401,5 @@
         updateTestSummary();
     </script>
 </body>
+
 </html>

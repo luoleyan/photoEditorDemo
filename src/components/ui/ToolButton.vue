@@ -18,31 +18,34 @@
     <span v-if="icon && iconPosition === 'left'" class="button-icon icon-left">
       <i :class="iconClass"></i>
     </span>
-    
+
     <!-- 加载状态 -->
     <span v-if="loading" class="button-loading">
       <i class="loading-spinner"></i>
     </span>
-    
+
     <!-- 文本标签 -->
-    <span 
-      v-if="label && (showLabel || !icon || loading)" 
+    <span
+      v-if="label && (showLabel || !icon || loading)"
       class="button-label"
       :class="{ 'with-icon': icon && !loading }"
     >
       {{ label }}
     </span>
-    
+
     <!-- 右侧图标 -->
-    <span v-if="icon && iconPosition === 'right' && !loading" class="button-icon icon-right">
+    <span
+      v-if="icon && iconPosition === 'right' && !loading"
+      class="button-icon icon-right"
+    >
       <i :class="iconClass"></i>
     </span>
-    
+
     <!-- 下拉箭头 -->
     <span v-if="dropdown" class="button-dropdown">
       <i class="icon-chevron-down"></i>
     </span>
-    
+
     <!-- 徽章 -->
     <span v-if="badge" class="button-badge" :class="badgeType">
       {{ badge }}
@@ -52,190 +55,199 @@
 
 <script>
 export default {
-  name: 'ToolButton',
+  name: "ToolButton",
   props: {
     // 基本属性
     label: {
       type: String,
-      default: ''
+      default: "",
     },
     icon: {
       type: String,
-      default: ''
+      default: "",
     },
     tooltip: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 状态
     active: {
       type: Boolean,
-      default: false
+      default: false,
     },
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => [
-        'default', 'primary', 'secondary', 'success', 
-        'warning', 'danger', 'info', 'ghost', 'link'
-      ].includes(value)
+      default: "default",
+      validator: (value) =>
+        [
+          "default",
+          "primary",
+          "secondary",
+          "success",
+          "warning",
+          "danger",
+          "info",
+          "ghost",
+          "link",
+        ].includes(value),
     },
     size: {
       type: String,
-      default: 'medium',
-      validator: value => ['small', 'medium', 'large'].includes(value)
+      default: "medium",
+      validator: (value) => ["small", "medium", "large"].includes(value),
     },
     shape: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'round', 'circle'].includes(value)
+      default: "default",
+      validator: (value) => ["default", "round", "circle"].includes(value),
     },
-    
+
     // 显示选项
     showLabel: {
       type: Boolean,
-      default: true
+      default: true,
     },
     iconPosition: {
       type: String,
-      default: 'left',
-      validator: value => ['left', 'right'].includes(value)
+      default: "left",
+      validator: (value) => ["left", "right"].includes(value),
     },
-    
+
     // 功能选项
     toggle: {
       type: Boolean,
-      default: false
+      default: false,
     },
     dropdown: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 徽章
     badge: {
       type: [String, Number],
-      default: ''
+      default: "",
     },
     badgeType: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'primary', 'success', 'warning', 'danger'].includes(value)
+      default: "default",
+      validator: (value) =>
+        ["default", "primary", "success", "warning", "danger"].includes(value),
     },
-    
+
     // HTML属性
     buttonType: {
       type: String,
-      default: 'button',
-      validator: value => ['button', 'submit', 'reset'].includes(value)
+      default: "button",
+      validator: (value) => ["button", "submit", "reset"].includes(value),
     },
     ariaLabel: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
-  
+
   data() {
     return {
       isPressed: false,
       isHovered: false,
-      isFocused: false
+      isFocused: false,
     };
   },
-  
+
   computed: {
     buttonClasses() {
       return {
         // 变体样式
         [`variant-${this.variant}`]: true,
-        
+
         // 尺寸样式
         [`size-${this.size}`]: true,
-        
+
         // 形状样式
         [`shape-${this.shape}`]: true,
-        
+
         // 状态样式
-        'active': this.active,
-        'disabled': this.disabled,
-        'loading': this.loading,
-        'pressed': this.isPressed,
-        'hovered': this.isHovered,
-        'focused': this.isFocused,
-        
+        active: this.active,
+        disabled: this.disabled,
+        loading: this.loading,
+        pressed: this.isPressed,
+        hovered: this.isHovered,
+        focused: this.isFocused,
+
         // 功能样式
-        'toggle-button': this.toggle,
-        'dropdown-button': this.dropdown,
-        'icon-only': this.icon && !this.showLabel && !this.label,
-        'text-only': !this.icon && this.label,
-        'has-badge': this.badge
+        "toggle-button": this.toggle,
+        "dropdown-button": this.dropdown,
+        "icon-only": this.icon && !this.showLabel && !this.label,
+        "text-only": !this.icon && this.label,
+        "has-badge": this.badge,
       };
     },
-    
+
     iconClass() {
       return `icon-${this.icon}`;
-    }
+    },
   },
-  
+
   methods: {
     handleClick(event) {
       if (this.disabled || this.loading) {
         event.preventDefault();
         return;
       }
-      
+
       if (this.toggle) {
-        this.$emit('update:active', !this.active);
+        this.$emit("update:active", !this.active);
       }
-      
-      this.$emit('click', event);
-      
+
+      this.$emit("click", event);
+
       if (this.dropdown) {
-        this.$emit('dropdown-toggle', event);
+        this.$emit("dropdown-toggle", event);
       }
     },
-    
+
     handleMouseDown(event) {
       this.isPressed = true;
-      this.$emit('mousedown', event);
+      this.$emit("mousedown", event);
     },
-    
+
     handleMouseUp(event) {
       this.isPressed = false;
-      this.$emit('mouseup', event);
+      this.$emit("mouseup", event);
     },
-    
+
     handleMouseEnter(event) {
       this.isHovered = true;
-      this.$emit('mouseenter', event);
+      this.$emit("mouseenter", event);
     },
-    
+
     handleMouseLeave(event) {
       this.isHovered = false;
-      this.$emit('mouseleave', event);
+      this.$emit("mouseleave", event);
     },
-    
+
     handleFocus(event) {
       this.isFocused = true;
-      this.$emit('focus', event);
+      this.$emit("focus", event);
     },
-    
+
     handleBlur(event) {
       this.isFocused = false;
-      this.$emit('blur', event);
-    }
-  }
+      this.$emit("blur", event);
+    },
+  },
 };
 </script>
 
@@ -481,8 +493,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 下拉箭头 */
@@ -527,52 +543,112 @@ export default {
 
 /* 图标字体 */
 .icon-chevron-down::before {
-  content: '▼';
+  content: "▼";
   font-size: 10px;
 }
 
 /* 常用图标 */
-.icon-edit::before { content: '✎'; }
-.icon-delete::before { content: '🗑'; }
-.icon-save::before { content: '💾'; }
-.icon-copy::before { content: '📋'; }
-.icon-cut::before { content: '✂'; }
-.icon-paste::before { content: '📄'; }
-.icon-undo::before { content: '↶'; }
-.icon-redo::before { content: '↷'; }
-.icon-zoom-in::before { content: '🔍+'; }
-.icon-zoom-out::before { content: '🔍-'; }
-.icon-rotate::before { content: '↻'; }
-.icon-flip::before { content: '⇄'; }
-.icon-crop::before { content: '⧉'; }
-.icon-filter::before { content: '🎨'; }
-.icon-text::before { content: 'T'; }
-.icon-shape::before { content: '◯'; }
-.icon-brush::before { content: '🖌'; }
-.icon-eraser::before { content: '🧽'; }
-.icon-eyedropper::before { content: '💧'; }
-.icon-layers::before { content: '📚'; }
-.icon-settings::before { content: '⚙'; }
-.icon-help::before { content: '?'; }
-.icon-close::before { content: '✕'; }
-.icon-check::before { content: '✓'; }
-.icon-plus::before { content: '+'; }
-.icon-minus::before { content: '-'; }
-.icon-arrow-left::before { content: '←'; }
-.icon-arrow-right::before { content: '→'; }
-.icon-arrow-up::before { content: '↑'; }
-.icon-arrow-down::before { content: '↓'; }
+.icon-edit::before {
+  content: "✎";
+}
+.icon-delete::before {
+  content: "🗑";
+}
+.icon-save::before {
+  content: "💾";
+}
+.icon-copy::before {
+  content: "📋";
+}
+.icon-cut::before {
+  content: "✂";
+}
+.icon-paste::before {
+  content: "📄";
+}
+.icon-undo::before {
+  content: "↶";
+}
+.icon-redo::before {
+  content: "↷";
+}
+.icon-zoom-in::before {
+  content: "🔍+";
+}
+.icon-zoom-out::before {
+  content: "🔍-";
+}
+.icon-rotate::before {
+  content: "↻";
+}
+.icon-flip::before {
+  content: "⇄";
+}
+.icon-crop::before {
+  content: "⧉";
+}
+.icon-filter::before {
+  content: "🎨";
+}
+.icon-text::before {
+  content: "T";
+}
+.icon-shape::before {
+  content: "◯";
+}
+.icon-brush::before {
+  content: "🖌";
+}
+.icon-eraser::before {
+  content: "🧽";
+}
+.icon-eyedropper::before {
+  content: "💧";
+}
+.icon-layers::before {
+  content: "📚";
+}
+.icon-settings::before {
+  content: "⚙";
+}
+.icon-help::before {
+  content: "?";
+}
+.icon-close::before {
+  content: "✕";
+}
+.icon-check::before {
+  content: "✓";
+}
+.icon-plus::before {
+  content: "+";
+}
+.icon-minus::before {
+  content: "-";
+}
+.icon-arrow-left::before {
+  content: "←";
+}
+.icon-arrow-right::before {
+  content: "→";
+}
+.icon-arrow-up::before {
+  content: "↑";
+}
+.icon-arrow-down::before {
+  content: "↓";
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {
   .tool-button {
     min-height: 36px;
   }
-  
+
   .tool-button.size-small {
     min-height: 28px;
   }
-  
+
   .tool-button.size-large {
     min-height: 44px;
   }

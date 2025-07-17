@@ -18,118 +18,112 @@ export class AdvancedFilterEngine {
    */
   _initializeFilters() {
     // 边缘检测滤镜
-    this.filters.set('edge-detection', {
-      name: '边缘检测',
-      category: 'artistic',
-      parameters: [
-        { name: 'threshold', min: 0, max: 255, default: 128 }
-      ],
-      apply: this._edgeDetection.bind(this)
+    this.filters.set("edge-detection", {
+      name: "边缘检测",
+      category: "artistic",
+      parameters: [{ name: "threshold", min: 0, max: 255, default: 128 }],
+      apply: this._edgeDetection.bind(this),
     });
 
     // 浮雕滤镜
-    this.filters.set('emboss', {
-      name: '浮雕',
-      category: 'artistic',
-      parameters: [
-        { name: 'strength', min: 0, max: 10, default: 1 }
-      ],
-      apply: this._emboss.bind(this)
+    this.filters.set("emboss", {
+      name: "浮雕",
+      category: "artistic",
+      parameters: [{ name: "strength", min: 0, max: 10, default: 1 }],
+      apply: this._emboss.bind(this),
     });
 
     // 油画滤镜
-    this.filters.set('oil-painting', {
-      name: '油画',
-      category: 'artistic',
+    this.filters.set("oil-painting", {
+      name: "油画",
+      category: "artistic",
       parameters: [
-        { name: 'radius', min: 1, max: 10, default: 4 },
-        { name: 'intensity', min: 1, max: 20, default: 10 }
+        { name: "radius", min: 1, max: 10, default: 4 },
+        { name: "intensity", min: 1, max: 20, default: 10 },
       ],
-      apply: this._oilPainting.bind(this)
+      apply: this._oilPainting.bind(this),
     });
 
     // 马赛克滤镜
-    this.filters.set('mosaic', {
-      name: '马赛克',
-      category: 'distortion',
-      parameters: [
-        { name: 'blockSize', min: 2, max: 50, default: 10 }
-      ],
-      apply: this._mosaic.bind(this)
+    this.filters.set("mosaic", {
+      name: "马赛克",
+      category: "distortion",
+      parameters: [{ name: "blockSize", min: 2, max: 50, default: 10 }],
+      apply: this._mosaic.bind(this),
     });
 
     // 水波纹滤镜
-    this.filters.set('ripple', {
-      name: '水波纹',
-      category: 'distortion',
+    this.filters.set("ripple", {
+      name: "水波纹",
+      category: "distortion",
       parameters: [
-        { name: 'amplitude', min: 1, max: 50, default: 10 },
-        { name: 'frequency', min: 0.1, max: 2, default: 0.5 }
+        { name: "amplitude", min: 1, max: 50, default: 10 },
+        { name: "frequency", min: 0.1, max: 2, default: 0.5 },
       ],
-      apply: this._ripple.bind(this)
+      apply: this._ripple.bind(this),
     });
 
     // 旋转模糊滤镜
-    this.filters.set('motion-blur', {
-      name: '运动模糊',
-      category: 'blur',
+    this.filters.set("motion-blur", {
+      name: "运动模糊",
+      category: "blur",
       parameters: [
-        { name: 'distance', min: 1, max: 100, default: 20 },
-        { name: 'angle', min: 0, max: 360, default: 0 }
+        { name: "distance", min: 1, max: 100, default: 20 },
+        { name: "angle", min: 0, max: 360, default: 0 },
       ],
-      apply: this._motionBlur.bind(this)
+      apply: this._motionBlur.bind(this),
     });
 
     // 径向模糊滤镜
-    this.filters.set('radial-blur', {
-      name: '径向模糊',
-      category: 'blur',
+    this.filters.set("radial-blur", {
+      name: "径向模糊",
+      category: "blur",
       parameters: [
-        { name: 'amount', min: 1, max: 100, default: 10 },
-        { name: 'centerX', min: 0, max: 1, default: 0.5 },
-        { name: 'centerY', min: 0, max: 1, default: 0.5 }
+        { name: "amount", min: 1, max: 100, default: 10 },
+        { name: "centerX", min: 0, max: 1, default: 0.5 },
+        { name: "centerY", min: 0, max: 1, default: 0.5 },
       ],
-      apply: this._radialBlur.bind(this)
+      apply: this._radialBlur.bind(this),
     });
 
     // HDR色调映射滤镜
-    this.filters.set('hdr-tone-mapping', {
-      name: 'HDR色调映射',
-      category: 'color',
+    this.filters.set("hdr-tone-mapping", {
+      name: "HDR色调映射",
+      category: "color",
       parameters: [
-        { name: 'exposure', min: -3, max: 3, default: 0 },
-        { name: 'gamma', min: 0.1, max: 3, default: 1 },
-        { name: 'highlights', min: -1, max: 1, default: 0 },
-        { name: 'shadows', min: -1, max: 1, default: 0 }
+        { name: "exposure", min: -3, max: 3, default: 0 },
+        { name: "gamma", min: 0.1, max: 3, default: 1 },
+        { name: "highlights", min: -1, max: 1, default: 0 },
+        { name: "shadows", min: -1, max: 1, default: 0 },
       ],
-      apply: this._hdrToneMapping.bind(this)
+      apply: this._hdrToneMapping.bind(this),
     });
 
     // 色彩平衡滤镜
-    this.filters.set('color-balance', {
-      name: '色彩平衡',
-      category: 'color',
+    this.filters.set("color-balance", {
+      name: "色彩平衡",
+      category: "color",
       parameters: [
-        { name: 'cyan-red', min: -100, max: 100, default: 0 },
-        { name: 'magenta-green', min: -100, max: 100, default: 0 },
-        { name: 'yellow-blue', min: -100, max: 100, default: 0 }
+        { name: "cyan-red", min: -100, max: 100, default: 0 },
+        { name: "magenta-green", min: -100, max: 100, default: 0 },
+        { name: "yellow-blue", min: -100, max: 100, default: 0 },
       ],
-      apply: this._colorBalance.bind(this)
+      apply: this._colorBalance.bind(this),
     });
 
     // 选择性颜色滤镜
-    this.filters.set('selective-color', {
-      name: '选择性颜色',
-      category: 'color',
+    this.filters.set("selective-color", {
+      name: "选择性颜色",
+      category: "color",
       parameters: [
-        { name: 'reds', min: -100, max: 100, default: 0 },
-        { name: 'yellows', min: -100, max: 100, default: 0 },
-        { name: 'greens', min: -100, max: 100, default: 0 },
-        { name: 'cyans', min: -100, max: 100, default: 0 },
-        { name: 'blues', min: -100, max: 100, default: 0 },
-        { name: 'magentas', min: -100, max: 100, default: 0 }
+        { name: "reds", min: -100, max: 100, default: 0 },
+        { name: "yellows", min: -100, max: 100, default: 0 },
+        { name: "greens", min: -100, max: 100, default: 0 },
+        { name: "cyans", min: -100, max: 100, default: 0 },
+        { name: "blues", min: -100, max: 100, default: 0 },
+        { name: "magentas", min: -100, max: 100, default: 0 },
       ],
-      apply: this._selectiveColor.bind(this)
+      apply: this._selectiveColor.bind(this),
     });
   }
 
@@ -148,10 +142,11 @@ export class AdvancedFilterEngine {
 
     // 合并默认参数
     const mergedParams = {};
-    filter.parameters.forEach(param => {
-      mergedParams[param.name] = parameters[param.name] !== undefined 
-        ? parameters[param.name] 
-        : param.default;
+    filter.parameters.forEach((param) => {
+      mergedParams[param.name] =
+        parameters[param.name] !== undefined
+          ? parameters[param.name]
+          : param.default;
     });
 
     return filter.apply(imageData, mergedParams);
@@ -178,14 +173,16 @@ export class AdvancedFilterEngine {
 
     for (let y = 1; y < height - 1; y++) {
       for (let x = 1; x < width - 1; x++) {
-        let gx = 0, gy = 0;
+        let gx = 0,
+          gy = 0;
 
         for (let ky = -1; ky <= 1; ky++) {
           for (let kx = -1; kx <= 1; kx++) {
             const idx = ((y + ky) * width + (x + kx)) * 4;
-            const gray = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+            const gray =
+              0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
             const kernelIdx = (ky + 1) * 3 + (kx + 1);
-            
+
             gx += gray * sobelX[kernelIdx];
             gy += gray * sobelY[kernelIdx];
           }
@@ -193,7 +190,7 @@ export class AdvancedFilterEngine {
 
         const magnitude = Math.sqrt(gx * gx + gy * gy);
         const edge = magnitude > threshold ? 255 : 0;
-        
+
         const idx = (y * width + x) * 4;
         resultData[idx] = edge;
         resultData[idx + 1] = edge;
@@ -225,14 +222,16 @@ export class AdvancedFilterEngine {
 
     for (let y = 1; y < height - 1; y++) {
       for (let x = 1; x < width - 1; x++) {
-        let r = 0, g = 0, b = 0;
+        let r = 0,
+          g = 0,
+          b = 0;
 
         for (let ky = -1; ky <= 1; ky++) {
           for (let kx = -1; kx <= 1; kx++) {
             const idx = ((y + ky) * width + (x + kx)) * 4;
             const kernelIdx = (ky + 1) * 3 + (kx + 1);
             const weight = kernel[kernelIdx] * strength;
-            
+
             r += data[idx] * weight;
             g += data[idx + 1] * weight;
             b += data[idx + 2] * weight;
@@ -268,7 +267,11 @@ export class AdvancedFilterEngine {
     for (let y = 0; y < height; y += blockSize) {
       for (let x = 0; x < width; x += blockSize) {
         // 计算块的平均颜色
-        let r = 0, g = 0, b = 0, a = 0, count = 0;
+        let r = 0,
+          g = 0,
+          b = 0,
+          a = 0,
+          count = 0;
 
         for (let by = y; by < Math.min(y + blockSize, height); by++) {
           for (let bx = x; bx < Math.min(x + blockSize, width); bx++) {
@@ -376,7 +379,7 @@ export class AdvancedFilterEngine {
         id: key,
         name: filter.name,
         category: filter.category,
-        parameters: filter.parameters
+        parameters: filter.parameters,
       });
     }
     return filters;
@@ -435,8 +438,13 @@ export class AdvancedFilterEngine {
             const g = data[idx + 1];
             const b = data[idx + 2];
 
-            const curIntensity = Math.floor(((r + g + b) / 3) * intensity / 255);
-            const clampedIntensity = Math.max(0, Math.min(intensity - 1, curIntensity));
+            const curIntensity = Math.floor(
+              (((r + g + b) / 3) * intensity) / 255
+            );
+            const clampedIntensity = Math.max(
+              0,
+              Math.min(intensity - 1, curIntensity)
+            );
 
             intensityCount[clampedIntensity]++;
             avgR[clampedIntensity] += r;
@@ -486,11 +494,19 @@ export class AdvancedFilterEngine {
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const distance = Math.sqrt((x - width/2) ** 2 + (y - height/2) ** 2);
+        const distance = Math.sqrt(
+          (x - width / 2) ** 2 + (y - height / 2) ** 2
+        );
         const ripple = Math.sin(distance * frequency) * amplitude;
 
-        const sourceX = Math.max(0, Math.min(width - 1, Math.round(x + ripple)));
-        const sourceY = Math.max(0, Math.min(height - 1, Math.round(y + ripple)));
+        const sourceX = Math.max(
+          0,
+          Math.min(width - 1, Math.round(x + ripple))
+        );
+        const sourceY = Math.max(
+          0,
+          Math.min(height - 1, Math.round(y + ripple))
+        );
 
         const sourceIdx = (sourceY * width + sourceX) * 4;
         const targetIdx = (y * width + x) * 4;
@@ -526,7 +542,11 @@ export class AdvancedFilterEngine {
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        let r = 0, g = 0, b = 0, a = 0, count = 0;
+        let r = 0,
+          g = 0,
+          b = 0,
+          a = 0,
+          count = 0;
 
         for (let i = -distance; i <= distance; i++) {
           const sx = Math.round(x + i * dx);
@@ -578,7 +598,11 @@ export class AdvancedFilterEngine {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const blurAmount = Math.min(amount, distance / 10);
 
-        let r = 0, g = 0, b = 0, a = 0, count = 0;
+        let r = 0,
+          g = 0,
+          b = 0,
+          a = 0,
+          count = 0;
 
         for (let i = 0; i < blurAmount; i++) {
           const factor = i / blurAmount;
@@ -614,7 +638,11 @@ export class AdvancedFilterEngine {
    * @private
    */
   _colorBalance(imageData, params) {
-    const { 'cyan-red': cyanRed, 'magenta-green': magentaGreen, 'yellow-blue': yellowBlue } = params;
+    const {
+      "cyan-red": cyanRed,
+      "magenta-green": magentaGreen,
+      "yellow-blue": yellowBlue,
+    } = params;
     const data = imageData.data;
     const result = new ImageData(imageData.width, imageData.height);
     const resultData = result.data;
@@ -662,13 +690,13 @@ export class AdvancedFilterEngine {
 
       if (max === r && r > g && r > b) {
         // 红色区域
-        r += reds / 100 * 0.1;
+        r += (reds / 100) * 0.1;
       } else if (max === g && g > r && g > b) {
         // 绿色区域
-        g += greens / 100 * 0.1;
+        g += (greens / 100) * 0.1;
       } else if (max === b && b > r && b > g) {
         // 蓝色区域
-        b += blues / 100 * 0.1;
+        b += (blues / 100) * 0.1;
       }
 
       resultData[i] = Math.max(0, Math.min(255, r * 255));

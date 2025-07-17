@@ -1,28 +1,48 @@
 <template>
   <div class="mobile-toolbar-container" v-if="isMobile">
     <!-- 主工具栏 -->
-    <div class="mobile-toolbar" :class="{ 'landscape': isLandscape }">
-      <div class="toolbar-item" @click="$emit('load-image')" :class="{ active: activeTab === 'load' }">
+    <div class="mobile-toolbar" :class="{ landscape: isLandscape }">
+      <div
+        class="toolbar-item"
+        @click="$emit('load-image')"
+        :class="{ active: activeTab === 'load' }"
+      >
         <div class="toolbar-icon">📁</div>
         <div class="toolbar-label">加载</div>
       </div>
-      
-      <div class="toolbar-item" @click="toggleAdjustments" :class="{ active: activeTab === 'adjust' }">
+
+      <div
+        class="toolbar-item"
+        @click="toggleAdjustments"
+        :class="{ active: activeTab === 'adjust' }"
+      >
         <div class="toolbar-icon">🎨</div>
         <div class="toolbar-label">调整</div>
       </div>
-      
-      <div class="toolbar-item" @click="toggleFilters" :class="{ active: activeTab === 'filter' }">
+
+      <div
+        class="toolbar-item"
+        @click="toggleFilters"
+        :class="{ active: activeTab === 'filter' }"
+      >
         <div class="toolbar-icon">✨</div>
         <div class="toolbar-label">滤镜</div>
       </div>
-      
-      <div class="toolbar-item" @click="toggleTransform" :class="{ active: activeTab === 'transform' }">
+
+      <div
+        class="toolbar-item"
+        @click="toggleTransform"
+        :class="{ active: activeTab === 'transform' }"
+      >
         <div class="toolbar-icon">🔄</div>
         <div class="toolbar-label">变换</div>
       </div>
-      
-      <div class="toolbar-item" @click="$emit('export-image')" :class="{ active: activeTab === 'export' }">
+
+      <div
+        class="toolbar-item"
+        @click="$emit('export-image')"
+        :class="{ active: activeTab === 'export' }"
+      >
         <div class="toolbar-icon">💾</div>
         <div class="toolbar-label">导出</div>
       </div>
@@ -37,35 +57,39 @@
       <div class="panel-content">
         <div class="adjustment-item">
           <label>亮度</label>
-          <input 
-            type="range" 
-            class="mobile-slider" 
-            :value="brightness" 
+          <input
+            type="range"
+            class="mobile-slider"
+            :value="brightness"
             @input="updateBrightness"
-            min="-100" 
-            max="100" 
+            min="-100"
+            max="100"
             step="1"
-          >
+          />
           <span class="value-display">{{ brightness }}</span>
         </div>
-        
+
         <div class="adjustment-item">
           <label>对比度</label>
-          <input 
-            type="range" 
-            class="mobile-slider" 
-            :value="contrast" 
+          <input
+            type="range"
+            class="mobile-slider"
+            :value="contrast"
             @input="updateContrast"
-            min="-100" 
-            max="100" 
+            min="-100"
+            max="100"
             step="1"
-          >
+          />
           <span class="value-display">{{ contrast }}</span>
         </div>
-        
+
         <div class="adjustment-actions">
-          <button class="mobile-button secondary" @click="resetAdjustments">重置</button>
-          <button class="mobile-button primary" @click="applyAdjustments">应用</button>
+          <button class="mobile-button secondary" @click="resetAdjustments">
+            重置
+          </button>
+          <button class="mobile-button primary" @click="applyAdjustments">
+            应用
+          </button>
         </div>
       </div>
     </div>
@@ -78,9 +102,9 @@
       </div>
       <div class="panel-content">
         <div class="filter-grid">
-          <div 
-            class="filter-item" 
-            v-for="filter in availableFilters" 
+          <div
+            class="filter-item"
+            v-for="filter in availableFilters"
             :key="filter.type"
             @click="applyFilter(filter.type)"
             :class="{ active: appliedFilters.includes(filter.type) }"
@@ -89,9 +113,11 @@
             <div class="filter-name">{{ filter.name }}</div>
           </div>
         </div>
-        
+
         <div class="filter-actions">
-          <button class="mobile-button secondary" @click="clearFilters">清除全部</button>
+          <button class="mobile-button secondary" @click="clearFilters">
+            清除全部
+          </button>
         </div>
       </div>
     </div>
@@ -108,44 +134,50 @@
             <div class="transform-icon">↺</div>
             <div class="transform-label">左转90°</div>
           </button>
-          
+
           <button class="transform-btn" @click="rotate(90)">
             <div class="transform-icon">↻</div>
             <div class="transform-label">右转90°</div>
           </button>
-          
+
           <button class="transform-btn" @click="flip(true, false)">
             <div class="transform-icon">⟷</div>
             <div class="transform-label">水平翻转</div>
           </button>
-          
+
           <button class="transform-btn" @click="flip(false, true)">
             <div class="transform-icon">⟷</div>
             <div class="transform-label">垂直翻转</div>
           </button>
         </div>
-        
+
         <div class="transform-actions">
-          <button class="mobile-button secondary" @click="resetTransform">重置变换</button>
+          <button class="mobile-button secondary" @click="resetTransform">
+            重置变换
+          </button>
         </div>
       </div>
     </div>
 
     <!-- 遮罩层 -->
-    <div class="mobile-overlay" v-show="activeTab && activeTab !== 'load' && activeTab !== 'export'" @click="closePanel"></div>
+    <div
+      class="mobile-overlay"
+      v-show="activeTab && activeTab !== 'load' && activeTab !== 'export'"
+      @click="closePanel"
+    ></div>
   </div>
 </template>
 
 <script>
-import { mobileAdapter } from '@/utils/MobileAdapter.js';
+import { mobileAdapter } from "@/utils/MobileAdapter.js";
 
 export default {
-  name: 'MobileToolbar',
+  name: "MobileToolbar",
   props: {
     hasImage: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
@@ -156,12 +188,12 @@ export default {
       contrast: 0,
       appliedFilters: [],
       availableFilters: [
-        { type: 'grayscale', name: '黑白', icon: '⚫' },
-        { type: 'sepia', name: '复古', icon: '🟤' },
-        { type: 'invert', name: '反色', icon: '🔄' },
-        { type: 'blur', name: '模糊', icon: '💫' },
-        { type: 'sharpen', name: '锐化', icon: '🔪' },
-        { type: 'emboss', name: '浮雕', icon: '🗿' }
+        { type: "grayscale", name: "黑白", icon: "⚫" },
+        { type: "sepia", name: "复古", icon: "🟤" },
+        { type: "invert", name: "反色", icon: "🔄" },
+        { type: "blur", name: "模糊", icon: "💫" },
+        { type: "sharpen", name: "锐化", icon: "🔪" },
+        { type: "emboss", name: "浮雕", icon: "🗿" },
       ],
 
       // 触摸手势支持
@@ -181,8 +213,8 @@ export default {
         enableHapticFeedback: true,
         enableGestures: true,
         autoHideToolbar: false,
-        compactMode: false
-      }
+        compactMode: false,
+      },
     };
   },
   mounted() {
@@ -199,30 +231,36 @@ export default {
     updateDeviceInfo() {
       const deviceInfo = mobileAdapter.getDeviceInfo();
       this.isMobile = deviceInfo.isMobile;
-      this.isLandscape = deviceInfo.orientation === 'landscape';
+      this.isLandscape = deviceInfo.orientation === "landscape";
     },
 
     /**
      * 设置事件监听器
      */
     setupEventListeners() {
-      window.addEventListener('mobile-orientation-change', this.handleOrientationChange);
-      window.addEventListener('mobile-resize', this.handleResize);
+      window.addEventListener(
+        "mobile-orientation-change",
+        this.handleOrientationChange
+      );
+      window.addEventListener("mobile-resize", this.handleResize);
     },
 
     /**
      * 移除事件监听器
      */
     removeEventListeners() {
-      window.removeEventListener('mobile-orientation-change', this.handleOrientationChange);
-      window.removeEventListener('mobile-resize', this.handleResize);
+      window.removeEventListener(
+        "mobile-orientation-change",
+        this.handleOrientationChange
+      );
+      window.removeEventListener("mobile-resize", this.handleResize);
     },
 
     /**
      * 处理方向变化
      */
     handleOrientationChange(event) {
-      this.isLandscape = event.detail.orientation === 'landscape';
+      this.isLandscape = event.detail.orientation === "landscape";
       // 方向变化时关闭面板
       this.closePanel();
     },
@@ -238,21 +276,21 @@ export default {
      * 切换调整面板
      */
     toggleAdjustments() {
-      this.activeTab = this.activeTab === 'adjust' ? null : 'adjust';
+      this.activeTab = this.activeTab === "adjust" ? null : "adjust";
     },
 
     /**
      * 切换滤镜面板
      */
     toggleFilters() {
-      this.activeTab = this.activeTab === 'filter' ? null : 'filter';
+      this.activeTab = this.activeTab === "filter" ? null : "filter";
     },
 
     /**
      * 切换变换面板
      */
     toggleTransform() {
-      this.activeTab = this.activeTab === 'transform' ? null : 'transform';
+      this.activeTab = this.activeTab === "transform" ? null : "transform";
     },
 
     /**
@@ -282,16 +320,16 @@ export default {
     resetAdjustments() {
       this.brightness = 0;
       this.contrast = 0;
-      this.$emit('reset-adjustments');
+      this.$emit("reset-adjustments");
     },
 
     /**
      * 应用调整
      */
     applyAdjustments() {
-      this.$emit('apply-adjustments', {
+      this.$emit("apply-adjustments", {
         brightness: this.brightness / 100,
-        contrast: this.contrast / 100
+        contrast: this.contrast / 100,
       });
     },
 
@@ -300,11 +338,13 @@ export default {
      */
     applyFilter(filterType) {
       if (this.appliedFilters.includes(filterType)) {
-        this.appliedFilters = this.appliedFilters.filter(f => f !== filterType);
-        this.$emit('remove-filter', filterType);
+        this.appliedFilters = this.appliedFilters.filter(
+          (f) => f !== filterType
+        );
+        this.$emit("remove-filter", filterType);
       } else {
         this.appliedFilters.push(filterType);
-        this.$emit('apply-filter', filterType);
+        this.$emit("apply-filter", filterType);
       }
     },
 
@@ -313,28 +353,28 @@ export default {
      */
     clearFilters() {
       this.appliedFilters = [];
-      this.$emit('clear-filters');
+      this.$emit("clear-filters");
     },
 
     /**
      * 旋转图像
      */
     rotate(angle) {
-      this.$emit('rotate', angle);
+      this.$emit("rotate", angle);
     },
 
     /**
      * 翻转图像
      */
     flip(horizontal, vertical) {
-      this.$emit('flip', { horizontal, vertical });
+      this.$emit("flip", { horizontal, vertical });
     },
 
     /**
      * 重置变换
      */
     resetTransform() {
-      this.$emit('reset-transform');
+      this.$emit("reset-transform");
     },
 
     // ========== 触摸手势支持 ==========
@@ -386,9 +426,9 @@ export default {
         const currentRotation = this._getAngle(touch1, touch2);
         const rotationChange = currentRotation - this.gestureStartRotation;
 
-        this.$emit('gesture-transform', {
+        this.$emit("gesture-transform", {
           scale: scaleChange,
-          rotation: rotationChange
+          rotation: rotationChange,
         });
       }
     },
@@ -425,9 +465,9 @@ export default {
      */
     _handleTap(touch) {
       // 双击检测可以在这里实现
-      this.$emit('tap', {
+      this.$emit("tap", {
         x: touch.clientX,
-        y: touch.clientY
+        y: touch.clientY,
       });
     },
 
@@ -444,16 +484,16 @@ export default {
       if (absX > absY) {
         // 水平滑动
         if (deltaX > 0) {
-          this.$emit('swipe-right');
+          this.$emit("swipe-right");
         } else {
-          this.$emit('swipe-left');
+          this.$emit("swipe-left");
         }
       } else {
         // 垂直滑动
         if (deltaY > 0) {
-          this.$emit('swipe-down');
+          this.$emit("swipe-down");
         } else {
-          this.$emit('swipe-up');
+          this.$emit("swipe-up");
         }
       }
     },
@@ -513,7 +553,7 @@ export default {
         if (!inThrottle) {
           func.apply(this, args);
           inThrottle = true;
-          setTimeout(() => inThrottle = false, limit);
+          setTimeout(() => (inThrottle = false), limit);
         }
       };
     },
@@ -534,8 +574,8 @@ export default {
       try {
         await operation(params);
       } catch (error) {
-        console.error('Operation failed:', error);
-        this.$emit('error', error);
+        console.error("Operation failed:", error);
+        this.$emit("error", error);
       } finally {
         this.isProcessing = false;
 
@@ -556,7 +596,7 @@ export default {
       // 使用Web Worker进行图像处理
       if (window.Worker) {
         try {
-          const worker = new Worker('/workers/image-processor.js');
+          const worker = new Worker("/workers/image-processor.js");
 
           return new Promise((resolve, reject) => {
             worker.onmessage = (event) => {
@@ -576,11 +616,11 @@ export default {
 
             worker.postMessage({
               type: operation,
-              ...params
+              ...params,
             });
           });
         } catch (error) {
-          console.warn('Web Worker not available, falling back to main thread');
+          console.warn("Web Worker not available, falling back to main thread");
           return this._fallbackImageProcess(operation, params);
         }
       } else {
@@ -599,19 +639,19 @@ export default {
       return new Promise((resolve) => {
         const process = () => {
           // 这里实现具体的图像处理逻辑
-          this.$emit('image-process', { operation, params });
+          this.$emit("image-process", { operation, params });
           resolve();
         };
 
         requestAnimationFrame(process);
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-@import '@/styles/mobile.css';
+@import "@/styles/mobile.css";
 
 .mobile-toolbar-container {
   position: fixed;
@@ -659,7 +699,7 @@ export default {
 
 .toolbar-item.active {
   background-color: rgba(0, 122, 255, 0.1);
-  color: #007AFF;
+  color: #007aff;
 }
 
 .toolbar-icon {
@@ -678,7 +718,7 @@ export default {
 }
 
 .toolbar-item.active .toolbar-label {
-  color: #007AFF;
+  color: #007aff;
 }
 
 .mobile-panel {
@@ -745,7 +785,7 @@ export default {
   display: inline-block;
   margin-left: 12px;
   font-weight: 600;
-  color: #007AFF;
+  color: #007aff;
   min-width: 40px;
 }
 
@@ -780,7 +820,7 @@ export default {
 }
 
 .filter-item.active {
-  border-color: #007AFF;
+  border-color: #007aff;
   background-color: rgba(0, 122, 255, 0.1);
 }
 
@@ -796,7 +836,7 @@ export default {
 }
 
 .filter-item.active .filter-name {
-  color: #007AFF;
+  color: #007aff;
 }
 
 .transform-grid {
@@ -849,15 +889,15 @@ export default {
   .mobile-panel {
     max-height: 80vh;
   }
-  
+
   .panel-content {
     padding: 16px;
   }
-  
+
   .filter-grid {
     grid-template-columns: repeat(6, 1fr);
   }
-  
+
   .transform-grid {
     grid-template-columns: repeat(4, 1fr);
   }

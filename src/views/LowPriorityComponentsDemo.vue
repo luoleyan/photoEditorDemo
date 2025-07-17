@@ -11,7 +11,7 @@
       <div class="demo-description">
         <p>支持基本形状绘制、属性调整、变换操作和组合功能</p>
       </div>
-      
+
       <div class="shape-demo-container">
         <div class="shape-wrapper">
           <shape-tool
@@ -32,29 +32,29 @@
             @shapes-delete="handleShapesDelete"
           />
         </div>
-        
+
         <div class="shape-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <label>背景图像:</label>
             <div class="image-selector">
-              <div 
-                v-for="(image, index) in shapeBackgroundImages" 
+              <div
+                v-for="(image, index) in shapeBackgroundImages"
                 :key="index"
                 class="image-option"
-                :class="{ 'active': shapeBackgroundImage === image.src }"
+                :class="{ active: shapeBackgroundImage === image.src }"
                 @click="selectShapeBackground(image.src)"
               >
                 <img :src="image.src" :alt="image.name" />
               </div>
             </div>
           </div>
-          
+
           <div class="control-group">
             <button @click="addSampleShapes">添加示例形状</button>
             <button @click="clearAllShapes">清空所有形状</button>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="shapeVariant">
@@ -63,15 +63,21 @@
               <option value="compact">紧凑</option>
             </select>
           </div>
-          
+
           <div class="shape-info">
             <h4>形状信息</h4>
             <p>形状数量: {{ shapeElements.length }}</p>
-            <p>选中形状: {{ selectedShapeId ? '是' : '否' }}</p>
+            <p>选中形状: {{ selectedShapeId ? "是" : "否" }}</p>
             <div v-if="selectedShape">
               <p>类型: {{ selectedShape.type }}</p>
-              <p>位置: {{ Math.round(selectedShape.x) }}, {{ Math.round(selectedShape.y) }}</p>
-              <p>尺寸: {{ Math.round(selectedShape.width) }} × {{ Math.round(selectedShape.height) }}</p>
+              <p>
+                位置: {{ Math.round(selectedShape.x) }},
+                {{ Math.round(selectedShape.y) }}
+              </p>
+              <p>
+                尺寸: {{ Math.round(selectedShape.width) }} ×
+                {{ Math.round(selectedShape.height) }}
+              </p>
             </div>
           </div>
         </div>
@@ -84,7 +90,7 @@
       <div class="demo-description">
         <p>支持多种画笔类型、属性调整、压力感应和混合模式</p>
       </div>
-      
+
       <div class="brush-demo-container">
         <div class="brush-wrapper">
           <brush-tool
@@ -106,29 +112,29 @@
             <p>正在初始化画笔适配器...</p>
           </div>
         </div>
-        
+
         <div class="brush-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <label>背景图像:</label>
             <div class="image-selector">
-              <div 
-                v-for="(image, index) in brushBackgroundImages" 
+              <div
+                v-for="(image, index) in brushBackgroundImages"
                 :key="index"
                 class="image-option"
-                :class="{ 'active': brushBackgroundImage === image.src }"
+                :class="{ active: brushBackgroundImage === image.src }"
                 @click="selectBrushBackground(image.src)"
               >
                 <img :src="image.src" :alt="image.name" />
               </div>
             </div>
           </div>
-          
+
           <div class="control-group">
             <button @click="loadSampleStrokes">加载示例笔触</button>
             <button @click="clearAllStrokes">清空画布</button>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="brushVariant">
@@ -137,11 +143,11 @@
               <option value="compact">紧凑</option>
             </select>
           </div>
-          
+
           <div class="brush-info">
             <h4>画笔信息</h4>
             <p>笔触数量: {{ brushStrokes.length }}</p>
-            <p>画布状态: {{ brushStrokes.length > 0 ? '有内容' : '空白' }}</p>
+            <p>画布状态: {{ brushStrokes.length > 0 ? "有内容" : "空白" }}</p>
           </div>
         </div>
       </div>
@@ -153,7 +159,7 @@
       <div class="demo-description">
         <p>支持多格式导出、质量设置、批量导出和导出预览</p>
       </div>
-      
+
       <div class="export-demo-container">
         <div class="export-wrapper">
           <export-panel
@@ -166,41 +172,41 @@
             @results-clear="handleResultsClear"
           />
         </div>
-        
+
         <div class="export-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <label>源画布:</label>
             <div class="canvas-selector">
-              <button 
+              <button
                 class="canvas-option"
-                :class="{ 'active': currentExportSource === 'sample' }"
+                :class="{ active: currentExportSource === 'sample' }"
                 @click="setExportSource('sample')"
               >
                 示例图像
               </button>
-              <button 
+              <button
                 class="canvas-option"
-                :class="{ 'active': currentExportSource === 'shapes' }"
+                :class="{ active: currentExportSource === 'shapes' }"
                 @click="setExportSource('shapes')"
               >
                 形状画布
               </button>
-              <button 
+              <button
                 class="canvas-option"
-                :class="{ 'active': currentExportSource === 'brush' }"
+                :class="{ active: currentExportSource === 'brush' }"
                 @click="setExportSource('brush')"
               >
                 画笔画布
               </button>
             </div>
           </div>
-          
+
           <div class="control-group">
             <button @click="generateSampleCanvas">生成示例画布</button>
             <button @click="clearExportSource">清空源画布</button>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="exportVariant">
@@ -209,7 +215,7 @@
               <option value="compact">紧凑</option>
             </select>
           </div>
-          
+
           <div class="export-info">
             <h4>导出信息</h4>
             <p>源画布: {{ getExportSourceName() }}</p>
@@ -226,7 +232,7 @@
       <div class="demo-description">
         <p>展示三个低优先级组件的集成效果，模拟完整的创作和导出工作流</p>
       </div>
-      
+
       <div class="integrated-demo-container">
         <div class="integrated-editor">
           <editor-container
@@ -241,23 +247,23 @@
                   <h3>创作工作台</h3>
                 </div>
                 <div class="toolbar-section">
-                  <button 
+                  <button
                     class="mode-button"
-                    :class="{ 'active': integratedMode === 'shape' }"
+                    :class="{ active: integratedMode === 'shape' }"
                     @click="setIntegratedMode('shape')"
                   >
                     形状绘制
                   </button>
-                  <button 
+                  <button
                     class="mode-button"
-                    :class="{ 'active': integratedMode === 'brush' }"
+                    :class="{ active: integratedMode === 'brush' }"
                     @click="setIntegratedMode('brush')"
                   >
                     自由绘制
                   </button>
-                  <button 
+                  <button
                     class="mode-button"
-                    :class="{ 'active': integratedMode === 'export' }"
+                    :class="{ active: integratedMode === 'export' }"
                     @click="setIntegratedMode('export')"
                   >
                     导出作品
@@ -275,9 +281,13 @@
                 @shapes-change="handleIntegratedShapesChange"
                 @shape-add="handleIntegratedShapeAdd"
               />
-              
+
               <brush-tool
-                v-else-if="integratedMode === 'brush' && integratedBrushAdapterInitialized && integratedBrushAdapter"
+                v-else-if="
+                  integratedMode === 'brush' &&
+                  integratedBrushAdapterInitialized &&
+                  integratedBrushAdapter
+                "
                 :show-toolbar="false"
                 :initial-strokes="integratedStrokes"
                 :width="800"
@@ -288,17 +298,20 @@
                 @stroke-add="handleIntegratedStrokeAdd"
               />
 
-              <div v-else-if="integratedMode === 'brush'" class="adapter-loading">
+              <div
+                v-else-if="integratedMode === 'brush'"
+                class="adapter-loading"
+              >
                 <p>正在初始化集成画笔适配器...</p>
               </div>
-              
+
               <export-panel
                 v-else-if="integratedMode === 'export'"
                 :show-header="false"
                 :source-canvas="integratedCanvas"
                 @export-complete="handleIntegratedExportComplete"
               />
-              
+
               <div v-else class="canvas-placeholder">
                 <i class="icon-canvas"></i>
                 <p>选择工具开始创作</p>
@@ -313,11 +326,17 @@
                   <p>形状工具属性</p>
                   <p>形状数量: {{ integratedShapes.length }}</p>
                 </div>
-                <div v-else-if="integratedMode === 'brush'" class="brush-properties">
+                <div
+                  v-else-if="integratedMode === 'brush'"
+                  class="brush-properties"
+                >
                   <p>画笔工具属性</p>
                   <p>笔触数量: {{ integratedStrokes.length }}</p>
                 </div>
-                <div v-else-if="integratedMode === 'export'" class="export-properties">
+                <div
+                  v-else-if="integratedMode === 'export'"
+                  class="export-properties"
+                >
                   <p>导出工具属性</p>
                   <p>准备导出作品</p>
                 </div>
@@ -334,7 +353,7 @@
             </template>
           </editor-container>
         </div>
-        
+
         <div class="integrated-controls">
           <h3>集成控制</h3>
           <div class="control-group">
@@ -344,7 +363,7 @@
               <option value="dark">暗色</option>
             </select>
           </div>
-          
+
           <div class="control-group">
             <button @click="simulateIntegratedLoading">模拟加载</button>
             <button @click="resetIntegratedDemo">重置演示</button>
@@ -356,61 +375,61 @@
 </template>
 
 <script>
-import ShapeTool from '@/components/ui/ShapeTool.vue';
-import BrushTool from '@/components/ui/BrushTool.vue';
-import ExportPanel from '@/components/ui/ExportPanel.vue';
-import EditorContainer from '@/components/ui/EditorContainer.vue';
-import AdapterFactory from '@/components/adapters/AdapterFactory.js';
+import ShapeTool from "@/components/ui/ShapeTool.vue";
+import BrushTool from "@/components/ui/BrushTool.vue";
+import ExportPanel from "@/components/ui/ExportPanel.vue";
+import EditorContainer from "@/components/ui/EditorContainer.vue";
+import AdapterFactory from "@/components/adapters/AdapterFactory.js";
 
 export default {
-  name: 'LowPriorityComponentsDemo',
+  name: "LowPriorityComponentsDemo",
   components: {
     ShapeTool,
     BrushTool,
     ExportPanel,
-    EditorContainer
+    EditorContainer,
   },
 
   data() {
     return {
       // 形状工具相关
       shapeElements: [],
-      selectedShapeId: '',
-      shapeBackgroundImage: 'https://picsum.photos/800/600?random=40',
-      shapeVariant: 'default',
+      selectedShapeId: "",
+      shapeBackgroundImage: "https://picsum.photos/800/600?random=40",
+      shapeVariant: "default",
       shapeBackgroundImages: [
-        { name: '背景1', src: 'https://picsum.photos/800/600?random=40' },
-        { name: '背景2', src: 'https://picsum.photos/800/600?random=41' },
-        { name: '背景3', src: 'https://picsum.photos/800/600?random=42' },
-        { name: '背景4', src: 'https://picsum.photos/800/600?random=43' }
+        { name: "背景1", src: "https://picsum.photos/800/600?random=40" },
+        { name: "背景2", src: "https://picsum.photos/800/600?random=41" },
+        { name: "背景3", src: "https://picsum.photos/800/600?random=42" },
+        { name: "背景4", src: "https://picsum.photos/800/600?random=43" },
       ],
 
       // 画笔工具相关
       brushStrokes: [],
-      brushBackgroundImage: 'https://picsum.photos/800/600?random=50',
-      brushVariant: 'default',
+      brushBackgroundImage: "https://picsum.photos/800/600?random=50",
+      brushVariant: "default",
       brushBackgroundImages: [
-        { name: '背景1', src: 'https://picsum.photos/800/600?random=50' },
-        { name: '背景2', src: 'https://picsum.photos/800/600?random=51' },
-        { name: '背景3', src: 'https://picsum.photos/800/600?random=52' },
-        { name: '背景4', src: 'https://picsum.photos/800/600?random=53' }
+        { name: "背景1", src: "https://picsum.photos/800/600?random=50" },
+        { name: "背景2", src: "https://picsum.photos/800/600?random=51" },
+        { name: "背景3", src: "https://picsum.photos/800/600?random=52" },
+        { name: "背景4", src: "https://picsum.photos/800/600?random=53" },
       ],
       brushAdapter: null,
-      brushAdapterType: 'fabric',
+      brushAdapterType: "fabric",
       brushAdapterInitialized: false,
 
       // 导出面板相关
       exportSourceCanvas: null,
-      exportVariant: 'default',
-      currentExportSource: 'sample',
+      exportVariant: "default",
+      currentExportSource: "sample",
       exportCanvasWidth: 800,
       exportCanvasHeight: 600,
       exportCount: 0,
 
       // 集成演示相关
-      integratedTheme: 'light',
+      integratedTheme: "light",
       integratedLoading: false,
-      integratedMode: 'shape',
+      integratedMode: "shape",
       integratedShapes: [],
       integratedStrokes: [],
       integratedCanvas: null,
@@ -425,15 +444,18 @@ export default {
       lastShapesChangeTime: 0,
       lastStrokesChangeTime: 0,
       shapesChangeCount: 0,
-      strokesChangeCount: 0
+      strokesChangeCount: 0,
     };
   },
 
   computed: {
     // 选中的形状
     selectedShape() {
-      return this.shapeElements.find(shape => shape.id === this.selectedShapeId) || null;
-    }
+      return (
+        this.shapeElements.find((shape) => shape.id === this.selectedShapeId) ||
+        null
+      );
+    },
   },
 
   async mounted() {
@@ -446,7 +468,7 @@ export default {
   },
 
   beforeDestroy() {
-    console.log('清理LowPriorityComponentsDemo资源');
+    console.log("清理LowPriorityComponentsDemo资源");
 
     // 清理定时器
     if (this.updateCanvasTimeout) {
@@ -458,14 +480,17 @@ export default {
     this.isUpdatingCanvas = false;
 
     // 清理适配器
-    if (this.brushAdapter && typeof this.brushAdapter.destroy === 'function') {
+    if (this.brushAdapter && typeof this.brushAdapter.destroy === "function") {
       this.brushAdapter.destroy();
     }
-    if (this.integratedBrushAdapter && typeof this.integratedBrushAdapter.destroy === 'function') {
+    if (
+      this.integratedBrushAdapter &&
+      typeof this.integratedBrushAdapter.destroy === "function"
+    ) {
       this.integratedBrushAdapter.destroy();
     }
 
-    console.log('资源清理完成');
+    console.log("资源清理完成");
   },
 
   methods: {
@@ -477,7 +502,7 @@ export default {
     async initializeAdapters() {
       try {
         // AdapterFactory导出的是实例，直接使用
-        console.log('开始初始化适配器...');
+        console.log("开始初始化适配器...");
 
         // 首先创建模拟适配器确保组件能立即渲染
         this.brushAdapter = this.createMockAdapter();
@@ -485,20 +510,20 @@ export default {
         this.brushAdapterInitialized = true;
         this.integratedBrushAdapterInitialized = true;
 
-        console.log('模拟适配器创建完成');
+        console.log("模拟适配器创建完成");
 
         // 尝试创建真实适配器（可选）
         try {
           // 注意：AdapterFactory是单例实例，不需要new
           // 这里可以尝试创建真实适配器，但需要DOM容器
-          console.log('适配器工厂可用:', AdapterFactory);
+          console.log("适配器工厂可用:", AdapterFactory);
         } catch (factoryError) {
-          console.warn('AdapterFactory不可用，使用模拟适配器:', factoryError);
+          console.warn("AdapterFactory不可用，使用模拟适配器:", factoryError);
         }
 
-        console.log('适配器初始化完成');
+        console.log("适配器初始化完成");
       } catch (error) {
-        console.error('适配器初始化失败:', error);
+        console.error("适配器初始化失败:", error);
         // 确保总是有可用的模拟适配器
         this.brushAdapter = this.createMockAdapter();
         this.integratedBrushAdapter = this.createMockAdapter();
@@ -544,50 +569,50 @@ export default {
     createMockAdapter() {
       const mockAdapter = {
         // 基本属性
-        adapterType: 'fabric',
+        adapterType: "fabric",
         isInitialized: true,
 
         // 绘制相关方法
         enableDrawingMode: (options) => {
-          console.log('模拟适配器 - 启用绘制模式:', options);
+          console.log("模拟适配器 - 启用绘制模式:", options);
           return Promise.resolve();
         },
 
         startDrawing: (options) => {
-          console.log('模拟适配器 - 开始绘制:', options);
+          console.log("模拟适配器 - 开始绘制:", options);
           return Promise.resolve();
         },
 
         addPath: (pathData, options) => {
-          console.log('模拟适配器 - 添加路径:', pathData, options);
+          console.log("模拟适配器 - 添加路径:", pathData, options);
           return Promise.resolve();
         },
 
         addLine: (points, options) => {
-          console.log('模拟适配器 - 添加线条:', points, options);
+          console.log("模拟适配器 - 添加线条:", points, options);
           return Promise.resolve();
         },
 
         // 状态管理方法
         saveState: () => {
-          console.log('模拟适配器 - 保存状态');
-          return Promise.resolve('mock-state-id');
+          console.log("模拟适配器 - 保存状态");
+          return Promise.resolve("mock-state-id");
         },
 
         restoreState: (stateId) => {
-          console.log('模拟适配器 - 恢复状态:', stateId);
+          console.log("模拟适配器 - 恢复状态:", stateId);
           return Promise.resolve();
         },
 
         // 导出方法
         toDataURL: (type, quality) => {
-          console.log('模拟适配器 - 导出为DataURL:', type, quality);
-          return Promise.resolve('data:image/png;base64,mock-data');
+          console.log("模拟适配器 - 导出为DataURL:", type, quality);
+          return Promise.resolve("data:image/png;base64,mock-data");
         },
 
         // 清理方法
         destroy: () => {
-          console.log('模拟适配器 - 销毁适配器');
+          console.log("模拟适配器 - 销毁适配器");
         },
 
         // 确保适配器验证通过的方法
@@ -595,13 +620,13 @@ export default {
 
         // 添加一些BrushTool可能需要的方法
         disableDrawingMode: () => {
-          console.log('模拟适配器 - 禁用绘制模式');
+          console.log("模拟适配器 - 禁用绘制模式");
           return Promise.resolve();
-        }
+        },
       };
 
       // 确保适配器对象不为null且包含必要方法
-      console.log('创建模拟适配器:', mockAdapter);
+      console.log("创建模拟适配器:", mockAdapter);
       return mockAdapter;
     },
 
@@ -613,18 +638,18 @@ export default {
     initializeShapeElements() {
       this.shapeElements = [
         {
-          id: 'rect-1',
-          type: 'rectangle',
+          id: "rect-1",
+          type: "rectangle",
           x: 100,
           y: 100,
           width: 200,
           height: 150,
           rotation: 0,
-          strokeColor: '#1890ff',
-          fillColor: 'rgba(24, 144, 255, 0.2)',
+          strokeColor: "#1890ff",
+          fillColor: "rgba(24, 144, 255, 0.2)",
           strokeWidth: 2,
-          cornerRadius: 0
-        }
+          cornerRadius: 0,
+        },
       ];
     },
 
@@ -642,39 +667,39 @@ export default {
       const shapes = [
         {
           id: `circle-${Date.now()}`,
-          type: 'circle',
+          type: "circle",
           x: 300,
           y: 200,
           width: 100,
           height: 100,
           rotation: 0,
-          strokeColor: '#52c41a',
-          fillColor: 'rgba(82, 196, 26, 0.2)',
-          strokeWidth: 2
+          strokeColor: "#52c41a",
+          fillColor: "rgba(82, 196, 26, 0.2)",
+          strokeWidth: 2,
         },
         {
           id: `ellipse-${Date.now() + 1}`,
-          type: 'ellipse',
+          type: "ellipse",
           x: 500,
           y: 300,
           width: 150,
           height: 100,
           rotation: 30,
-          strokeColor: '#722ed1',
-          fillColor: 'rgba(114, 46, 209, 0.2)',
-          strokeWidth: 2
+          strokeColor: "#722ed1",
+          fillColor: "rgba(114, 46, 209, 0.2)",
+          strokeWidth: 2,
         },
         {
           id: `line-${Date.now() + 2}`,
-          type: 'line',
+          type: "line",
           x: 200,
           y: 400,
           width: 200,
           height: 100,
           rotation: 0,
-          strokeColor: '#fa8c16',
-          strokeWidth: 3
-        }
+          strokeColor: "#fa8c16",
+          strokeWidth: 3,
+        },
       ];
 
       this.shapeElements.push(...shapes);
@@ -685,21 +710,21 @@ export default {
      */
     clearAllShapes() {
       this.shapeElements = [];
-      this.selectedShapeId = '';
+      this.selectedShapeId = "";
     },
 
     /**
      * 处理形状变化
      */
     handleShapesChange(shapes) {
-      console.log('形状变化:', shapes);
+      console.log("形状变化:", shapes);
     },
 
     /**
      * 处理形状添加
      */
     handleShapeAdd(shape) {
-      console.log('形状添加:', shape);
+      console.log("形状添加:", shape);
     },
 
     /**
@@ -707,70 +732,70 @@ export default {
      */
     handleShapeSelect(shape) {
       this.selectedShapeId = shape.id;
-      console.log('形状选择:', shape);
+      console.log("形状选择:", shape);
     },
 
     /**
      * 处理形状样式变化
      */
     handleShapeStyleChange(shape) {
-      console.log('形状样式变化:', shape);
+      console.log("形状样式变化:", shape);
     },
 
     /**
      * 处理形状移动
      */
     handleShapeMove(shape) {
-      console.log('形状移动:', shape);
+      console.log("形状移动:", shape);
     },
 
     /**
      * 处理形状旋转
      */
     handleShapeRotate(shape) {
-      console.log('形状旋转:', shape);
+      console.log("形状旋转:", shape);
     },
 
     /**
      * 处理形状调整大小
      */
     handleShapeResize(shape) {
-      console.log('形状调整大小:', shape);
+      console.log("形状调整大小:", shape);
     },
 
     /**
      * 处理形状组合
      */
     handleShapesGroup(groupShape) {
-      console.log('形状组合:', groupShape);
+      console.log("形状组合:", groupShape);
     },
 
     /**
      * 处理形状取消组合
      */
     handleShapesUngroup(shapes) {
-      console.log('形状取消组合:', shapes);
+      console.log("形状取消组合:", shapes);
     },
 
     /**
      * 处理形状对齐
      */
     handleShapesAlign(data) {
-      console.log('形状对齐:', data);
+      console.log("形状对齐:", data);
     },
 
     /**
      * 处理形状分布
      */
     handleShapesDistribute(data) {
-      console.log('形状分布:', data);
+      console.log("形状分布:", data);
     },
 
     /**
      * 处理形状删除
      */
     handleShapesDelete(shapes) {
-      console.log('形状删除:', shapes);
+      console.log("形状删除:", shapes);
     },
 
     // ========== 画笔工具相关方法 ==========
@@ -790,37 +815,37 @@ export default {
       // 这里只是模拟一些笔触
       this.brushStrokes = [
         {
-          type: 'pencil',
-          color: '#000000',
+          type: "pencil",
+          color: "#000000",
           size: 5,
           opacity: 0.8,
           hardness: 1,
           flow: 1,
           spacing: 0.25,
-          blendMode: 'normal',
+          blendMode: "normal",
           isEraser: false,
           points: [
             { x: 100, y: 100, pressure: 1 },
             { x: 200, y: 150, pressure: 1 },
-            { x: 300, y: 100, pressure: 1 }
-          ]
+            { x: 300, y: 100, pressure: 1 },
+          ],
         },
         {
-          type: 'brush',
-          color: '#ff0000',
+          type: "brush",
+          color: "#ff0000",
           size: 20,
           opacity: 0.5,
           hardness: 0.8,
           flow: 0.9,
           spacing: 0.3,
-          blendMode: 'normal',
+          blendMode: "normal",
           isEraser: false,
           points: [
             { x: 400, y: 200, pressure: 1 },
             { x: 500, y: 250, pressure: 0.8 },
-            { x: 600, y: 200, pressure: 0.6 }
-          ]
-        }
+            { x: 600, y: 200, pressure: 0.6 },
+          ],
+        },
       ];
     },
 
@@ -835,35 +860,35 @@ export default {
      * 处理笔触变化
      */
     handleStrokesChange(strokes) {
-      console.log('笔触变化:', strokes);
+      console.log("笔触变化:", strokes);
     },
 
     /**
      * 处理笔触添加
      */
     handleStrokeAdd() {
-      console.log('笔触添加');
+      console.log("笔触添加");
     },
 
     /**
      * 处理笔触撤销
      */
     handleStrokeUndo() {
-      console.log('笔触撤销');
+      console.log("笔触撤销");
     },
 
     /**
      * 处理笔触重做
      */
     handleStrokeRedo() {
-      console.log('笔触重做');
+      console.log("笔触重做");
     },
 
     /**
      * 处理画布清空
      */
     handleCanvasClear() {
-      console.log('画布清空');
+      console.log("画布清空");
     },
 
     // ========== 导出面板相关方法 ==========
@@ -876,14 +901,14 @@ export default {
 
       // 更新导出源画布
       switch (source) {
-        case 'sample':
+        case "sample":
           this.generateSampleCanvas();
           break;
-        case 'shapes':
+        case "shapes":
           // 在实际应用中，这里应该从形状工具获取画布
           this.generateSampleCanvas();
           break;
-        case 'brush':
+        case "brush":
           // 在实际应用中，这里应该从画笔工具获取画布
           this.generateSampleCanvas();
           break;
@@ -895,34 +920,34 @@ export default {
      */
     generateSampleCanvas() {
       // 创建示例画布
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = this.exportCanvasWidth;
       canvas.height = this.exportCanvasHeight;
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
 
       // 绘制背景
-      ctx.fillStyle = '#f0f0f0';
+      ctx.fillStyle = "#f0f0f0";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // 绘制一些形状
-      ctx.fillStyle = 'rgba(24, 144, 255, 0.2)';
-      ctx.strokeStyle = '#1890ff';
+      ctx.fillStyle = "rgba(24, 144, 255, 0.2)";
+      ctx.strokeStyle = "#1890ff";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.rect(100, 100, 200, 150);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(82, 196, 26, 0.2)';
-      ctx.strokeStyle = '#52c41a';
+      ctx.fillStyle = "rgba(82, 196, 26, 0.2)";
+      ctx.strokeStyle = "#52c41a";
       ctx.beginPath();
       ctx.arc(400, 200, 50, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(250, 140, 22, 0.2)';
-      ctx.strokeStyle = '#fa8c16';
+      ctx.fillStyle = "rgba(250, 140, 22, 0.2)";
+      ctx.strokeStyle = "#fa8c16";
       ctx.beginPath();
       ctx.moveTo(500, 300);
       ctx.lineTo(600, 350);
@@ -932,10 +957,10 @@ export default {
       ctx.stroke();
 
       // 绘制文本
-      ctx.fillStyle = '#333';
-      ctx.font = 'bold 24px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('示例画布', canvas.width / 2, 50);
+      ctx.fillStyle = "#333";
+      ctx.font = "bold 24px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("示例画布", canvas.width / 2, 50);
 
       this.exportSourceCanvas = canvas;
     },
@@ -944,12 +969,12 @@ export default {
      * 清空导出源
      */
     clearExportSource() {
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = this.exportCanvasWidth;
       canvas.height = this.exportCanvasHeight;
 
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = 'white';
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       this.exportSourceCanvas = canvas;
@@ -960,11 +985,11 @@ export default {
      */
     getExportSourceName() {
       const names = {
-        'sample': '示例图像',
-        'shapes': '形状画布',
-        'brush': '画笔画布'
+        sample: "示例图像",
+        shapes: "形状画布",
+        brush: "画笔画布",
       };
-      return names[this.currentExportSource] || '未知源';
+      return names[this.currentExportSource] || "未知源";
     },
 
     /**
@@ -972,7 +997,7 @@ export default {
      */
     handleExportComplete(results) {
       this.exportCount++;
-      console.log('导出完成:', results);
+      console.log("导出完成:", results);
       alert(`导出完成！共导出 ${results.length} 个文件`);
     },
 
@@ -980,29 +1005,29 @@ export default {
      * 处理导出取消
      */
     handleExportCancel() {
-      console.log('导出取消');
-      alert('导出已取消');
+      console.log("导出取消");
+      alert("导出已取消");
     },
 
     /**
      * 处理文件下载
      */
     handleFileDownload(result) {
-      console.log('文件下载:', result);
+      console.log("文件下载:", result);
     },
 
     /**
      * 处理全部文件下载
      */
     handleAllFilesDownload(results) {
-      console.log('全部文件下载:', results);
+      console.log("全部文件下载:", results);
     },
 
     /**
      * 处理结果清空
      */
     handleResultsClear() {
-      console.log('结果清空');
+      console.log("结果清空");
     },
 
     // ========== 集成演示相关方法 ==========
@@ -1011,7 +1036,7 @@ export default {
      * 设置集成模式
      */
     setIntegratedMode(mode) {
-      console.log('切换集成模式:', mode);
+      console.log("切换集成模式:", mode);
 
       // 防止频繁切换
       if (this.integratedMode === mode) {
@@ -1031,11 +1056,11 @@ export default {
      */
     getIntegratedModeTitle() {
       const titles = {
-        'shape': '形状绘制',
-        'brush': '自由绘制',
-        'export': '导出作品'
+        shape: "形状绘制",
+        brush: "自由绘制",
+        export: "导出作品",
       };
-      return titles[this.integratedMode] || '未知模式';
+      return titles[this.integratedMode] || "未知模式";
     },
 
     /**
@@ -1045,10 +1070,11 @@ export default {
       const now = Date.now();
 
       // 检测频繁调用
-      if (now - this.lastShapesChangeTime < 10) { // 10ms内的调用视为频繁
+      if (now - this.lastShapesChangeTime < 10) {
+        // 10ms内的调用视为频繁
         this.shapesChangeCount++;
         if (this.shapesChangeCount > 10) {
-          console.error('🚨 检测到形状变化事件频繁触发，可能存在无限循环！');
+          console.error("🚨 检测到形状变化事件频繁触发，可能存在无限循环！");
           return;
         }
       } else {
@@ -1058,11 +1084,11 @@ export default {
 
       // 防止无限循环 - 检查数据是否真的变化了
       if (this.isShapesEqual(this.integratedShapes, shapes)) {
-        console.log('🔄 形状数据未变化，跳过更新');
+        console.log("🔄 形状数据未变化，跳过更新");
         return;
       }
 
-      console.log('✅ 集成形状变化:', shapes.length, '当前时间:', now);
+      console.log("✅ 集成形状变化:", shapes.length, "当前时间:", now);
       this.integratedShapes = shapes;
       // 使用防抖的画布更新
       this.updateIntegratedCanvas();
@@ -1072,9 +1098,9 @@ export default {
      * 处理集成形状添加
      */
     handleIntegratedShapeAdd(shape) {
-      console.log('集成形状添加:', shape);
+      console.log("集成形状添加:", shape);
       // 只在导出模式时更新画布
-      if (this.integratedMode === 'export') {
+      if (this.integratedMode === "export") {
         this.updateIntegratedCanvas();
       }
     },
@@ -1086,10 +1112,11 @@ export default {
       const now = Date.now();
 
       // 检测频繁调用
-      if (now - this.lastStrokesChangeTime < 10) { // 10ms内的调用视为频繁
+      if (now - this.lastStrokesChangeTime < 10) {
+        // 10ms内的调用视为频繁
         this.strokesChangeCount++;
         if (this.strokesChangeCount > 10) {
-          console.error('🚨 检测到笔触变化事件频繁触发，可能存在无限循环！');
+          console.error("🚨 检测到笔触变化事件频繁触发，可能存在无限循环！");
           return;
         }
       } else {
@@ -1099,11 +1126,11 @@ export default {
 
       // 防止无限循环 - 检查数据是否真的变化了
       if (this.isStrokesEqual(this.integratedStrokes, strokes)) {
-        console.log('🔄 笔触数据未变化，跳过更新');
+        console.log("🔄 笔触数据未变化，跳过更新");
         return;
       }
 
-      console.log('✅ 集成笔触变化:', strokes.length, '当前时间:', now);
+      console.log("✅ 集成笔触变化:", strokes.length, "当前时间:", now);
       this.integratedStrokes = strokes;
       // 使用防抖的画布更新
       this.updateIntegratedCanvas();
@@ -1113,9 +1140,9 @@ export default {
      * 处理集成笔触添加
      */
     handleIntegratedStrokeAdd() {
-      console.log('集成笔触添加');
+      console.log("集成笔触添加");
       // 只在导出模式时更新画布
-      if (this.integratedMode === 'export') {
+      if (this.integratedMode === "export") {
         this.updateIntegratedCanvas();
       }
     },
@@ -1124,7 +1151,7 @@ export default {
      * 处理集成导出完成
      */
     handleIntegratedExportComplete(results) {
-      console.log('集成导出完成:', results);
+      console.log("集成导出完成:", results);
       alert(`集成导出完成！共导出 ${results.length} 个文件`);
     },
 
@@ -1134,17 +1161,17 @@ export default {
     updateIntegratedCanvas() {
       // 防止重复调用
       if (this.isUpdatingCanvas) {
-        console.log('⚠️ Canvas正在更新中，跳过本次调用');
+        console.log("⚠️ Canvas正在更新中，跳过本次调用");
         return;
       }
 
       // 清除之前的定时器
       if (this.updateCanvasTimeout) {
         clearTimeout(this.updateCanvasTimeout);
-        console.log('🔄 清除之前的Canvas更新定时器');
+        console.log("🔄 清除之前的Canvas更新定时器");
       }
 
-      console.log('⏰ 设置Canvas更新定时器，100ms后执行');
+      console.log("⏰ 设置Canvas更新定时器，100ms后执行");
       // 使用防抖机制，避免频繁重绘
       this.updateCanvasTimeout = setTimeout(() => {
         this.performCanvasUpdate();
@@ -1156,30 +1183,30 @@ export default {
      */
     performCanvasUpdate() {
       if (this.isUpdatingCanvas) {
-        console.log('⚠️ Canvas正在更新中，跳过performCanvasUpdate');
+        console.log("⚠️ Canvas正在更新中，跳过performCanvasUpdate");
         return;
       }
 
-      console.log('🎨 开始执行Canvas更新');
+      console.log("🎨 开始执行Canvas更新");
       this.isUpdatingCanvas = true;
 
       try {
         // 在实际应用中，这里应该合并形状和笔触到一个画布
         // 这里只是创建一个示例画布
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = 800;
         canvas.height = 600;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
 
         // 绘制背景
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // 绘制形状（简化）
         if (this.integratedShapes.length > 0) {
-          ctx.fillStyle = 'rgba(24, 144, 255, 0.3)';
-          ctx.strokeStyle = '#1890ff';
+          ctx.fillStyle = "rgba(24, 144, 255, 0.3)";
+          ctx.strokeStyle = "#1890ff";
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.rect(100, 100, 200, 150);
@@ -1189,7 +1216,7 @@ export default {
 
         // 绘制笔触（简化）
         if (this.integratedStrokes.length > 0) {
-          ctx.strokeStyle = '#000';
+          ctx.strokeStyle = "#000";
           ctx.lineWidth = 3;
           ctx.beginPath();
           ctx.moveTo(300, 300);
@@ -1199,9 +1226,9 @@ export default {
         }
 
         this.integratedCanvas = canvas;
-        console.log('集成画布更新完成');
+        console.log("集成画布更新完成");
       } catch (error) {
-        console.error('画布更新失败:', error);
+        console.error("画布更新失败:", error);
       } finally {
         this.isUpdatingCanvas = false;
       }
@@ -1222,7 +1249,7 @@ export default {
      * 重置集成演示
      */
     resetIntegratedDemo() {
-      console.log('重置集成演示');
+      console.log("重置集成演示");
 
       // 清理定时器
       if (this.updateCanvasTimeout) {
@@ -1232,15 +1259,15 @@ export default {
 
       // 重置状态
       this.isUpdatingCanvas = false;
-      this.integratedMode = 'shape';
+      this.integratedMode = "shape";
       this.integratedShapes = [];
       this.integratedStrokes = [];
       this.integratedCanvas = null;
       this.integratedLoading = false;
 
-      console.log('集成演示重置完成');
-    }
-  }
+      console.log("集成演示重置完成");
+    },
+  },
 };
 </script>
 
@@ -1688,7 +1715,10 @@ select {
 }
 
 /* 图标样式 */
-.icon-canvas::before { content: '🎨'; font-size: 24px; }
+.icon-canvas::before {
+  content: "🎨";
+  font-size: 24px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

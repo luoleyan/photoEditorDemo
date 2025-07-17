@@ -4,24 +4,24 @@
       <h3 class="panel-title">{{ title }}</h3>
       <div class="panel-actions">
         <div v-if="showSearch" class="search-container">
-          <input 
-            type="text" 
-            class="search-input" 
-            v-model="searchQuery" 
+          <input
+            type="text"
+            class="search-input"
+            v-model="searchQuery"
             placeholder="搜索历史记录..."
             @input="handleSearchInput"
           />
-          <button 
-            v-if="searchQuery" 
+          <button
+            v-if="searchQuery"
             class="clear-search-button"
             @click="clearSearch"
           >
             <i class="icon-close"></i>
           </button>
         </div>
-        
-        <button 
-          v-if="showClearButton && historyItems.length > 0" 
+
+        <button
+          v-if="showClearButton && historyItems.length > 0"
           class="clear-button"
           @click="confirmClearHistory"
           :disabled="disabled"
@@ -31,11 +31,11 @@
         </button>
       </div>
     </div>
-    
+
     <div class="panel-content">
       <!-- 历史记录列表 -->
-      <div 
-        v-if="filteredItems.length > 0" 
+      <div
+        v-if="filteredItems.length > 0"
         class="history-list"
         ref="historyList"
       >
@@ -43,10 +43,10 @@
           v-for="(item, index) in filteredItems"
           :key="getItemKey(item, index)"
           class="history-item"
-          :class="{ 
-            'active': isItemActive(item), 
-            'disabled': isItemDisabled(item),
-            'highlighted': isItemHighlighted(item)
+          :class="{
+            active: isItemActive(item),
+            disabled: isItemDisabled(item),
+            highlighted: isItemHighlighted(item),
           }"
           @click="handleItemClick(item, index)"
         >
@@ -56,28 +56,31 @@
             <div v-if="showThumbnails && item.thumbnail" class="item-thumbnail">
               <img :src="item.thumbnail" :alt="item.name" />
             </div>
-            
+
             <!-- 图标 -->
             <div v-else-if="item.icon" class="item-icon">
               <i :class="`icon-${item.icon}`"></i>
             </div>
-            
+
             <!-- 文本内容 -->
             <div class="item-text">
               <div class="item-name">{{ item.name }}</div>
               <div v-if="item.description" class="item-description">
                 {{ item.description }}
               </div>
-              <div v-if="showTimestamps && item.timestamp" class="item-timestamp">
+              <div
+                v-if="showTimestamps && item.timestamp"
+                class="item-timestamp"
+              >
                 {{ formatTimestamp(item.timestamp) }}
               </div>
             </div>
           </div>
-          
+
           <!-- 操作按钮 -->
           <div class="item-actions">
-            <button 
-              v-if="showItemActions && !isItemDisabled(item)" 
+            <button
+              v-if="showItemActions && !isItemDisabled(item)"
               class="item-action-button"
               @click.stop="handleItemActionClick(item, index)"
               :title="getItemActionTitle(item)"
@@ -87,7 +90,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 空状态 -->
       <div v-else class="empty-state">
         <div v-if="searchQuery" class="empty-search">
@@ -103,10 +106,10 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 撤销/重做控制 -->
     <div v-if="showUndoRedo" class="undo-redo-controls">
-      <button 
+      <button
         class="undo-button"
         @click="handleUndo"
         :disabled="!canUndo || disabled"
@@ -115,8 +118,8 @@
         <i class="icon-undo"></i>
         <span>撤销</span>
       </button>
-      
-      <button 
+
+      <button
         class="redo-button"
         @click="handleRedo"
         :disabled="!canRedo || disabled"
@@ -126,7 +129,7 @@
         <span>重做</span>
       </button>
     </div>
-    
+
     <!-- 分支历史 -->
     <div v-if="showBranches && branches.length > 0" class="branches-section">
       <h4 class="branches-title">历史分支</h4>
@@ -135,7 +138,7 @@
           v-for="(branch, index) in branches"
           :key="getBranchKey(branch, index)"
           class="branch-item"
-          :class="{ 'active': branch.id === activeBranchId }"
+          :class="{ active: branch.id === activeBranchId }"
           @click="handleBranchClick(branch)"
         >
           <div class="branch-name">{{ branch.name }}</div>
@@ -143,7 +146,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 确认对话框 -->
     <div v-if="showConfirmDialog" class="confirm-dialog">
       <div class="dialog-content">
@@ -164,162 +167,162 @@
 
 <script>
 export default {
-  name: 'HistoryPanel',
+  name: "HistoryPanel",
   props: {
     // 面板标题
     title: {
       type: String,
-      default: '历史记录'
+      default: "历史记录",
     },
-    
+
     // 历史记录项
     historyItems: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 当前活动项索引
     activeIndex: {
       type: Number,
-      default: -1
+      default: -1,
     },
-    
+
     // 分支历史
     branches: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     activeBranchId: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 显示选项
     showHeader: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showSearch: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showClearButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showThumbnails: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showTimestamps: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showItemActions: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showUndoRedo: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showBranches: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 文本选项
     emptyText: {
       type: String,
-      default: '暂无历史记录'
+      default: "暂无历史记录",
     },
     undoTooltip: {
       type: String,
-      default: '撤销上一步操作'
+      default: "撤销上一步操作",
     },
     redoTooltip: {
       type: String,
-      default: '重做下一步操作'
+      default: "重做下一步操作",
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'compact', 'minimal'].includes(value)
+      default: "default",
+      validator: (value) => ["default", "compact", "minimal"].includes(value),
     },
-    
+
     // 高亮项
     highlightedItemId: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
-  
+
   data() {
     return {
       // 搜索
-      searchQuery: '',
+      searchQuery: "",
       searchResults: [],
       isSearching: false,
-      
+
       // 确认对话框
       showConfirmDialog: false,
-      confirmDialogTitle: '',
-      confirmDialogMessage: '',
-      confirmDialogCallback: null
+      confirmDialogTitle: "",
+      confirmDialogMessage: "",
+      confirmDialogCallback: null,
     };
   },
-  
+
   computed: {
     panelClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
     },
-    
+
     // 过滤后的历史记录项
     filteredItems() {
       if (!this.searchQuery) {
         return this.historyItems;
       }
-      
+
       return this.searchResults;
     },
-    
+
     // 是否可以撤销
     canUndo() {
       return this.activeIndex > 0;
     },
-    
+
     // 是否可以重做
     canRedo() {
       return this.activeIndex < this.historyItems.length - 1;
-    }
+    },
   },
-  
+
   watch: {
     activeIndex(newIndex) {
       this.$nextTick(() => {
         this.scrollToActiveItem();
       });
     },
-    
+
     historyItems() {
       // 如果有搜索查询，重新执行搜索
       if (this.searchQuery) {
         this.performSearch();
       }
-    }
+    },
   },
-  
+
   mounted() {
     // 延迟执行滚动，确保页面已完全加载且不影响初始页面位置
     this.$nextTick(() => {
@@ -328,7 +331,7 @@ export default {
       }, 100); // 100ms延迟，避免影响页面初始滚动位置
     });
   },
-  
+
   methods: {
     /**
      * 处理历史记录项点击
@@ -337,10 +340,10 @@ export default {
       if (this.disabled || this.isItemDisabled(item)) {
         return;
       }
-      
-      this.$emit('item-click', { item, index });
+
+      this.$emit("item-click", { item, index });
     },
-    
+
     /**
      * 处理历史记录项操作按钮点击
      */
@@ -348,10 +351,10 @@ export default {
       if (this.disabled || this.isItemDisabled(item)) {
         return;
       }
-      
-      this.$emit('item-action', { item, index });
+
+      this.$emit("item-action", { item, index });
     },
-    
+
     /**
      * 处理撤销
      */
@@ -359,10 +362,10 @@ export default {
       if (this.disabled || !this.canUndo) {
         return;
       }
-      
-      this.$emit('undo');
+
+      this.$emit("undo");
     },
-    
+
     /**
      * 处理重做
      */
@@ -370,10 +373,10 @@ export default {
       if (this.disabled || !this.canRedo) {
         return;
       }
-      
-      this.$emit('redo');
+
+      this.$emit("redo");
     },
-    
+
     /**
      * 处理分支点击
      */
@@ -381,17 +384,17 @@ export default {
       if (this.disabled) {
         return;
       }
-      
-      this.$emit('branch-click', branch);
+
+      this.$emit("branch-click", branch);
     },
-    
+
     /**
      * 处理搜索输入
      */
     handleSearchInput() {
       this.performSearch();
     },
-    
+
     /**
      * 执行搜索
      */
@@ -401,45 +404,46 @@ export default {
         this.isSearching = false;
         return;
       }
-      
+
       this.isSearching = true;
-      
+
       // 搜索历史记录
       const query = this.searchQuery.toLowerCase();
-      this.searchResults = this.historyItems.filter(item => {
+      this.searchResults = this.historyItems.filter((item) => {
         const nameMatch = item.name && item.name.toLowerCase().includes(query);
-        const descMatch = item.description && item.description.toLowerCase().includes(query);
+        const descMatch =
+          item.description && item.description.toLowerCase().includes(query);
         return nameMatch || descMatch;
       });
     },
-    
+
     /**
      * 清除搜索
      */
     clearSearch() {
-      this.searchQuery = '';
+      this.searchQuery = "";
       this.searchResults = [];
       this.isSearching = false;
     },
-    
+
     /**
      * 确认清空历史
      */
     confirmClearHistory() {
       this.showConfirmDialog = true;
-      this.confirmDialogTitle = '清空历史记录';
-      this.confirmDialogMessage = '确定要清空所有历史记录吗？此操作无法撤销。';
+      this.confirmDialogTitle = "清空历史记录";
+      this.confirmDialogMessage = "确定要清空所有历史记录吗？此操作无法撤销。";
       this.confirmDialogCallback = this.clearHistory;
     },
-    
+
     /**
      * 清空历史
      */
     clearHistory() {
-      this.$emit('clear-history');
+      this.$emit("clear-history");
       this.showConfirmDialog = false;
     },
-    
+
     /**
      * 取消确认对话框
      */
@@ -447,7 +451,7 @@ export default {
       this.showConfirmDialog = false;
       this.confirmDialogCallback = null;
     },
-    
+
     /**
      * 执行确认对话框操作
      */
@@ -457,7 +461,7 @@ export default {
       }
       this.showConfirmDialog = false;
     },
-    
+
     /**
      * 滚动到活动项（仅在组件内部滚动，不影响页面滚动）
      */
@@ -466,7 +470,8 @@ export default {
         return;
       }
 
-      const historyItems = this.$refs.historyList.querySelectorAll('.history-item');
+      const historyItems =
+        this.$refs.historyList.querySelectorAll(".history-item");
       if (historyItems.length > this.activeIndex) {
         const activeItem = historyItems[this.activeIndex];
         const container = this.$refs.historyList;
@@ -477,66 +482,75 @@ export default {
           const itemRect = activeItem.getBoundingClientRect();
 
           // 检查项目是否在可视区域内
-          const isVisible = (
+          const isVisible =
             itemRect.top >= containerRect.top &&
-            itemRect.bottom <= containerRect.bottom
-          );
+            itemRect.bottom <= containerRect.bottom;
 
           // 只有当项目不在可视区域时才滚动
           if (!isVisible) {
-            const scrollTop = activeItem.offsetTop - container.offsetTop - (container.clientHeight / 2) + (activeItem.clientHeight / 2);
+            const scrollTop =
+              activeItem.offsetTop -
+              container.offsetTop -
+              container.clientHeight / 2 +
+              activeItem.clientHeight / 2;
 
             // 使用平滑滚动，但限制在容器内
             container.scrollTo({
-              top: Math.max(0, Math.min(scrollTop, container.scrollHeight - container.clientHeight)),
-              behavior: 'smooth'
+              top: Math.max(
+                0,
+                Math.min(
+                  scrollTop,
+                  container.scrollHeight - container.clientHeight
+                )
+              ),
+              behavior: "smooth",
             });
           }
         }
       }
     },
-    
+
     /**
      * 检查项是否激活
      */
     isItemActive(item) {
-      const index = this.historyItems.findIndex(i => i.id === item.id);
+      const index = this.historyItems.findIndex((i) => i.id === item.id);
       return index === this.activeIndex;
     },
-    
+
     /**
      * 检查项是否禁用
      */
     isItemDisabled(item) {
       // 如果项在当前活动项之后，则禁用
-      const index = this.historyItems.findIndex(i => i.id === item.id);
+      const index = this.historyItems.findIndex((i) => i.id === item.id);
       return index > this.activeIndex;
     },
-    
+
     /**
      * 检查项是否高亮
      */
     isItemHighlighted(item) {
       return item.id === this.highlightedItemId;
     },
-    
+
     /**
      * 获取项操作图标
      */
     getItemActionIcon(item) {
       // 如果项是当前活动项，则显示重做图标
-      const index = this.historyItems.findIndex(i => i.id === item.id);
-      return index < this.activeIndex ? 'icon-goto' : 'icon-redo';
+      const index = this.historyItems.findIndex((i) => i.id === item.id);
+      return index < this.activeIndex ? "icon-goto" : "icon-redo";
     },
-    
+
     /**
      * 获取项操作提示
      */
     getItemActionTitle(item) {
-      const index = this.historyItems.findIndex(i => i.id === item.id);
-      return index < this.activeIndex ? '跳转到此步骤' : '重做到此步骤';
+      const index = this.historyItems.findIndex((i) => i.id === item.id);
+      return index < this.activeIndex ? "跳转到此步骤" : "重做到此步骤";
     },
-    
+
     /**
      * 获取历史项的安全key值
      * @param {Object} item - 历史项
@@ -545,31 +559,44 @@ export default {
      */
     getItemKey(item, index) {
       // 首先验证item是否是有效的历史项对象
-      if (!item || typeof item !== 'object') {
-        console.warn('HistoryPanel: item is not a valid object, using index as key:', item);
+      if (!item || typeof item !== "object") {
+        console.warn(
+          "HistoryPanel: item is not a valid object, using index as key:",
+          item
+        );
         return `item-invalid-${index}`;
       }
 
       // 检查是否是事件对象（常见的错误情况）
-      if (item.constructor && (
-        item.constructor.name === 'PointerEvent' ||
-        item.constructor.name === 'MouseEvent' ||
-        item.constructor.name === 'Event' ||
-        item.type !== undefined // 事件对象通常有type属性
-      )) {
-        console.error('HistoryPanel: 检测到事件对象被传递为历史项，这是一个错误:', item);
+      if (
+        item.constructor &&
+        (item.constructor.name === "PointerEvent" ||
+          item.constructor.name === "MouseEvent" ||
+          item.constructor.name === "Event" ||
+          item.type !== undefined) // 事件对象通常有type属性
+      ) {
+        console.error(
+          "HistoryPanel: 检测到事件对象被传递为历史项，这是一个错误:",
+          item
+        );
         return `item-event-error-${index}`;
       }
 
       // 确保返回原始值（字符串或数字）
       if (item.id !== null && item.id !== undefined) {
         // 如果id是对象或数组，转换为字符串
-        if (typeof item.id === 'object') {
-          console.warn('HistoryPanel: item.id is not a primitive value, converting to string:', item.id);
+        if (typeof item.id === "object") {
+          console.warn(
+            "HistoryPanel: item.id is not a primitive value, converting to string:",
+            item.id
+          );
           try {
             return `item-${JSON.stringify(item.id)}-${index}`;
           } catch (error) {
-            console.error('HistoryPanel: 无法序列化item.id，使用fallback:', error);
+            console.error(
+              "HistoryPanel: 无法序列化item.id，使用fallback:",
+              error
+            );
             return `item-serialize-error-${index}`;
           }
         }
@@ -578,7 +605,10 @@ export default {
       }
 
       // 如果没有有效的id，使用索引作为fallback
-      console.warn('HistoryPanel: item.id is missing or invalid, using index as key:', item);
+      console.warn(
+        "HistoryPanel: item.id is missing or invalid, using index as key:",
+        item
+      );
       return `item-fallback-${index}`;
     },
 
@@ -592,15 +622,21 @@ export default {
       // 确保返回原始值（字符串或数字）
       if (branch && branch.id !== null && branch.id !== undefined) {
         // 如果id是对象或数组，转换为字符串
-        if (typeof branch.id === 'object') {
-          console.warn('HistoryPanel: branch.id is not a primitive value, converting to string:', branch.id);
+        if (typeof branch.id === "object") {
+          console.warn(
+            "HistoryPanel: branch.id is not a primitive value, converting to string:",
+            branch.id
+          );
           return `branch-${JSON.stringify(branch.id)}-${index}`;
         }
         // 确保id是字符串
         return String(branch.id);
       }
       // 如果没有有效的id，使用索引作为fallback
-      console.warn('HistoryPanel: branch.id is missing or invalid, using index as key:', branch);
+      console.warn(
+        "HistoryPanel: branch.id is missing or invalid, using index as key:",
+        branch
+      );
       return `branch-fallback-${index}`;
     },
 
@@ -608,8 +644,8 @@ export default {
      * 格式化时间戳
      */
     formatTimestamp(timestamp) {
-      if (!timestamp) return '';
-      
+      if (!timestamp) return "";
+
       const date = new Date(timestamp);
       const now = new Date();
       const diffMs = now - date;
@@ -617,33 +653,41 @@ export default {
       const diffMin = Math.floor(diffSec / 60);
       const diffHour = Math.floor(diffMin / 60);
       const diffDay = Math.floor(diffHour / 24);
-      
+
       // 今天内的时间显示为"xx分钟前"或"xx小时前"
       if (diffDay === 0) {
         if (diffHour === 0) {
           if (diffMin === 0) {
-            return '刚刚';
+            return "刚刚";
           }
           return `${diffMin}分钟前`;
         }
         return `${diffHour}小时前`;
       }
-      
+
       // 昨天的时间显示为"昨天 xx:xx"
       if (diffDay === 1) {
-        return `昨天 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        return `昨天 ${date.getHours().toString().padStart(2, "0")}:${date
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}`;
       }
-      
+
       // 一周内的时间显示为"周x xx:xx"
       if (diffDay < 7) {
-        const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
-        return `周${weekdays[date.getDay()]} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+        return `周${weekdays[date.getDay()]} ${date
+          .getHours()
+          .toString()
+          .padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
       }
-      
+
       // 其他时间显示为"yyyy-MM-dd"
-      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    }
-  }
+      return `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+    },
+  },
 };
 </script>
 
@@ -1141,13 +1185,34 @@ export default {
 }
 
 /* 图标样式 */
-.icon-close::before { content: '✕'; font-size: 12px; }
-.icon-trash::before { content: '🗑'; font-size: 14px; }
-.icon-undo::before { content: '↶'; font-size: 14px; }
-.icon-redo::before { content: '↷'; font-size: 14px; }
-.icon-goto::before { content: '→'; font-size: 14px; }
-.icon-search::before { content: '🔍'; font-size: 24px; }
-.icon-history::before { content: '📜'; font-size: 24px; }
+.icon-close::before {
+  content: "✕";
+  font-size: 12px;
+}
+.icon-trash::before {
+  content: "🗑";
+  font-size: 14px;
+}
+.icon-undo::before {
+  content: "↶";
+  font-size: 14px;
+}
+.icon-redo::before {
+  content: "↷";
+  font-size: 14px;
+}
+.icon-goto::before {
+  content: "→";
+  font-size: 14px;
+}
+.icon-search::before {
+  content: "🔍";
+  font-size: 24px;
+}
+.icon-history::before {
+  content: "📜";
+  font-size: 24px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

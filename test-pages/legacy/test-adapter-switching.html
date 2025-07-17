@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +12,21 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .test-container {
             border: 1px solid #ddd;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
         }
+
         .controls {
             margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
         button {
             padding: 10px 15px;
             background: #007bff;
@@ -32,19 +36,24 @@
             cursor: pointer;
             min-width: 120px;
         }
+
         button:hover {
             background: #0056b3;
         }
+
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
+
         button.active {
             background: #28a745;
         }
+
         button.error {
             background: #dc3545;
         }
+
         .log {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -57,42 +66,52 @@
             overflow-y: auto;
             font-size: 12px;
         }
+
         .error {
             color: #dc3545;
         }
+
         .success {
             color: #28a745;
         }
+
         .warning {
             color: #ffc107;
         }
+
         .info {
             color: #17a2b8;
         }
+
         .status-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
+
         .status-card {
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 5px;
             text-align: center;
         }
+
         .status-card.success {
             border-color: #28a745;
             background-color: #d4edda;
         }
+
         .status-card.error {
             border-color: #dc3545;
             background-color: #f8d7da;
         }
+
         .status-card.loading {
             border-color: #ffc107;
             background-color: #fff3cd;
         }
+
         #container {
             width: 100%;
             height: 400px;
@@ -103,10 +122,11 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Adapter Switching Test</h1>
     <p>这个测试页面用于验证所有适配器的切换功能和兼容性。</p>
-    
+
     <div class="test-container">
         <h3>适配器状态</h3>
         <div class="status-grid" id="statusGrid">
@@ -127,7 +147,7 @@
                 <div class="status">未测试</div>
             </div>
         </div>
-        
+
         <div class="controls">
             <button id="openProject">打开项目 (localhost:8081)</button>
             <button id="testFabric" data-adapter="fabric">测试 Fabric.js</button>
@@ -137,9 +157,9 @@
             <button id="testAll">测试所有适配器</button>
             <button id="clearLog">清除日志</button>
         </div>
-        
+
         <div id="container"></div>
-        
+
         <div class="log" id="log">等待测试开始...</div>
     </div>
 
@@ -152,38 +172,38 @@
             cropper: document.getElementById('status-cropper'),
             tui: document.getElementById('status-tui')
         };
-        
+
         let currentAdapter = null;
         let testResults = {};
-        
+
         function addLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
             log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
             log.scrollTop = log.scrollHeight;
         }
-        
+
         function clearLog() {
             log.innerHTML = '';
         }
-        
+
         function updateStatus(adapter, status, message = '') {
             const card = statusCards[adapter];
             if (!card) return;
-            
+
             card.className = `status-card ${status}`;
             const statusDiv = card.querySelector('.status');
             statusDiv.textContent = message || status;
-            
+
             testResults[adapter] = { status, message };
         }
-        
+
         function createTestImage() {
             const canvas = document.createElement('canvas');
             canvas.width = 300;
             canvas.height = 200;
             const ctx = canvas.getContext('2d');
-            
+
             // 绘制测试图案
             ctx.fillStyle = '#4CAF50';
             ctx.fillRect(0, 0, 300, 200);
@@ -192,10 +212,10 @@
             ctx.textAlign = 'center';
             ctx.fillText('Test Image', 150, 100);
             ctx.fillText('for Adapters', 150, 130);
-            
+
             return canvas.toDataURL();
         }
-        
+
         // 实际适配器测试（连接到真实项目）
         async function testAdapter(adapterType) {
             addLog(`开始测试 ${adapterType} 适配器...`);
@@ -230,57 +250,57 @@
                 return false;
             }
         }
-        
+
         async function checkLibraryAvailability(adapterType) {
             addLog(`检查 ${adapterType} 库是否可用...`);
-            
+
             const libraries = {
                 fabric: () => window.fabric,
                 konva: () => window.Konva,
                 cropper: () => window.Cropper,
                 tui: () => window.tui && window.tui.ImageEditor
             };
-            
+
             const checkFn = libraries[adapterType];
             if (!checkFn) {
                 throw new Error(`未知的适配器类型: ${adapterType}`);
             }
-            
+
             // 模拟库加载时间
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             if (!checkFn()) {
                 throw new Error(`${adapterType} 库未加载`);
             }
-            
+
             addLog(`${adapterType} 库检查通过`, 'success');
         }
-        
+
         async function simulateAdapterInitialization(adapterType) {
             addLog(`初始化 ${adapterType} 适配器...`);
-            
+
             // 模拟初始化时间
             await new Promise(resolve => setTimeout(resolve, 800));
-            
+
             // 模拟一些可能的初始化错误
             if (adapterType === 'tui' && Math.random() < 0.3) {
                 throw new Error('TUI ImageEditor constructor failed');
             }
-            
+
             addLog(`${adapterType} 适配器初始化完成`, 'success');
         }
-        
+
         async function simulateBasicOperations(adapterType) {
             addLog(`测试 ${adapterType} 基本操作...`);
-            
+
             // 模拟图像加载
             await new Promise(resolve => setTimeout(resolve, 300));
             addLog(`${adapterType}: 图像加载测试通过`);
-            
+
             // 模拟导出功能
             await new Promise(resolve => setTimeout(resolve, 200));
             addLog(`${adapterType}: 导出功能测试通过`);
-            
+
             // 模拟一些操作
             const operations = ['旋转', '缩放', '滤镜'];
             for (const op of operations) {
@@ -288,37 +308,37 @@
                 addLog(`${adapterType}: ${op}操作测试通过`);
             }
         }
-        
+
         async function testAllAdapters() {
             addLog('开始测试所有适配器...', 'info');
-            
+
             const adapters = ['fabric', 'konva', 'cropper', 'tui'];
             let successCount = 0;
-            
+
             for (const adapter of adapters) {
                 const success = await testAdapter(adapter);
                 if (success) successCount++;
-                
+
                 // 适配器间切换延迟
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
-            
+
             addLog(`\n=== 测试完成 ===`, 'info');
             addLog(`成功: ${successCount}/${adapters.length}`, successCount === adapters.length ? 'success' : 'warning');
-            
+
             if (successCount === adapters.length) {
                 addLog('所有适配器测试通过！', 'success');
             } else {
                 addLog('部分适配器测试失败，请检查错误信息', 'warning');
             }
         }
-        
+
         // 事件监听
         document.querySelectorAll('[data-adapter]').forEach(button => {
             button.addEventListener('click', async () => {
                 const adapterType = button.dataset.adapter;
                 button.disabled = true;
-                
+
                 try {
                     await testAdapter(adapterType);
                 } finally {
@@ -326,17 +346,17 @@
                 }
             });
         });
-        
+
         document.getElementById('testAll').addEventListener('click', async (e) => {
             e.target.disabled = true;
-            
+
             try {
                 await testAllAdapters();
             } finally {
                 e.target.disabled = false;
             }
         });
-        
+
         document.getElementById('clearLog').addEventListener('click', clearLog);
 
         document.getElementById('openProject').addEventListener('click', () => {
@@ -350,4 +370,5 @@
         addLog('或点击其他按钮进行模拟测试');
     </script>
 </body>
+
 </html>

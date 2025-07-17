@@ -17,8 +17,19 @@
       </div>
 
       <!-- 健康状态指示器 -->
-      <div class="health-indicator" :class="overallHealthClass" @click="toggleDetails">
-        <div class="drag-handle" :title="`拖拽手柄 - 当前位置: (${Math.round(position.x)}, ${Math.round(position.y)})`">⋮⋮</div>
+      <div
+        class="health-indicator"
+        :class="overallHealthClass"
+        @click="toggleDetails"
+      >
+        <div
+          class="drag-handle"
+          :title="`拖拽手柄 - 当前位置: (${Math.round(
+            position.x
+          )}, ${Math.round(position.y)})`"
+        >
+          ⋮⋮
+        </div>
         <div class="indicator-icon">
           <span v-if="systemHealth.overallHealth === 'normal'">✅</span>
           <span v-else-if="systemHealth.overallHealth === 'warning'">⚠️</span>
@@ -28,107 +39,135 @@
           <div class="health-status">{{ getHealthStatusText() }}</div>
           <div class="health-summary">{{ getHealthSummary() }}</div>
         </div>
-        <div class="toggle-arrow" :class="{ 'expanded': showDetails }">▼</div>
+        <div class="toggle-arrow" :class="{ expanded: showDetails }">▼</div>
       </div>
 
       <!-- 详细信息面板 -->
-    <div class="health-details" v-show="showDetails">
-      <!-- 系统检查结果 -->
-      <div class="health-section">
-        <h4>系统状态</h4>
-        <div class="status-grid">
-          <div class="status-item" v-for="(check, type) in systemHealth.checks" :key="type">
-            <div class="status-label">{{ getCheckLabel(type) }}</div>
-            <div class="status-value" :class="`status-${check.status}`">
-              {{ getStatusText(check.status) }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 内存使用情况 -->
-      <div class="health-section" v-if="systemHealth.checks && systemHealth.checks.memory">
-        <h4>内存使用</h4>
-        <div class="memory-info">
-          <div class="memory-bar">
-            <div 
-              class="memory-fill" 
-              :style="{ width: systemHealth.checks.memory.usage + '%' }"
-              :class="getMemoryBarClass(systemHealth.checks.memory.usage)"
-            ></div>
-            <span class="memory-text">{{ systemHealth.checks.memory.usage.toFixed(1) }}%</span>
-          </div>
-          <div class="memory-details">
-            <div class="memory-item">
-              <span>已分配:</span>
-              <span>{{ formatBytes(systemHealth.checks.memory.allocated) }}</span>
-            </div>
-            <div class="memory-item">
-              <span>峰值:</span>
-              <span>{{ formatBytes(systemHealth.checks.memory.peak) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 错误恢复统计 -->
-      <div class="health-section" v-if="recoveryStats">
-        <h4>错误恢复</h4>
-        <div class="recovery-stats">
-          <div class="recovery-item" v-for="(stat, type) in recoveryStats" :key="type">
-            <div class="recovery-type">{{ type }}</div>
-            <div class="recovery-info">
-              <span class="success-rate" :class="getSuccessRateClass(stat.successRate)">
-                成功率: {{ (stat.successRate * 100).toFixed(1) }}%
-              </span>
-              <span class="attempt-count">
-                尝试: {{ stat.successCount + stat.failureCount }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 系统建议 -->
-      <div class="health-section" v-if="systemHealth.recommendations && systemHealth.recommendations.length > 0">
-        <h4>系统建议</h4>
-        <div class="recommendations">
-          <div 
-            class="recommendation-item" 
-            v-for="(rec, index) in systemHealth.recommendations" 
-            :key="index"
-            :class="`priority-${rec.priority}`"
-          >
-            <div class="recommendation-icon">
-              <span v-if="rec.priority === 'high'">🔴</span>
-              <span v-else>🟡</span>
-            </div>
-            <div class="recommendation-text">
-              {{ getRecommendationText(rec) }}
-            </div>
-            <button 
-              class="recommendation-action" 
-              @click="executeRecommendation(rec)"
-              :disabled="executingRecommendation"
+      <div class="health-details" v-show="showDetails">
+        <!-- 系统检查结果 -->
+        <div class="health-section">
+          <h4>系统状态</h4>
+          <div class="status-grid">
+            <div
+              class="status-item"
+              v-for="(check, type) in systemHealth.checks"
+              :key="type"
             >
-              执行
-            </button>
+              <div class="status-label">{{ getCheckLabel(type) }}</div>
+              <div class="status-value" :class="`status-${check.status}`">
+                {{ getStatusText(check.status) }}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 操作按钮 -->
-      <div class="health-actions">
-        <button class="action-button" @click="performSystemCheck" :disabled="checking">
-          {{ checking ? '检查中...' : '系统自检' }}
-        </button>
-        <button class="action-button" @click="resetRecoveryHistory">
-          重置恢复历史
-        </button>
-        <button class="action-button secondary" @click="exportHealthReport">
-          导出报告
-        </button>
-      </div>
+        <!-- 内存使用情况 -->
+        <div
+          class="health-section"
+          v-if="systemHealth.checks && systemHealth.checks.memory"
+        >
+          <h4>内存使用</h4>
+          <div class="memory-info">
+            <div class="memory-bar">
+              <div
+                class="memory-fill"
+                :style="{ width: systemHealth.checks.memory.usage + '%' }"
+                :class="getMemoryBarClass(systemHealth.checks.memory.usage)"
+              ></div>
+              <span class="memory-text"
+                >{{ systemHealth.checks.memory.usage.toFixed(1) }}%</span
+              >
+            </div>
+            <div class="memory-details">
+              <div class="memory-item">
+                <span>已分配:</span>
+                <span>{{
+                  formatBytes(systemHealth.checks.memory.allocated)
+                }}</span>
+              </div>
+              <div class="memory-item">
+                <span>峰值:</span>
+                <span>{{ formatBytes(systemHealth.checks.memory.peak) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 错误恢复统计 -->
+        <div class="health-section" v-if="recoveryStats">
+          <h4>错误恢复</h4>
+          <div class="recovery-stats">
+            <div
+              class="recovery-item"
+              v-for="(stat, type) in recoveryStats"
+              :key="type"
+            >
+              <div class="recovery-type">{{ type }}</div>
+              <div class="recovery-info">
+                <span
+                  class="success-rate"
+                  :class="getSuccessRateClass(stat.successRate)"
+                >
+                  成功率: {{ (stat.successRate * 100).toFixed(1) }}%
+                </span>
+                <span class="attempt-count">
+                  尝试: {{ stat.successCount + stat.failureCount }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 系统建议 -->
+        <div
+          class="health-section"
+          v-if="
+            systemHealth.recommendations &&
+            systemHealth.recommendations.length > 0
+          "
+        >
+          <h4>系统建议</h4>
+          <div class="recommendations">
+            <div
+              class="recommendation-item"
+              v-for="(rec, index) in systemHealth.recommendations"
+              :key="index"
+              :class="`priority-${rec.priority}`"
+            >
+              <div class="recommendation-icon">
+                <span v-if="rec.priority === 'high'">🔴</span>
+                <span v-else>🟡</span>
+              </div>
+              <div class="recommendation-text">
+                {{ getRecommendationText(rec) }}
+              </div>
+              <button
+                class="recommendation-action"
+                @click="executeRecommendation(rec)"
+                :disabled="executingRecommendation"
+              >
+                执行
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="health-actions">
+          <button
+            class="action-button"
+            @click="performSystemCheck"
+            :disabled="checking"
+          >
+            {{ checking ? "检查中..." : "系统自检" }}
+          </button>
+          <button class="action-button" @click="resetRecoveryHistory">
+            重置恢复历史
+          </button>
+          <button class="action-button secondary" @click="exportHealthReport">
+            导出报告
+          </button>
+        </div>
       </div>
     </div>
 
@@ -143,7 +182,9 @@
     >
       <div class="trigger-hint">
         <span class="trigger-icon">📌</span>
-        <span class="trigger-text">{{ getEdgeDisplayName(position.snapEdge) }}</span>
+        <span class="trigger-text">{{
+          getEdgeDisplayName(position.snapEdge)
+        }}</span>
       </div>
     </div>
 
@@ -155,48 +196,50 @@
     >
       <div class="indicator-content">
         <div class="indicator-icon">{{ getEdgeIcon(edgeIndicator.edge) }}</div>
-        <div class="indicator-text">拖拽到{{ getEdgeDisplayName(edgeIndicator.edge) }}边缘吸附</div>
+        <div class="indicator-text">
+          拖拽到{{ getEdgeDisplayName(edgeIndicator.edge) }}边缘吸附
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { errorRecoveryManager } from '@/utils/ErrorRecoveryManager.js';
-import DraggableMixin from '@/mixins/DraggableMixin.js';
+import { errorRecoveryManager } from "@/utils/ErrorRecoveryManager.js";
+import DraggableMixin from "@/mixins/DraggableMixin.js";
 
 export default {
-  name: 'SystemHealthMonitor',
+  name: "SystemHealthMonitor",
   mixins: [DraggableMixin],
   props: {
     autoCheck: {
       type: Boolean,
-      default: true
+      default: true,
     },
     checkInterval: {
       type: Number,
-      default: 60000 // 1分钟
-    }
+      default: 60000, // 1分钟
+    },
   },
   data() {
     return {
       showMonitor: true,
       showDetails: false,
       systemHealth: {
-        overallHealth: 'normal',
+        overallHealth: "normal",
         checks: {},
-        recommendations: []
+        recommendations: [],
       },
       recoveryStats: null,
       checking: false,
       executingRecommendation: false,
-      checkTimer: null
+      checkTimer: null,
     };
   },
   computed: {
     overallHealthClass() {
       return `health-${this.systemHealth.overallHealth}`;
-    }
+    },
   },
   mounted() {
     this.initializeMonitor();
@@ -213,7 +256,7 @@ export default {
      */
     async initializeMonitor() {
       await this.performSystemCheck();
-      
+
       if (this.autoCheck) {
         this.startAutoCheck();
       }
@@ -243,21 +286,21 @@ export default {
      */
     async performSystemCheck() {
       if (this.checking) return;
-      
+
       this.checking = true;
-      
+
       try {
         const healthReport = await errorRecoveryManager.performSystemCheck();
         this.systemHealth = healthReport;
-        
+
         // 获取恢复统计
         const fullHealth = errorRecoveryManager.getSystemHealth();
         this.recoveryStats = fullHealth.recoveryStrategies;
-        
-        this.$emit('health-updated', this.systemHealth);
+
+        this.$emit("health-updated", this.systemHealth);
       } catch (error) {
-        console.error('系统检查失败:', error);
-        this.$emit('check-error', error);
+        console.error("系统检查失败:", error);
+        this.$emit("check-error", error);
       } finally {
         this.checking = false;
       }
@@ -275,21 +318,20 @@ export default {
      */
     async executeRecommendation(recommendation) {
       if (this.executingRecommendation) return;
-      
+
       this.executingRecommendation = true;
-      
+
       try {
         await this.handleRecommendationAction(recommendation);
-        this.$emit('recommendation-executed', recommendation);
-        
+        this.$emit("recommendation-executed", recommendation);
+
         // 重新检查系统状态
         setTimeout(() => {
           this.performSystemCheck();
         }, 1000);
-        
       } catch (error) {
-        console.error('执行建议失败:', error);
-        this.$emit('recommendation-error', { recommendation, error });
+        console.error("执行建议失败:", error);
+        this.$emit("recommendation-error", { recommendation, error });
       } finally {
         this.executingRecommendation = false;
       }
@@ -300,17 +342,17 @@ export default {
      */
     async handleRecommendationAction(recommendation) {
       switch (recommendation.action) {
-        case 'cleanup':
-          this.$emit('action-request', { type: 'cleanup' });
+        case "cleanup":
+          this.$emit("action-request", { type: "cleanup" });
           break;
-        case 'restart':
-          this.$emit('action-request', { type: 'restart' });
+        case "restart":
+          this.$emit("action-request", { type: "restart" });
           break;
-        case 'switchAdapter':
-          this.$emit('action-request', { type: 'switchAdapter' });
+        case "switchAdapter":
+          this.$emit("action-request", { type: "switchAdapter" });
           break;
         default:
-          // 未知的建议操作，忽略
+        // 未知的建议操作，忽略
       }
     },
 
@@ -320,7 +362,7 @@ export default {
     resetRecoveryHistory() {
       errorRecoveryManager.resetRecoveryHistory();
       this.performSystemCheck();
-      this.$emit('recovery-history-reset');
+      this.$emit("recovery-history-reset");
     },
 
     /**
@@ -332,21 +374,21 @@ export default {
         systemHealth: this.systemHealth,
         recoveryStats: this.recoveryStats,
         userAgent: navigator.userAgent,
-        url: window.location.href
+        url: window.location.href,
       };
 
       const blob = new Blob([JSON.stringify(report, null, 2)], {
-        type: 'application/json'
+        type: "application/json",
       });
-      
+
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `system-health-report-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
 
-      this.$emit('report-exported', report);
+      this.$emit("report-exported", report);
     },
 
     /**
@@ -354,24 +396,25 @@ export default {
      */
     getHealthStatusText() {
       const texts = {
-        normal: '系统正常',
-        warning: '系统警告',
-        critical: '系统异常'
+        normal: "系统正常",
+        warning: "系统警告",
+        critical: "系统异常",
       };
-      return texts[this.systemHealth.overallHealth] || '未知状态';
+      return texts[this.systemHealth.overallHealth] || "未知状态";
     },
 
     /**
      * 获取健康摘要
      */
     getHealthSummary() {
-      if (!this.systemHealth.checks) return '';
-      
-      const issues = Object.values(this.systemHealth.checks)
-        .filter(check => check.status !== 'normal').length;
-      
+      if (!this.systemHealth.checks) return "";
+
+      const issues = Object.values(this.systemHealth.checks).filter(
+        (check) => check.status !== "normal"
+      ).length;
+
       if (issues === 0) {
-        return '所有系统正常运行';
+        return "所有系统正常运行";
       } else {
         return `发现 ${issues} 个问题`;
       }
@@ -382,10 +425,10 @@ export default {
      */
     getCheckLabel(type) {
       const labels = {
-        memory: '内存',
-        adapters: '适配器',
-        performance: '性能',
-        errors: '错误'
+        memory: "内存",
+        adapters: "适配器",
+        performance: "性能",
+        errors: "错误",
       };
       return labels[type] || type;
     },
@@ -395,9 +438,9 @@ export default {
      */
     getStatusText(status) {
       const texts = {
-        normal: '正常',
-        warning: '警告',
-        critical: '异常'
+        normal: "正常",
+        warning: "警告",
+        critical: "异常",
       };
       return texts[status] || status;
     },
@@ -406,18 +449,18 @@ export default {
      * 获取内存条样式类
      */
     getMemoryBarClass(usage) {
-      if (usage > 90) return 'critical';
-      if (usage > 70) return 'warning';
-      return 'normal';
+      if (usage > 90) return "critical";
+      if (usage > 70) return "warning";
+      return "normal";
     },
 
     /**
      * 获取成功率样式类
      */
     getSuccessRateClass(rate) {
-      if (rate >= 0.8) return 'good';
-      if (rate >= 0.5) return 'medium';
-      return 'poor';
+      if (rate >= 0.8) return "good";
+      if (rate >= 0.5) return "medium";
+      return "poor";
     },
 
     /**
@@ -425,24 +468,26 @@ export default {
      */
     getRecommendationText(recommendation) {
       const texts = {
-        cleanup: '建议执行内存清理以释放资源',
-        restart: '建议重启应用程序以恢复稳定性',
-        switchAdapter: '建议切换到备用适配器'
+        cleanup: "建议执行内存清理以释放资源",
+        restart: "建议重启应用程序以恢复稳定性",
+        switchAdapter: "建议切换到备用适配器",
       };
-      return texts[recommendation.action] || `建议执行: ${recommendation.action}`;
+      return (
+        texts[recommendation.action] || `建议执行: ${recommendation.action}`
+      );
     },
 
     /**
      * 格式化字节数
      */
     formatBytes(bytes) {
-      if (bytes === 0) return '0 B';
-      
+      if (bytes === 0) return "0 B";
+
       const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const sizes = ["B", "KB", "MB", "GB"];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
-      
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
     },
 
     /**
@@ -450,7 +495,7 @@ export default {
      */
     handleTriggerHover() {
       // 可以添加悬停预览效果
-      this.$emit('trigger-hover');
+      this.$emit("trigger-hover");
     },
 
     /**
@@ -458,25 +503,28 @@ export default {
      */
     isDragHandle(target) {
       // 首先检查是否是专门的拖拽手柄
-      const dragHandle = this.$el.querySelector('.drag-handle');
-      if (dragHandle && (dragHandle === target || dragHandle.contains(target))) {
+      const dragHandle = this.$el.querySelector(".drag-handle");
+      if (
+        dragHandle &&
+        (dragHandle === target || dragHandle.contains(target))
+      ) {
         return true;
       }
 
       // 检查是否是健康指示器区域，但排除切换箭头
-      const healthIndicator = this.$el.querySelector('.health-indicator');
+      const healthIndicator = this.$el.querySelector(".health-indicator");
       if (!healthIndicator || !healthIndicator.contains(target)) {
         return false;
       }
 
       // 排除切换箭头和其他交互元素
       const excludeSelectors = [
-        '.toggle-arrow',
-        'button',
-        'input',
-        'select',
+        ".toggle-arrow",
+        "button",
+        "input",
+        "select",
         '[role="button"]',
-        '.clickable'
+        ".clickable",
       ];
 
       for (const selector of excludeSelectors) {
@@ -494,12 +542,12 @@ export default {
      */
     getEdgeIcon(edge) {
       const icons = {
-        top: '⬆️',
-        bottom: '⬇️',
-        left: '⬅️',
-        right: '➡️'
+        top: "⬆️",
+        bottom: "⬇️",
+        left: "⬅️",
+        right: "➡️",
       };
-      return icons[edge] || '📌';
+      return icons[edge] || "📌";
     },
 
     /**
@@ -507,8 +555,8 @@ export default {
      */
     cleanup() {
       this.stopAutoCheck();
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -740,9 +788,15 @@ export default {
   font-size: 11px;
 }
 
-.success-rate.good { color: #28a745; }
-.success-rate.medium { color: #ffc107; }
-.success-rate.poor { color: #dc3545; }
+.success-rate.good {
+  color: #28a745;
+}
+.success-rate.medium {
+  color: #ffc107;
+}
+.success-rate.poor {
+  color: #dc3545;
+}
 
 .recommendations {
   display: flex;

@@ -3,8 +3,8 @@
     <div class="panel-header" v-if="showHeader">
       <h3 class="panel-title">{{ title }}</h3>
       <div class="panel-actions">
-        <button 
-          v-if="showResetAll" 
+        <button
+          v-if="showResetAll"
           class="reset-all-button"
           @click="resetAll"
           :disabled="disabled"
@@ -14,12 +14,12 @@
         </button>
       </div>
     </div>
-    
+
     <div class="panel-content">
       <!-- 旋转控制 -->
       <div v-if="showRotation" class="transform-section">
         <h4 class="section-title">旋转</h4>
-        
+
         <div class="rotation-controls">
           <!-- 旋转角度滑块 -->
           <div class="control-item">
@@ -36,24 +36,24 @@
               @change-complete="handleTransformComplete"
             />
           </div>
-          
+
           <!-- 快速旋转按钮 -->
           <div class="quick-rotation">
-            <tool-button 
+            <tool-button
               icon="rotate-left"
               tooltip="逆时针旋转90°"
               size="small"
               @click="quickRotate(-90)"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="rotate-right"
               tooltip="顺时针旋转90°"
               size="small"
               @click="quickRotate(90)"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="rotate-180"
               tooltip="旋转180°"
               size="small"
@@ -63,11 +63,11 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 缩放控制 -->
       <div v-if="showScale" class="transform-section">
         <h4 class="section-title">缩放</h4>
-        
+
         <div class="scale-controls">
           <!-- 统一缩放 -->
           <div v-if="uniformScale" class="control-item">
@@ -85,7 +85,7 @@
               @change-complete="handleTransformComplete"
             />
           </div>
-          
+
           <!-- 分别缩放 -->
           <template v-else>
             <div class="control-item">
@@ -103,7 +103,7 @@
                 @change-complete="handleTransformComplete"
               />
             </div>
-            
+
             <div class="control-item">
               <slider-control
                 v-model="scaleY"
@@ -120,33 +120,33 @@
               />
             </div>
           </template>
-          
+
           <!-- 缩放选项 -->
           <div class="scale-options">
             <label class="checkbox-label">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 v-model="uniformScale"
                 :disabled="disabled"
                 @change="handleUniformScaleToggle"
               />
               <span>保持比例</span>
             </label>
-            
+
             <div class="quick-scale">
-              <tool-button 
+              <tool-button
                 label="50%"
                 size="small"
                 @click="quickScale(0.5)"
                 :disabled="disabled"
               />
-              <tool-button 
+              <tool-button
                 label="100%"
                 size="small"
                 @click="quickScale(1)"
                 :disabled="disabled"
               />
-              <tool-button 
+              <tool-button
                 label="200%"
                 size="small"
                 @click="quickScale(2)"
@@ -156,13 +156,13 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 翻转控制 -->
       <div v-if="showFlip" class="transform-section">
         <h4 class="section-title">翻转</h4>
-        
+
         <div class="flip-controls">
-          <tool-button 
+          <tool-button
             icon="flip-horizontal"
             label="水平翻转"
             size="small"
@@ -170,7 +170,7 @@
             @click="toggleFlipHorizontal"
             :disabled="disabled"
           />
-          <tool-button 
+          <tool-button
             icon="flip-vertical"
             label="垂直翻转"
             size="small"
@@ -180,11 +180,11 @@
           />
         </div>
       </div>
-      
+
       <!-- 位置控制 -->
       <div v-if="showPosition" class="transform-section">
         <h4 class="section-title">位置</h4>
-        
+
         <div class="position-controls">
           <div class="control-item">
             <slider-control
@@ -200,7 +200,7 @@
               @change-complete="handleTransformComplete"
             />
           </div>
-          
+
           <div class="control-item">
             <slider-control
               v-model="positionY"
@@ -215,66 +215,66 @@
               @change-complete="handleTransformComplete"
             />
           </div>
-          
+
           <!-- 位置快捷按钮 -->
           <div class="position-grid">
-            <tool-button 
+            <tool-button
               icon="align-top-left"
               tooltip="左上角"
               size="small"
               @click="setPosition('top-left')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-top"
               tooltip="顶部居中"
               size="small"
               @click="setPosition('top-center')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-top-right"
               tooltip="右上角"
               size="small"
               @click="setPosition('top-right')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-left"
               tooltip="左侧居中"
               size="small"
               @click="setPosition('middle-left')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-center"
               tooltip="居中"
               size="small"
               @click="setPosition('center')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-right"
               tooltip="右侧居中"
               size="small"
               @click="setPosition('middle-right')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-bottom-left"
               tooltip="左下角"
               size="small"
               @click="setPosition('bottom-left')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-bottom"
               tooltip="底部居中"
               size="small"
               @click="setPosition('bottom-center')"
               :disabled="disabled"
             />
-            <tool-button 
+            <tool-button
               icon="align-bottom-right"
               tooltip="右下角"
               size="small"
@@ -284,20 +284,20 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 自定义变换项 -->
       <slot name="custom-transforms"></slot>
     </div>
-    
+
     <!-- 预设 -->
     <div v-if="showPresets && presets.length > 0" class="panel-presets">
       <h4 class="presets-title">预设</h4>
       <div class="presets-grid">
-        <button 
-          v-for="(preset, index) in presets" 
+        <button
+          v-for="(preset, index) in presets"
           :key="index"
           class="preset-button"
-          :class="{ 'active': activePreset === preset.id }"
+          :class="{ active: activePreset === preset.id }"
           @click="applyPreset(preset)"
           :disabled="disabled"
         >
@@ -309,118 +309,118 @@
 </template>
 
 <script>
-import SliderControl from './SliderControl.vue';
-import ToolButton from './ToolButton.vue';
+import SliderControl from "./SliderControl.vue";
+import ToolButton from "./ToolButton.vue";
 
 export default {
-  name: 'TransformPanel',
+  name: "TransformPanel",
   components: {
     SliderControl,
-    ToolButton
+    ToolButton,
   },
-  
+
   props: {
     // 面板标题
     title: {
       type: String,
-      default: '变换'
+      default: "变换",
     },
-    
+
     // 显示选项
     showHeader: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showResetAll: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 变换项显示控制
     showRotation: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showScale: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showFlip: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showPosition: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 预设
     showPresets: {
       type: Boolean,
-      default: false
+      default: false,
     },
     presets: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'compact', 'minimal'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "compact", "minimal"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 旋转
       rotationAngle: 0,
-      
+
       // 缩放
       scaleValue: 1,
       scaleX: 1,
       scaleY: 1,
       uniformScale: true,
-      
+
       // 翻转
       flipHorizontal: false,
       flipVertical: false,
-      
+
       // 位置
       positionX: 0,
       positionY: 0,
-      
+
       // 活动预设
-      activePreset: null
+      activePreset: null,
     };
   },
-  
+
   computed: {
     panelClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
-    }
+    },
   },
-  
+
   methods: {
     /**
      * 处理旋转变化
      */
     handleRotationChange(value) {
       this.rotationAngle = value;
-      this.$emit('rotation-change', value);
+      this.$emit("rotation-change", value);
       this.activePreset = null;
     },
-    
+
     /**
      * 快速旋转
      */
@@ -429,10 +429,10 @@ export default {
       if (this.rotationAngle < 0) {
         this.rotationAngle += 360;
       }
-      this.$emit('rotation-change', this.rotationAngle);
+      this.$emit("rotation-change", this.rotationAngle);
       this.activePreset = null;
     },
-    
+
     /**
      * 处理统一缩放变化
      */
@@ -440,28 +440,28 @@ export default {
       this.scaleValue = value;
       this.scaleX = value;
       this.scaleY = value;
-      this.$emit('scale-change', { x: value, y: value, uniform: true });
+      this.$emit("scale-change", { x: value, y: value, uniform: true });
       this.activePreset = null;
     },
-    
+
     /**
      * 处理X轴缩放变化
      */
     handleScaleXChange(value) {
       this.scaleX = value;
-      this.$emit('scale-change', { x: value, y: this.scaleY, uniform: false });
+      this.$emit("scale-change", { x: value, y: this.scaleY, uniform: false });
       this.activePreset = null;
     },
-    
+
     /**
      * 处理Y轴缩放变化
      */
     handleScaleYChange(value) {
       this.scaleY = value;
-      this.$emit('scale-change', { x: this.scaleX, y: value, uniform: false });
+      this.$emit("scale-change", { x: this.scaleX, y: value, uniform: false });
       this.activePreset = null;
     },
-    
+
     /**
      * 处理统一缩放切换
      */
@@ -470,10 +470,14 @@ export default {
         // 切换到统一缩放，使用当前X轴缩放值
         this.scaleValue = this.scaleX;
         this.scaleY = this.scaleX;
-        this.$emit('scale-change', { x: this.scaleX, y: this.scaleX, uniform: true });
+        this.$emit("scale-change", {
+          x: this.scaleX,
+          y: this.scaleX,
+          uniform: true,
+        });
       }
     },
-    
+
     /**
      * 快速缩放
      */
@@ -482,102 +486,118 @@ export default {
         this.scaleValue = scale;
         this.scaleX = scale;
         this.scaleY = scale;
-        this.$emit('scale-change', { x: scale, y: scale, uniform: true });
+        this.$emit("scale-change", { x: scale, y: scale, uniform: true });
       } else {
         this.scaleX = scale;
         this.scaleY = scale;
-        this.$emit('scale-change', { x: scale, y: scale, uniform: false });
+        this.$emit("scale-change", { x: scale, y: scale, uniform: false });
       }
       this.activePreset = null;
     },
-    
+
     /**
      * 切换水平翻转
      */
     toggleFlipHorizontal() {
       this.flipHorizontal = !this.flipHorizontal;
-      this.$emit('flip-change', { horizontal: this.flipHorizontal, vertical: this.flipVertical });
+      this.$emit("flip-change", {
+        horizontal: this.flipHorizontal,
+        vertical: this.flipVertical,
+      });
       this.activePreset = null;
     },
-    
+
     /**
      * 切换垂直翻转
      */
     toggleFlipVertical() {
       this.flipVertical = !this.flipVertical;
-      this.$emit('flip-change', { horizontal: this.flipHorizontal, vertical: this.flipVertical });
+      this.$emit("flip-change", {
+        horizontal: this.flipHorizontal,
+        vertical: this.flipVertical,
+      });
       this.activePreset = null;
     },
-    
+
     /**
      * 处理X坐标变化
      */
     handlePositionXChange(value) {
       this.positionX = value;
-      this.$emit('position-change', { x: value, y: this.positionY });
+      this.$emit("position-change", { x: value, y: this.positionY });
       this.activePreset = null;
     },
-    
+
     /**
      * 处理Y坐标变化
      */
     handlePositionYChange(value) {
       this.positionY = value;
-      this.$emit('position-change', { x: this.positionX, y: value });
+      this.$emit("position-change", { x: this.positionX, y: value });
       this.activePreset = null;
     },
-    
+
     /**
      * 设置位置
      */
     setPosition(position) {
-      let x = 0, y = 0;
-      
+      let x = 0,
+        y = 0;
+
       // 这里的坐标计算需要根据实际的画布尺寸来调整
       // 暂时使用相对值
       switch (position) {
-        case 'top-left':
-          x = -100; y = -100;
+        case "top-left":
+          x = -100;
+          y = -100;
           break;
-        case 'top-center':
-          x = 0; y = -100;
+        case "top-center":
+          x = 0;
+          y = -100;
           break;
-        case 'top-right':
-          x = 100; y = -100;
+        case "top-right":
+          x = 100;
+          y = -100;
           break;
-        case 'middle-left':
-          x = -100; y = 0;
+        case "middle-left":
+          x = -100;
+          y = 0;
           break;
-        case 'center':
-          x = 0; y = 0;
+        case "center":
+          x = 0;
+          y = 0;
           break;
-        case 'middle-right':
-          x = 100; y = 0;
+        case "middle-right":
+          x = 100;
+          y = 0;
           break;
-        case 'bottom-left':
-          x = -100; y = 100;
+        case "bottom-left":
+          x = -100;
+          y = 100;
           break;
-        case 'bottom-center':
-          x = 0; y = 100;
+        case "bottom-center":
+          x = 0;
+          y = 100;
           break;
-        case 'bottom-right':
-          x = 100; y = 100;
+        case "bottom-right":
+          x = 100;
+          y = 100;
           break;
       }
-      
+
       this.positionX = x;
       this.positionY = y;
-      this.$emit('position-change', { x, y });
+      this.$emit("position-change", { x, y });
       this.activePreset = null;
     },
-    
+
     /**
      * 处理变换完成
      */
     handleTransformComplete() {
-      this.$emit('transform-complete', this.getTransformValues());
+      this.$emit("transform-complete", this.getTransformValues());
     },
-    
+
     /**
      * 重置所有变换
      */
@@ -591,60 +611,77 @@ export default {
       this.flipVertical = false;
       this.positionX = 0;
       this.positionY = 0;
-      
+
       this.activePreset = null;
-      
-      this.$emit('reset-all');
-      this.$emit('transform-complete', this.getTransformValues());
+
+      this.$emit("reset-all");
+      this.$emit("transform-complete", this.getTransformValues());
     },
-    
+
     /**
      * 应用预设
      */
     applyPreset(preset) {
       // 更新活动预设
       this.activePreset = preset.id;
-      
+
       // 应用预设值
       if (preset.values) {
         if (preset.values.rotation !== undefined) {
           this.rotationAngle = preset.values.rotation;
-          this.$emit('rotation-change', this.rotationAngle);
+          this.$emit("rotation-change", this.rotationAngle);
         }
-        
+
         if (preset.values.scale !== undefined) {
-          if (typeof preset.values.scale === 'number') {
+          if (typeof preset.values.scale === "number") {
             this.scaleValue = preset.values.scale;
             this.scaleX = preset.values.scale;
             this.scaleY = preset.values.scale;
             this.uniformScale = true;
-            this.$emit('scale-change', { x: preset.values.scale, y: preset.values.scale, uniform: true });
-          } else if (preset.values.scale.x !== undefined && preset.values.scale.y !== undefined) {
+            this.$emit("scale-change", {
+              x: preset.values.scale,
+              y: preset.values.scale,
+              uniform: true,
+            });
+          } else if (
+            preset.values.scale.x !== undefined &&
+            preset.values.scale.y !== undefined
+          ) {
             this.scaleX = preset.values.scale.x;
             this.scaleY = preset.values.scale.y;
             this.uniformScale = preset.values.scale.uniform || false;
-            this.$emit('scale-change', { x: this.scaleX, y: this.scaleY, uniform: this.uniformScale });
+            this.$emit("scale-change", {
+              x: this.scaleX,
+              y: this.scaleY,
+              uniform: this.uniformScale,
+            });
           }
         }
-        
+
         if (preset.values.flip !== undefined) {
           this.flipHorizontal = preset.values.flip.horizontal || false;
           this.flipVertical = preset.values.flip.vertical || false;
-          this.$emit('flip-change', { horizontal: this.flipHorizontal, vertical: this.flipVertical });
+          this.$emit("flip-change", {
+            horizontal: this.flipHorizontal,
+            vertical: this.flipVertical,
+          });
         }
-        
+
         if (preset.values.position !== undefined) {
           this.positionX = preset.values.position.x || 0;
           this.positionY = preset.values.position.y || 0;
-          this.$emit('position-change', { x: this.positionX, y: this.positionY });
+          this.$emit("position-change", {
+            x: this.positionX,
+            y: this.positionY,
+          });
         }
       }
-      
+
       // 触发预设应用事件
-      this.$emit('preset-applied', preset);
-      this.$emit('transform-complete', this.getTransformValues());
+      this.$emit("preset-applied", preset);
+      this.$emit("transform-complete", this.getTransformValues());
     },
-    
+
     /**
      * 获取所有变换值
      */
@@ -654,31 +691,31 @@ export default {
         scale: {
           x: this.scaleX,
           y: this.scaleY,
-          uniform: this.uniformScale
+          uniform: this.uniformScale,
         },
         flip: {
           horizontal: this.flipHorizontal,
-          vertical: this.flipVertical
+          vertical: this.flipVertical,
         },
         position: {
           x: this.positionX,
-          y: this.positionY
-        }
+          y: this.positionY,
+        },
       };
     },
-    
+
     /**
      * 设置变换值
      */
     setTransformValues(values) {
       if (!values) return;
-      
+
       if (values.rotation !== undefined) {
         this.rotationAngle = values.rotation;
       }
-      
+
       if (values.scale !== undefined) {
-        if (typeof values.scale === 'number') {
+        if (typeof values.scale === "number") {
           this.scaleValue = values.scale;
           this.scaleX = values.scale;
           this.scaleY = values.scale;
@@ -692,18 +729,18 @@ export default {
           }
         }
       }
-      
+
       if (values.flip !== undefined) {
         this.flipHorizontal = values.flip.horizontal || false;
         this.flipVertical = values.flip.vertical || false;
       }
-      
+
       if (values.position !== undefined) {
         this.positionX = values.position.x || 0;
         this.positionY = values.position.y || 0;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -779,7 +816,7 @@ export default {
 }
 
 .icon-reset::before {
-  content: '↺';
+  content: "↺";
   font-size: 14px;
 }
 
@@ -927,18 +964,46 @@ export default {
 }
 
 /* 图标样式 */
-.icon-rotate-left::before { content: '↺'; }
-.icon-rotate-right::before { content: '↻'; }
-.icon-rotate-180::before { content: '↻'; }
-.icon-flip-horizontal::before { content: '⇄'; }
-.icon-flip-vertical::before { content: '⇅'; }
-.icon-align-top-left::before { content: '⌜'; }
-.icon-align-top::before { content: '⌝'; }
-.icon-align-top-right::before { content: '⌞'; }
-.icon-align-left::before { content: '⌟'; }
-.icon-align-center::before { content: '⊞'; }
-.icon-align-right::before { content: '⊟'; }
-.icon-align-bottom-left::before { content: '⌊'; }
-.icon-align-bottom::before { content: '⌋'; }
-.icon-align-bottom-right::before { content: '⌈'; }
+.icon-rotate-left::before {
+  content: "↺";
+}
+.icon-rotate-right::before {
+  content: "↻";
+}
+.icon-rotate-180::before {
+  content: "↻";
+}
+.icon-flip-horizontal::before {
+  content: "⇄";
+}
+.icon-flip-vertical::before {
+  content: "⇅";
+}
+.icon-align-top-left::before {
+  content: "⌜";
+}
+.icon-align-top::before {
+  content: "⌝";
+}
+.icon-align-top-right::before {
+  content: "⌞";
+}
+.icon-align-left::before {
+  content: "⌟";
+}
+.icon-align-center::before {
+  content: "⊞";
+}
+.icon-align-right::before {
+  content: "⊟";
+}
+.icon-align-bottom-left::before {
+  content: "⌊";
+}
+.icon-align-bottom::before {
+  content: "⌋";
+}
+.icon-align-bottom-right::before {
+  content: "⌈";
+}
 </style>

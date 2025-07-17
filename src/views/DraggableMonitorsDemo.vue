@@ -3,33 +3,37 @@
     <div class="demo-header">
       <h1>可拖拽监控控件演示</h1>
       <p>演示系统状态监控和性能监控控件的拖拽、边缘吸附和冲突避免功能</p>
-      
+
       <div class="demo-controls">
         <button @click="resetPositions" class="control-btn">重置位置</button>
         <button @click="toggleMonitors" class="control-btn">
-          {{ showMonitors ? '隐藏监控器' : '显示监控器' }}
+          {{ showMonitors ? "隐藏监控器" : "显示监控器" }}
         </button>
         <button @click="simulateConflict" class="control-btn">模拟冲突</button>
       </div>
-      
+
       <div class="demo-info">
         <div class="info-item">
-          <strong>拖拽功能：</strong>点击并拖拽监控器头部的 ⋮⋮ 图标或整个头部区域
+          <strong>拖拽功能：</strong>点击并拖拽监控器头部的 ⋮⋮
+          图标或整个头部区域
         </div>
         <div class="info-item">
           <strong>边缘吸附：</strong>将监控器拖拽到屏幕边缘会自动吸附并部分隐藏
         </div>
         <div class="info-item">
-          <strong>边缘指示器：</strong>拖拽时接近边缘会显示彩色指示器，提示可吸附位置
+          <strong>边缘指示器：</strong
+          >拖拽时接近边缘会显示彩色指示器，提示可吸附位置
         </div>
         <div class="info-item">
-          <strong>吸附状态标识：</strong>吸附后显示明确的位置标识，如"已吸附到右边缘"
+          <strong>吸附状态标识：</strong
+          >吸附后显示明确的位置标识，如"已吸附到右边缘"
         </div>
         <div class="info-item">
           <strong>冲突避免：</strong>当两个监控器重叠时会自动调整位置
         </div>
         <div class="info-item">
-          <strong>触发区域：</strong>吸附后点击边缘的触发区域可重新展开，区域显示位置提示
+          <strong>触发区域：</strong
+          >吸附后点击边缘的触发区域可重新展开，区域显示位置提示
         </div>
       </div>
     </div>
@@ -38,8 +42,10 @@
     <div class="demo-content">
       <div class="content-placeholder">
         <h2>主要内容区域</h2>
-        <p>这里是应用的主要内容区域。监控控件会浮动在内容之上，不会影响主要内容的布局。</p>
-        
+        <p>
+          这里是应用的主要内容区域。监控控件会浮动在内容之上，不会影响主要内容的布局。
+        </p>
+
         <div class="feature-grid">
           <div class="feature-card">
             <h3>图像编辑</h3>
@@ -100,8 +106,8 @@
         <button @click="showEventLog = false" class="close-btn">×</button>
       </div>
       <div class="log-entries">
-        <div 
-          v-for="(event, index) in eventLog" 
+        <div
+          v-for="(event, index) in eventLog"
           :key="index"
           class="log-entry"
           :class="`log-${event.type}`"
@@ -113,7 +119,7 @@
     </div>
 
     <!-- 显示事件日志按钮 -->
-    <button 
+    <button
       v-if="!showEventLog && eventLog.length > 0"
       @click="showEventLog = true"
       class="show-log-btn"
@@ -124,21 +130,21 @@
 </template>
 
 <script>
-import PerformanceMonitor from '@/components/ui/PerformanceMonitor.vue';
-import SystemHealthMonitor from '@/components/ui/SystemHealthMonitor.vue';
+import PerformanceMonitor from "@/components/ui/PerformanceMonitor.vue";
+import SystemHealthMonitor from "@/components/ui/SystemHealthMonitor.vue";
 
 export default {
-  name: 'DraggableMonitorsDemo',
+  name: "DraggableMonitorsDemo",
   components: {
     PerformanceMonitor,
-    SystemHealthMonitor
+    SystemHealthMonitor,
   },
   data() {
     return {
       showMonitors: true,
       showEventLog: false,
       eventLog: [],
-      maxLogEntries: 50
+      maxLogEntries: 50,
     };
   },
   methods: {
@@ -146,49 +152,61 @@ export default {
      * 处理拖拽开始事件
      */
     handleDragStart(monitorType) {
-      this.addEventLog('info', `${monitorType} 监控器开始拖拽`);
+      this.addEventLog("info", `${monitorType} 监控器开始拖拽`);
     },
 
     /**
      * 处理拖拽结束事件
      */
     handleDragEnd(monitorType, position) {
-      this.addEventLog('info', `${monitorType} 监控器拖拽结束，位置: (${position?.x || 0}, ${position?.y || 0})`);
+      this.addEventLog(
+        "info",
+        `${monitorType} 监控器拖拽结束，位置: (${position?.x || 0}, ${
+          position?.y || 0
+        })`
+      );
     },
 
     /**
      * 处理吸附事件
      */
     handleSnapped(monitorType, edge) {
-      this.addEventLog('success', `${monitorType} 监控器吸附到 ${edge} 边缘`);
+      this.addEventLog("success", `${monitorType} 监控器吸附到 ${edge} 边缘`);
     },
 
     /**
      * 处理取消吸附事件
      */
     handleUnsnapped(monitorType) {
-      this.addEventLog('info', `${monitorType} 监控器取消吸附`);
+      this.addEventLog("info", `${monitorType} 监控器取消吸附`);
     },
 
     /**
      * 处理触发区域悬停
      */
     handleTriggerHover(monitorType) {
-      this.addEventLog('info', `${monitorType} 监控器触发区域悬停`);
+      this.addEventLog("info", `${monitorType} 监控器触发区域悬停`);
     },
 
     /**
      * 处理边缘指示器显示
      */
     handleEdgeIndicatorShow(monitorType, { edge, distance, opacity }) {
-      this.addEventLog('info', `${monitorType} 监控器显示${this.getEdgeDisplayName(edge)}边缘指示器 (距离: ${Math.round(distance)}px, 透明度: ${opacity.toFixed(2)})`);
+      this.addEventLog(
+        "info",
+        `${monitorType} 监控器显示${this.getEdgeDisplayName(
+          edge
+        )}边缘指示器 (距离: ${Math.round(
+          distance
+        )}px, 透明度: ${opacity.toFixed(2)})`
+      );
     },
 
     /**
      * 处理边缘指示器隐藏
      */
     handleEdgeIndicatorHide(monitorType) {
-      this.addEventLog('info', `${monitorType} 监控器隐藏边缘指示器`);
+      this.addEventLog("info", `${monitorType} 监控器隐藏边缘指示器`);
     },
 
     /**
@@ -196,14 +214,24 @@ export default {
      */
     resetPositions() {
       if (this.$refs.performanceMonitor) {
-        this.$refs.performanceMonitor.position = { x: 20, y: 20, isSnapped: false, snapEdge: null };
+        this.$refs.performanceMonitor.position = {
+          x: 20,
+          y: 20,
+          isSnapped: false,
+          snapEdge: null,
+        };
         this.$refs.performanceMonitor.savePosition();
       }
       if (this.$refs.systemHealthMonitor) {
-        this.$refs.systemHealthMonitor.position = { x: 20, y: 80, isSnapped: false, snapEdge: null };
+        this.$refs.systemHealthMonitor.position = {
+          x: 20,
+          y: 80,
+          isSnapped: false,
+          snapEdge: null,
+        };
         this.$refs.systemHealthMonitor.savePosition();
       }
-      this.addEventLog('success', '监控器位置已重置');
+      this.addEventLog("success", "监控器位置已重置");
     },
 
     /**
@@ -211,7 +239,7 @@ export default {
      */
     toggleMonitors() {
       this.showMonitors = !this.showMonitors;
-      this.addEventLog('info', `监控器${this.showMonitors ? '显示' : '隐藏'}`);
+      this.addEventLog("info", `监控器${this.showMonitors ? "显示" : "隐藏"}`);
     },
 
     /**
@@ -220,13 +248,23 @@ export default {
     simulateConflict() {
       if (this.$refs.performanceMonitor && this.$refs.systemHealthMonitor) {
         // 将两个监控器移动到相近位置
-        this.$refs.performanceMonitor.position = { x: 100, y: 100, isSnapped: false, snapEdge: null };
-        this.$refs.systemHealthMonitor.position = { x: 110, y: 110, isSnapped: false, snapEdge: null };
-        
+        this.$refs.performanceMonitor.position = {
+          x: 100,
+          y: 100,
+          isSnapped: false,
+          snapEdge: null,
+        };
+        this.$refs.systemHealthMonitor.position = {
+          x: 110,
+          y: 110,
+          isSnapped: false,
+          snapEdge: null,
+        };
+
         // 触发冲突检测
         this.$refs.systemHealthMonitor.avoidConflicts();
-        
-        this.addEventLog('warning', '模拟冲突情况，系统自动调整位置');
+
+        this.addEventLog("warning", "模拟冲突情况，系统自动调整位置");
       }
     },
 
@@ -237,11 +275,11 @@ export default {
       const event = {
         type,
         message,
-        time: new Date().toLocaleTimeString()
+        time: new Date().toLocaleTimeString(),
       };
-      
+
       this.eventLog.unshift(event);
-      
+
       // 限制日志条目数量
       if (this.eventLog.length > this.maxLogEntries) {
         this.eventLog = this.eventLog.slice(0, this.maxLogEntries);
@@ -259,28 +297,28 @@ export default {
      * 处理系统健康更新
      */
     handleHealthUpdated(health) {
-      this.addEventLog('info', `系统健康状态更新: ${health.overallHealth}`);
+      this.addEventLog("info", `系统健康状态更新: ${health.overallHealth}`);
     },
 
     /**
      * 处理系统操作请求
      */
     handleSystemAction(action) {
-      this.addEventLog('info', `系统操作请求: ${action}`);
+      this.addEventLog("info", `系统操作请求: ${action}`);
     },
 
     /**
      * 处理建议执行
      */
     handleRecommendationExecuted(recommendation) {
-      this.addEventLog('success', `执行建议: ${recommendation.action}`);
+      this.addEventLog("success", `执行建议: ${recommendation.action}`);
     },
 
     /**
      * 处理健康报告导出
      */
     handleHealthReportExported() {
-      this.addEventLog('success', '健康报告已导出');
+      this.addEventLog("success", "健康报告已导出");
     },
 
     /**
@@ -288,18 +326,18 @@ export default {
      */
     getEdgeDisplayName(edge) {
       const names = {
-        top: '顶部',
-        bottom: '底部',
-        left: '左侧',
-        right: '右侧'
+        top: "顶部",
+        bottom: "底部",
+        left: "左侧",
+        right: "右侧",
       };
-      return names[edge] || '';
-    }
+      return names[edge] || "";
+    },
   },
-  
+
   mounted() {
-    this.addEventLog('success', '可拖拽监控控件演示页面已加载');
-  }
+    this.addEventLog("success", "可拖拽监控控件演示页面已加载");
+  },
 };
 </script>
 
@@ -308,7 +346,7 @@ export default {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .demo-header {
@@ -455,7 +493,8 @@ export default {
   gap: 8px;
 }
 
-.clear-btn, .close-btn {
+.clear-btn,
+.close-btn {
   padding: 4px 8px;
   border: none;
   border-radius: 4px;
@@ -465,7 +504,8 @@ export default {
   font-size: 12px;
 }
 
-.clear-btn:hover, .close-btn:hover {
+.clear-btn:hover,
+.close-btn:hover {
   background: #5a6268;
 }
 
@@ -528,29 +568,29 @@ export default {
   .draggable-monitors-demo {
     padding: 10px;
   }
-  
+
   .demo-header {
     padding: 16px;
   }
-  
+
   .demo-header h1 {
     font-size: 24px;
   }
-  
+
   .demo-controls {
     flex-direction: column;
   }
-  
+
   .control-btn {
     width: 100%;
   }
-  
+
   .event-log {
     left: 10px;
     right: 10px;
     width: auto;
   }
-  
+
   .show-log-btn {
     left: 10px;
     right: 10px;

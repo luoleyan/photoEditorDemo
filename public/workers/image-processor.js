@@ -4,21 +4,21 @@
  */
 
 // 监听主线程消息
-self.onmessage = function(event) {
+self.onmessage = function (event) {
   const { type, imageData, processor, options } = event.data;
 
   try {
     switch (type) {
-      case 'process':
+      case "process":
         processImage(imageData, processor, options);
         break;
-      case 'filter':
+      case "filter":
         applyFilter(imageData, options);
         break;
-      case 'resize':
+      case "resize":
         resizeImage(imageData, options);
         break;
-      case 'compress':
+      case "compress":
         compressImage(imageData, options);
         break;
       default:
@@ -27,7 +27,7 @@ self.onmessage = function(event) {
   } catch (error) {
     self.postMessage({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -41,19 +41,19 @@ self.onmessage = function(event) {
 function processImage(imageData, processorCode, options) {
   try {
     // 创建处理函数
-    const processor = new Function('imageData', 'options', processorCode);
-    
+    const processor = new Function("imageData", "options", processorCode);
+
     // 执行处理
     const result = processor(imageData, options);
-    
+
     self.postMessage({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
     self.postMessage({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 }
@@ -66,36 +66,36 @@ function processImage(imageData, processorCode, options) {
 function applyFilter(imageData, options) {
   const { filterType, intensity = 1 } = options;
   const data = imageData.data;
-  
+
   switch (filterType) {
-    case 'grayscale':
+    case "grayscale":
       applyGrayscale(data, intensity);
       break;
-    case 'sepia':
+    case "sepia":
       applySepia(data, intensity);
       break;
-    case 'blur':
+    case "blur":
       applyBlur(imageData, options);
       break;
-    case 'brightness':
+    case "brightness":
       applyBrightness(data, intensity);
       break;
-    case 'contrast':
+    case "contrast":
       applyContrast(data, intensity);
       break;
-    case 'saturation':
+    case "saturation":
       applySaturation(data, intensity);
       break;
-    case 'invert':
+    case "invert":
       applyInvert(data, intensity);
       break;
     default:
       throw new Error(`Unknown filter type: ${filterType}`);
   }
-  
+
   self.postMessage({
     success: true,
-    data: imageData
+    data: imageData,
   });
 }
 
@@ -123,11 +123,11 @@ function applySepia(data, intensity) {
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
-    
-    const newR = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-    const newG = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-    const newB = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
-    
+
+    const newR = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
+    const newG = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
+    const newB = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
+
     data[i] = r + (newR - r) * intensity;
     data[i + 1] = g + (newG - g) * intensity;
     data[i + 2] = b + (newB - b) * intensity;
@@ -141,7 +141,7 @@ function applySepia(data, intensity) {
  */
 function applyBrightness(data, intensity) {
   const adjustment = intensity * 255;
-  
+
   for (let i = 0; i < data.length; i += 4) {
     data[i] = Math.max(0, Math.min(255, data[i] + adjustment));
     data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + adjustment));
@@ -155,12 +155,19 @@ function applyBrightness(data, intensity) {
  * @param {number} intensity - 强度 (-1 到 1)
  */
 function applyContrast(data, intensity) {
-  const factor = (259 * (intensity * 255 + 255)) / (255 * (259 - intensity * 255));
-  
+  const factor =
+    (259 * (intensity * 255 + 255)) / (255 * (259 - intensity * 255));
+
   for (let i = 0; i < data.length; i += 4) {
     data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128));
-    data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128));
-    data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128));
+    data[i + 1] = Math.max(
+      0,
+      Math.min(255, factor * (data[i + 1] - 128) + 128)
+    );
+    data[i + 2] = Math.max(
+      0,
+      Math.min(255, factor * (data[i + 2] - 128) + 128)
+    );
   }
 }
 
@@ -174,12 +181,18 @@ function applySaturation(data, intensity) {
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
-    
+
     const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-    
+
     data[i] = Math.max(0, Math.min(255, gray + (r - gray) * (1 + intensity)));
-    data[i + 1] = Math.max(0, Math.min(255, gray + (g - gray) * (1 + intensity)));
-    data[i + 2] = Math.max(0, Math.min(255, gray + (b - gray) * (1 + intensity)));
+    data[i + 1] = Math.max(
+      0,
+      Math.min(255, gray + (g - gray) * (1 + intensity))
+    );
+    data[i + 2] = Math.max(
+      0,
+      Math.min(255, gray + (b - gray) * (1 + intensity))
+    );
   }
 }
 
@@ -207,18 +220,21 @@ function applyBlur(imageData, options) {
   const height = imageData.height;
   const data = imageData.data;
   const output = new Uint8ClampedArray(data);
-  
+
   // 简单的盒式模糊
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      let r = 0, g = 0, b = 0, a = 0;
+      let r = 0,
+        g = 0,
+        b = 0,
+        a = 0;
       let count = 0;
-      
+
       for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
           const nx = x + dx;
           const ny = y + dy;
-          
+
           if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
             const idx = (ny * width + nx) * 4;
             r += data[idx];
@@ -229,7 +245,7 @@ function applyBlur(imageData, options) {
           }
         }
       }
-      
+
       const idx = (y * width + x) * 4;
       output[idx] = r / count;
       output[idx + 1] = g / count;
@@ -237,7 +253,7 @@ function applyBlur(imageData, options) {
       output[idx + 3] = a / count;
     }
   }
-  
+
   // 复制结果回原数据
   for (let i = 0; i < data.length; i++) {
     data[i] = output[i];
@@ -252,32 +268,32 @@ function applyBlur(imageData, options) {
 function resizeImage(imageData, options) {
   const { width: newWidth, height: newHeight } = options;
   const { width: oldWidth, height: oldHeight } = imageData;
-  
+
   const newImageData = new ImageData(newWidth, newHeight);
   const oldData = imageData.data;
   const newData = newImageData.data;
-  
+
   const scaleX = oldWidth / newWidth;
   const scaleY = oldHeight / newHeight;
-  
+
   for (let y = 0; y < newHeight; y++) {
     for (let x = 0; x < newWidth; x++) {
       const srcX = Math.floor(x * scaleX);
       const srcY = Math.floor(y * scaleY);
-      
+
       const srcIdx = (srcY * oldWidth + srcX) * 4;
       const dstIdx = (y * newWidth + x) * 4;
-      
+
       newData[dstIdx] = oldData[srcIdx];
       newData[dstIdx + 1] = oldData[srcIdx + 1];
       newData[dstIdx + 2] = oldData[srcIdx + 2];
       newData[dstIdx + 3] = oldData[srcIdx + 3];
     }
   }
-  
+
   self.postMessage({
     success: true,
-    data: newImageData
+    data: newImageData,
   });
 }
 
@@ -287,27 +303,28 @@ function resizeImage(imageData, options) {
  * @param {Object} options - 选项
  */
 function compressImage(imageData, options) {
-  const { quality = 0.8, format = 'image/jpeg' } = options;
-  
+  const { quality = 0.8, format = "image/jpeg" } = options;
+
   // 创建离屏画布
   const canvas = new OffscreenCanvas(imageData.width, imageData.height);
-  const ctx = canvas.getContext('2d');
-  
+  const ctx = canvas.getContext("2d");
+
   // 绘制图像数据
   ctx.putImageData(imageData, 0, 0);
-  
+
   // 转换为Blob
-  canvas.convertToBlob({ type: format, quality })
-    .then(blob => {
+  canvas
+    .convertToBlob({ type: format, quality })
+    .then((blob) => {
       self.postMessage({
         success: true,
-        data: blob
+        data: blob,
       });
     })
-    .catch(error => {
+    .catch((error) => {
       self.postMessage({
         success: false,
-        error: error.message
+        error: error.message,
       });
     });
 }

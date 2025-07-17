@@ -1,8 +1,5 @@
 <template>
-  <div 
-    class="editor-toolbar" 
-    :class="toolbarClasses"
-  >
+  <div class="editor-toolbar" :class="toolbarClasses">
     <!-- 工具栏左侧区域 -->
     <div class="toolbar-section toolbar-left">
       <slot name="left">
@@ -10,7 +7,7 @@
         <template v-for="(group, groupIndex) in visibleGroups">
           <div
             class="toolbar-group"
-            :class="{ 'active': group.active }"
+            :class="{ active: group.active }"
             v-if="!group.hidden"
             :key="'group-' + groupIndex"
           >
@@ -50,19 +47,23 @@
 
           <!-- 工具组分隔符 -->
           <div
-            v-if="groupIndex < visibleGroups.length - 1 && !group.hidden && !visibleGroups[groupIndex + 1].hidden"
+            v-if="
+              groupIndex < visibleGroups.length - 1 &&
+              !group.hidden &&
+              !visibleGroups[groupIndex + 1].hidden
+            "
             :key="'group-separator-' + groupIndex"
             class="group-separator"
           ></div>
         </template>
       </slot>
     </div>
-    
+
     <!-- 工具栏中间区域 -->
     <div class="toolbar-section toolbar-center">
       <slot name="center"></slot>
     </div>
-    
+
     <!-- 工具栏右侧区域 -->
     <div class="toolbar-section toolbar-right">
       <slot name="right">
@@ -74,16 +75,12 @@
             :dropdown="true"
             @click="toggleOverflowMenu"
           />
-          
+
           <!-- 溢出菜单 -->
-          <div 
-            v-if="showOverflowMenu" 
-            class="overflow-menu"
-            ref="overflowMenu"
-          >
+          <div v-if="showOverflowMenu" class="overflow-menu" ref="overflowMenu">
             <template v-for="(group, groupIndex) in overflowGroups">
               <div
-                v-if="!group.hidden && group.tools.some(t => !t.hidden)"
+                v-if="!group.hidden && group.tools.some((t) => !t.hidden)"
                 class="overflow-group"
                 :key="'overflow-group-' + groupIndex"
               >
@@ -98,14 +95,18 @@
                       :key="'overflow-tool-' + toolIndex"
                       class="overflow-tool"
                       :class="{
-                        'active': isToolActive(tool),
-                        'disabled': isToolDisabled(tool)
+                        active: isToolActive(tool),
+                        disabled: isToolDisabled(tool),
                       }"
                       @click="handleOverflowToolClick(tool, group)"
                     >
                       <i v-if="tool.icon" :class="`icon-${tool.icon}`"></i>
                       <span class="overflow-tool-label">{{ tool.label }}</span>
-                      <span v-if="tool.badge" class="overflow-tool-badge" :class="tool.badgeType">
+                      <span
+                        v-if="tool.badge"
+                        class="overflow-tool-badge"
+                        :class="tool.badgeType"
+                      >
                         {{ tool.badge }}
                       </span>
                     </div>
@@ -114,7 +115,11 @@
               </div>
 
               <div
-                v-if="groupIndex < overflowGroups.length - 1 && !group.hidden && !overflowGroups[groupIndex + 1].hidden"
+                v-if="
+                  groupIndex < overflowGroups.length - 1 &&
+                  !group.hidden &&
+                  !overflowGroups[groupIndex + 1].hidden
+                "
                 :key="'overflow-separator-' + groupIndex"
                 class="overflow-separator"
               ></div>
@@ -127,202 +132,214 @@
 </template>
 
 <script>
-import ToolButton from './ToolButton.vue';
+import ToolButton from "./ToolButton.vue";
 
 export default {
-  name: 'EditorToolbar',
+  name: "EditorToolbar",
   components: {
-    ToolButton
+    ToolButton,
   },
-  
+
   props: {
     // 工具组配置
     toolGroups: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 激活的工具ID
     activeToolId: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 禁用的工具ID列表
     disabledToolIds: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 加载中的工具ID列表
     loadingToolIds: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 显示选项
     showLabels: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showGroupTitles: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 样式选项
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'primary', 'ghost', 'minimal'].includes(value)
+      default: "default",
+      validator: (value) =>
+        ["default", "primary", "ghost", "minimal"].includes(value),
     },
     size: {
       type: String,
-      default: 'small',
-      validator: value => ['small', 'medium', 'large'].includes(value)
+      default: "small",
+      validator: (value) => ["small", "medium", "large"].includes(value),
     },
-    
+
     // 响应式选项
     responsive: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 方向
     direction: {
       type: String,
-      default: 'horizontal',
-      validator: value => ['horizontal', 'vertical'].includes(value)
-    }
+      default: "horizontal",
+      validator: (value) => ["horizontal", "vertical"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 响应式状态
       containerWidth: 0,
       showOverflowMenu: false,
       overflowBreakpoint: 600,
-      
+
       // 工具状态
       localActiveToolId: this.activeToolId,
-      
+
       // 窗口点击监听器
-      windowClickListener: null
+      windowClickListener: null,
     };
   },
-  
+
   computed: {
     toolbarClasses() {
       return {
         [`variant-${this.variant}`]: true,
         [`size-${this.size}`]: true,
         [`direction-${this.direction}`]: true,
-        'responsive': this.responsive,
-        'compact': this.containerWidth < this.overflowBreakpoint,
-        'with-labels': this.showLabels,
-        'with-group-titles': this.showGroupTitles
+        responsive: this.responsive,
+        compact: this.containerWidth < this.overflowBreakpoint,
+        "with-labels": this.showLabels,
+        "with-group-titles": this.showGroupTitles,
       };
     },
-    
+
     // 可见的工具组
     visibleGroups() {
       if (!this.responsive || this.containerWidth >= this.overflowBreakpoint) {
         return this.normalizedToolGroups;
       }
-      
+
       // 在紧凑模式下，只显示主要工具组
-      return this.normalizedToolGroups.filter(group => group.priority === 'high');
+      return this.normalizedToolGroups.filter(
+        (group) => group.priority === "high"
+      );
     },
-    
+
     // 溢出菜单中的工具组
     overflowGroups() {
       if (!this.responsive || this.containerWidth >= this.overflowBreakpoint) {
         return [];
       }
-      
+
       // 在紧凑模式下，将非高优先级的工具组放入溢出菜单
-      return this.normalizedToolGroups.filter(group => group.priority !== 'high');
+      return this.normalizedToolGroups.filter(
+        (group) => group.priority !== "high"
+      );
     },
-    
+
     // 是否有溢出菜单
     hasOverflowMenu() {
-      return this.responsive && this.containerWidth < this.overflowBreakpoint && this.overflowGroups.length > 0;
+      return (
+        this.responsive &&
+        this.containerWidth < this.overflowBreakpoint &&
+        this.overflowGroups.length > 0
+      );
     },
-    
+
     // 标准化的工具组配置
     normalizedToolGroups() {
-      return this.toolGroups.map(group => {
+      return this.toolGroups.map((group) => {
         // 确保每个工具组都有必要的属性
         const normalizedGroup = {
-          id: group.id || `group-${Math.random().toString(36).substring(2, 11)}`,
-          title: group.title || '',
+          id:
+            group.id || `group-${Math.random().toString(36).substring(2, 11)}`,
+          title: group.title || "",
           active: group.active || false,
           hidden: group.hidden || false,
-          priority: group.priority || 'normal',
-          tools: []
+          priority: group.priority || "normal",
+          tools: [],
         };
-        
+
         // 标准化工具配置
         if (Array.isArray(group.tools)) {
-          normalizedGroup.tools = group.tools.map(tool => {
+          normalizedGroup.tools = group.tools.map((tool) => {
             // 如果工具是字符串，将其转换为对象
-            if (typeof tool === 'string') {
+            if (typeof tool === "string") {
               return {
                 id: tool,
                 label: tool,
-                icon: tool.toLowerCase()
+                icon: tool.toLowerCase(),
               };
             }
-            
+
             // 确保工具对象有必要的属性
             return {
-              id: tool.id || `tool-${Math.random().toString(36).substring(2, 11)}`,
-              label: tool.label || '',
-              icon: tool.icon || '',
-              tooltip: tool.tooltip || tool.label || '',
-              variant: tool.variant || 'default',
-              shape: tool.shape || 'default',
+              id:
+                tool.id ||
+                `tool-${Math.random().toString(36).substring(2, 11)}`,
+              label: tool.label || "",
+              icon: tool.icon || "",
+              tooltip: tool.tooltip || tool.label || "",
+              variant: tool.variant || "default",
+              shape: tool.shape || "default",
               hidden: tool.hidden || false,
               separator: tool.separator || false,
               dropdown: tool.dropdown || false,
-              badge: tool.badge || '',
-              badgeType: tool.badgeType || 'default',
-              data: tool.data || {}
+              badge: tool.badge || "",
+              badgeType: tool.badgeType || "default",
+              data: tool.data || {},
             };
           });
         }
-        
+
         return normalizedGroup;
       });
-    }
+    },
   },
-  
+
   watch: {
     activeToolId(newValue) {
       this.localActiveToolId = newValue;
-    }
+    },
   },
-  
+
   mounted() {
     this.updateContainerWidth();
-    
+
     // 监听窗口大小变化
-    window.addEventListener('resize', this.handleWindowResize);
-    
+    window.addEventListener("resize", this.handleWindowResize);
+
     // 监听窗口点击事件，用于关闭溢出菜单
     this.windowClickListener = this.handleWindowClick.bind(this);
-    window.addEventListener('click', this.windowClickListener);
+    window.addEventListener("click", this.windowClickListener);
   },
-  
+
   beforeDestroy() {
     // 移除事件监听器
-    window.removeEventListener('resize', this.handleWindowResize);
-    
+    window.removeEventListener("resize", this.handleWindowResize);
+
     if (this.windowClickListener) {
-      window.removeEventListener('click', this.windowClickListener);
+      window.removeEventListener("click", this.windowClickListener);
     }
   },
-  
+
   methods: {
     /**
      * 更新容器宽度
@@ -332,7 +349,7 @@ export default {
         this.containerWidth = this.$el.getBoundingClientRect().width;
       }
     },
-    
+
     /**
      * 处理窗口大小变化
      */
@@ -343,17 +360,21 @@ export default {
         this.updateContainerWidth();
       }, 100);
     },
-    
+
     /**
      * 处理窗口点击事件
      */
     handleWindowClick(event) {
       // 如果点击的不是溢出菜单或其子元素，则关闭溢出菜单
-      if (this.showOverflowMenu && this.$refs.overflowMenu && !this.$refs.overflowMenu.contains(event.target)) {
+      if (
+        this.showOverflowMenu &&
+        this.$refs.overflowMenu &&
+        !this.$refs.overflowMenu.contains(event.target)
+      ) {
         this.showOverflowMenu = false;
       }
     },
-    
+
     /**
      * 切换溢出菜单显示状态
      */
@@ -362,7 +383,7 @@ export default {
       event.stopPropagation();
       this.showOverflowMenu = !this.showOverflowMenu;
     },
-    
+
     /**
      * 处理工具点击事件
      */
@@ -370,54 +391,55 @@ export default {
       if (this.isToolDisabled(tool)) {
         return;
       }
-      
+
       // 如果工具是可切换的，更新激活状态
       if (tool.toggle) {
-        this.localActiveToolId = this.localActiveToolId === tool.id ? '' : tool.id;
-        this.$emit('update:activeToolId', this.localActiveToolId);
+        this.localActiveToolId =
+          this.localActiveToolId === tool.id ? "" : tool.id;
+        this.$emit("update:activeToolId", this.localActiveToolId);
       }
-      
+
       // 触发工具点击事件
-      this.$emit('tool-click', {
+      this.$emit("tool-click", {
         toolId: tool.id,
         groupId: group.id,
         tool: { ...tool },
-        group: { ...group }
+        group: { ...group },
       });
     },
-    
+
     /**
      * 处理溢出菜单中的工具点击事件
      */
     handleOverflowToolClick(tool, group) {
       // 关闭溢出菜单
       this.showOverflowMenu = false;
-      
+
       // 调用普通工具点击处理器
       this.handleToolClick(tool, group);
     },
-    
+
     /**
      * 检查工具是否激活
      */
     isToolActive(tool) {
       return tool.id === this.localActiveToolId || tool.active;
     },
-    
+
     /**
      * 检查工具是否禁用
      */
     isToolDisabled(tool) {
       return tool.disabled || this.disabledToolIds.includes(tool.id);
     },
-    
+
     /**
      * 检查工具是否加载中
      */
     isToolLoading(tool) {
       return tool.loading || this.loadingToolIds.includes(tool.id);
     },
-    
+
     /**
      * 获取工具变体样式
      */
@@ -426,11 +448,11 @@ export default {
       if (this.isToolActive(tool) && tool.activeVariant) {
         return tool.activeVariant;
       }
-      
+
       // 使用工具自身的变体或默认变体
-      return tool.variant || 'default';
-    }
-  }
+      return tool.variant || "default";
+    },
+  },
 };
 </script>
 
@@ -689,7 +711,7 @@ export default {
 
 /* 图标样式 */
 .icon-more::before {
-  content: '⋮';
+  content: "⋮";
   font-size: 16px;
 }
 </style>

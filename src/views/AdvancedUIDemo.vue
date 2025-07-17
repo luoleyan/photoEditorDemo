@@ -2,7 +2,9 @@
   <div class="advanced-ui-demo">
     <div class="demo-header">
       <h1>高级UI组件集成演示</h1>
-      <p>展示EditorToolbar、SliderControl、ColorPicker、ImageAdjustmentPanel和TransformPanel的集成效果</p>
+      <p>
+        展示EditorToolbar、SliderControl、ColorPicker、ImageAdjustmentPanel和TransformPanel的集成效果
+      </p>
     </div>
 
     <!-- 完整编辑器演示 -->
@@ -73,8 +75,22 @@
               <div class="image-placeholder">
                 <h3>图像编辑区域</h3>
                 <p>当前工具: {{ getToolName(activeToolId) }}</p>
-                <p>前景色: <span class="color-sample" :style="{ backgroundColor: foregroundColor }"></span> {{ foregroundColor }}</p>
-                <p>背景色: <span class="color-sample" :style="{ backgroundColor: backgroundColor }"></span> {{ backgroundColor }}</p>
+                <p>
+                  前景色:
+                  <span
+                    class="color-sample"
+                    :style="{ backgroundColor: foregroundColor }"
+                  ></span>
+                  {{ foregroundColor }}
+                </p>
+                <p>
+                  背景色:
+                  <span
+                    class="color-sample"
+                    :style="{ backgroundColor: backgroundColor }"
+                  ></span>
+                  {{ backgroundColor }}
+                </p>
                 <div class="adjustment-preview">
                   <h4>当前调整:</h4>
                   <ul>
@@ -127,7 +143,10 @@
         <template #status-bar>
           <div class="editor-status">
             <span>就绪</span>
-            <span>{{ canvasDimensions.width }} × {{ canvasDimensions.height }}</span>
+            <span
+              >{{ canvasDimensions.width }} ×
+              {{ canvasDimensions.height }}</span
+            >
             <span>缩放: {{ Math.round(transformValues.scale.x * 100) }}%</span>
             <span>{{ new Date().toLocaleTimeString() }}</span>
           </div>
@@ -203,7 +222,7 @@
               { label: '50%', value: 50 },
               { label: '100%', value: 100 },
               { label: '150%', value: 150 },
-              { label: '200%', value: 200 }
+              { label: '200%', value: 200 },
             ]"
             @change="handleSliderChange"
           />
@@ -217,10 +236,7 @@
       <div class="color-picker-demo">
         <div class="color-picker-item">
           <h3>基础颜色选择器</h3>
-          <color-picker
-            v-model="demoColor1"
-            @change="handleColorChange"
-          />
+          <color-picker v-model="demoColor1" @change="handleColorChange" />
           <p>选中颜色: {{ demoColor1 }}</p>
         </div>
 
@@ -264,49 +280,49 @@
 </template>
 
 <script>
-import EditorContainer from '@/components/ui/EditorContainer.vue';
-import EditorToolbar from '@/components/ui/EditorToolbar.vue';
-import SliderControl from '@/components/ui/SliderControl.vue';
-import ColorPicker from '@/components/ui/ColorPicker.vue';
-import ImageAdjustmentPanel from '@/components/ui/ImageAdjustmentPanel.vue';
-import TransformPanel from '@/components/ui/TransformPanel.vue';
+import EditorContainer from "@/components/ui/EditorContainer.vue";
+import EditorToolbar from "@/components/ui/EditorToolbar.vue";
+import SliderControl from "@/components/ui/SliderControl.vue";
+import ColorPicker from "@/components/ui/ColorPicker.vue";
+import ImageAdjustmentPanel from "@/components/ui/ImageAdjustmentPanel.vue";
+import TransformPanel from "@/components/ui/TransformPanel.vue";
 
 export default {
-  name: 'AdvancedUIDemo',
+  name: "AdvancedUIDemo",
   components: {
     EditorContainer,
     EditorToolbar,
     SliderControl,
     ColorPicker,
     ImageAdjustmentPanel,
-    TransformPanel
+    TransformPanel,
   },
 
   data() {
     return {
       // 编辑器状态
-      editorTheme: 'light',
+      editorTheme: "light",
       editorLoading: false,
       canvasDimensions: {
         width: 0,
-        height: 0
+        height: 0,
       },
 
       // 工具状态
-      activeToolId: 'brush',
+      activeToolId: "brush",
       disabledToolIds: [],
       loadingToolIds: [],
 
       // 颜色状态
-      foregroundColor: '#000000',
-      backgroundColor: '#ffffff',
+      foregroundColor: "#000000",
+      backgroundColor: "#ffffff",
 
       // 调整值
       adjustmentValues: {
         brightness: 0,
         contrast: 0,
         saturation: 0,
-        hue: 0
+        hue: 0,
       },
 
       // 变换值
@@ -314,152 +330,152 @@ export default {
         rotation: 0,
         scale: { x: 1, y: 1, uniform: true },
         flip: { horizontal: false, vertical: false },
-        position: { x: 0, y: 0 }
+        position: { x: 0, y: 0 },
       },
 
       // 演示用数据
-      demoActiveToolId: 'select',
+      demoActiveToolId: "select",
       demoSliderValue1: 50,
       demoSliderValue2: 0,
       demoSliderValue3: 100,
-      demoColor1: '#ff0000',
-      demoColor2: 'rgba(0, 255, 0, 0.5)',
+      demoColor1: "#ff0000",
+      demoColor2: "rgba(0, 255, 0, 0.5)",
 
       // 工具组配置
       mainToolGroups: [
         {
-          id: 'file',
-          title: '文件',
-          priority: 'high',
+          id: "file",
+          title: "文件",
+          priority: "high",
           tools: [
-            { id: 'new', label: '新建', icon: 'plus' },
-            { id: 'open', label: '打开', icon: 'folder' },
-            { id: 'save', label: '保存', icon: 'save', variant: 'primary' },
-            { id: 'export', label: '导出', icon: 'download' }
-          ]
+            { id: "new", label: "新建", icon: "plus" },
+            { id: "open", label: "打开", icon: "folder" },
+            { id: "save", label: "保存", icon: "save", variant: "primary" },
+            { id: "export", label: "导出", icon: "download" },
+          ],
         },
         {
-          id: 'edit',
-          title: '编辑',
-          priority: 'high',
+          id: "edit",
+          title: "编辑",
+          priority: "high",
           tools: [
-            { id: 'undo', label: '撤销', icon: 'undo' },
-            { id: 'redo', label: '重做', icon: 'redo' },
-            { id: 'copy', label: '复制', icon: 'copy' },
-            { id: 'paste', label: '粘贴', icon: 'paste' }
-          ]
+            { id: "undo", label: "撤销", icon: "undo" },
+            { id: "redo", label: "重做", icon: "redo" },
+            { id: "copy", label: "复制", icon: "copy" },
+            { id: "paste", label: "粘贴", icon: "paste" },
+          ],
         },
         {
-          id: 'view',
-          title: '视图',
-          priority: 'normal',
+          id: "view",
+          title: "视图",
+          priority: "normal",
           tools: [
-            { id: 'zoom-in', label: '放大', icon: 'zoom-in' },
-            { id: 'zoom-out', label: '缩小', icon: 'zoom-out' },
-            { id: 'fit', label: '适合', icon: 'fit' },
-            { id: 'fullscreen', label: '全屏', icon: 'fullscreen' }
-          ]
-        }
+            { id: "zoom-in", label: "放大", icon: "zoom-in" },
+            { id: "zoom-out", label: "缩小", icon: "zoom-out" },
+            { id: "fit", label: "适合", icon: "fit" },
+            { id: "fullscreen", label: "全屏", icon: "fullscreen" },
+          ],
+        },
       ],
 
       toolPaletteGroups: [
         {
-          id: 'selection',
-          title: '选择',
+          id: "selection",
+          title: "选择",
           tools: [
-            { id: 'select', label: '选择', icon: 'cursor' },
-            { id: 'lasso', label: '套索', icon: 'lasso' },
-            { id: 'magic-wand', label: '魔术棒', icon: 'magic-wand' }
-          ]
+            { id: "select", label: "选择", icon: "cursor" },
+            { id: "lasso", label: "套索", icon: "lasso" },
+            { id: "magic-wand", label: "魔术棒", icon: "magic-wand" },
+          ],
         },
         {
-          id: 'drawing',
-          title: '绘画',
+          id: "drawing",
+          title: "绘画",
           tools: [
-            { id: 'brush', label: '画笔', icon: 'brush' },
-            { id: 'pencil', label: '铅笔', icon: 'pencil' },
-            { id: 'eraser', label: '橡皮擦', icon: 'eraser' }
-          ]
+            { id: "brush", label: "画笔", icon: "brush" },
+            { id: "pencil", label: "铅笔", icon: "pencil" },
+            { id: "eraser", label: "橡皮擦", icon: "eraser" },
+          ],
         },
         {
-          id: 'shapes',
-          title: '形状',
+          id: "shapes",
+          title: "形状",
           tools: [
-            { id: 'rectangle', label: '矩形', icon: 'rectangle' },
-            { id: 'circle', label: '圆形', icon: 'circle' },
-            { id: 'line', label: '直线', icon: 'line' }
-          ]
-        }
+            { id: "rectangle", label: "矩形", icon: "rectangle" },
+            { id: "circle", label: "圆形", icon: "circle" },
+            { id: "line", label: "直线", icon: "line" },
+          ],
+        },
       ],
 
       demoToolGroups: [
         {
-          id: 'basic',
-          title: '基础工具',
+          id: "basic",
+          title: "基础工具",
           tools: [
-            { id: 'select', label: '选择', icon: 'cursor' },
-            { id: 'brush', label: '画笔', icon: 'brush' },
-            { id: 'eraser', label: '橡皮擦', icon: 'eraser' },
-            { id: 'text', label: '文本', icon: 'text' }
-          ]
-        }
+            { id: "select", label: "选择", icon: "cursor" },
+            { id: "brush", label: "画笔", icon: "brush" },
+            { id: "eraser", label: "橡皮擦", icon: "eraser" },
+            { id: "text", label: "文本", icon: "text" },
+          ],
+        },
       ],
 
       // 预设配置
       adjustmentPresets: [
         {
-          id: 'bright',
-          name: '明亮',
+          id: "bright",
+          name: "明亮",
           values: {
             brightness: 20,
             contrast: 10,
-            saturation: 5
-          }
+            saturation: 5,
+          },
         },
         {
-          id: 'vivid',
-          name: '鲜艳',
+          id: "vivid",
+          name: "鲜艳",
           values: {
             brightness: 5,
             contrast: 15,
-            saturation: 25
-          }
+            saturation: 25,
+          },
         },
         {
-          id: 'vintage',
-          name: '复古',
+          id: "vintage",
+          name: "复古",
           values: {
             brightness: -10,
             contrast: -5,
             saturation: -15,
-            hue: 15
-          }
-        }
+            hue: 15,
+          },
+        },
       ],
 
       transformPresets: [
         {
-          id: 'rotate-90',
-          name: '旋转90°',
+          id: "rotate-90",
+          name: "旋转90°",
           values: {
-            rotation: 90
-          }
+            rotation: 90,
+          },
         },
         {
-          id: 'flip-h',
-          name: '水平翻转',
+          id: "flip-h",
+          name: "水平翻转",
           values: {
-            flip: { horizontal: true, vertical: false }
-          }
+            flip: { horizontal: true, vertical: false },
+          },
         },
         {
-          id: 'scale-2x',
-          name: '放大2倍',
+          id: "scale-2x",
+          name: "放大2倍",
           values: {
-            scale: { x: 2, y: 2, uniform: true }
-          }
-        }
-      ]
+            scale: { x: 2, y: 2, uniform: true },
+          },
+        },
+      ],
     };
   },
 
@@ -470,7 +486,7 @@ export default {
     handleDimensionsChange(dimensions) {
       this.canvasDimensions = {
         width: Math.round(dimensions.canvasWidth),
-        height: Math.round(dimensions.canvasHeight)
+        height: Math.round(dimensions.canvasHeight),
       };
     },
 
@@ -479,7 +495,7 @@ export default {
      */
     handleToolClick(event) {
       this.activeToolId = event.toolId;
-      console.log('工具点击:', event);
+      console.log("工具点击:", event);
     },
 
     /**
@@ -487,7 +503,7 @@ export default {
      */
     handleDemoToolClick(event) {
       this.demoActiveToolId = event.toolId;
-      console.log('演示工具点击:', event);
+      console.log("演示工具点击:", event);
     },
 
     /**
@@ -495,17 +511,17 @@ export default {
      */
     getToolName(toolId) {
       const toolNames = {
-        'select': '选择工具',
-        'brush': '画笔工具',
-        'eraser': '橡皮擦工具',
-        'text': '文本工具',
-        'cursor': '选择工具',
-        'lasso': '套索工具',
-        'magic-wand': '魔术棒工具',
-        'pencil': '铅笔工具',
-        'rectangle': '矩形工具',
-        'circle': '圆形工具',
-        'line': '直线工具'
+        select: "选择工具",
+        brush: "画笔工具",
+        eraser: "橡皮擦工具",
+        text: "文本工具",
+        cursor: "选择工具",
+        lasso: "套索工具",
+        "magic-wand": "魔术棒工具",
+        pencil: "铅笔工具",
+        rectangle: "矩形工具",
+        circle: "圆形工具",
+        line: "直线工具",
       };
       return toolNames[toolId] || toolId;
     },
@@ -515,7 +531,7 @@ export default {
      */
     handleForegroundColorChange(color) {
       this.foregroundColor = color;
-      console.log('前景色变化:', color);
+      console.log("前景色变化:", color);
     },
 
     /**
@@ -523,7 +539,7 @@ export default {
      */
     handleBackgroundColorChange(color) {
       this.backgroundColor = color;
-      console.log('背景色变化:', color);
+      console.log("背景色变化:", color);
     },
 
     /**
@@ -531,7 +547,7 @@ export default {
      */
     handleBrightnessChange(value) {
       this.adjustmentValues.brightness = value;
-      console.log('亮度变化:', value);
+      console.log("亮度变化:", value);
     },
 
     /**
@@ -539,7 +555,7 @@ export default {
      */
     handleContrastChange(value) {
       this.adjustmentValues.contrast = value;
-      console.log('对比度变化:', value);
+      console.log("对比度变化:", value);
     },
 
     /**
@@ -547,7 +563,7 @@ export default {
      */
     handleSaturationChange(value) {
       this.adjustmentValues.saturation = value;
-      console.log('饱和度变化:', value);
+      console.log("饱和度变化:", value);
     },
 
     /**
@@ -555,7 +571,7 @@ export default {
      */
     handleHueChange(value) {
       this.adjustmentValues.hue = value;
-      console.log('色调变化:', value);
+      console.log("色调变化:", value);
     },
 
     /**
@@ -566,16 +582,16 @@ export default {
         brightness: 0,
         contrast: 0,
         saturation: 0,
-        hue: 0
+        hue: 0,
       };
-      console.log('调整重置');
+      console.log("调整重置");
     },
 
     /**
      * 处理调整预设应用
      */
     handleAdjustmentPresetApplied(preset) {
-      console.log('调整预设应用:', preset);
+      console.log("调整预设应用:", preset);
     },
 
     /**
@@ -583,7 +599,7 @@ export default {
      */
     handleRotationChange(value) {
       this.transformValues.rotation = value;
-      console.log('旋转变化:', value);
+      console.log("旋转变化:", value);
     },
 
     /**
@@ -591,7 +607,7 @@ export default {
      */
     handleScaleChange(value) {
       this.transformValues.scale = value;
-      console.log('缩放变化:', value);
+      console.log("缩放变化:", value);
     },
 
     /**
@@ -599,7 +615,7 @@ export default {
      */
     handleFlipChange(value) {
       this.transformValues.flip = value;
-      console.log('翻转变化:', value);
+      console.log("翻转变化:", value);
     },
 
     /**
@@ -607,7 +623,7 @@ export default {
      */
     handlePositionChange(value) {
       this.transformValues.position = value;
-      console.log('位置变化:', value);
+      console.log("位置变化:", value);
     },
 
     /**
@@ -618,30 +634,30 @@ export default {
         rotation: 0,
         scale: { x: 1, y: 1, uniform: true },
         flip: { horizontal: false, vertical: false },
-        position: { x: 0, y: 0 }
+        position: { x: 0, y: 0 },
       };
-      console.log('变换重置');
+      console.log("变换重置");
     },
 
     /**
      * 处理变换预设应用
      */
     handleTransformPresetApplied(preset) {
-      console.log('变换预设应用:', preset);
+      console.log("变换预设应用:", preset);
     },
 
     /**
      * 处理滑块变化
      */
     handleSliderChange(value) {
-      console.log('滑块变化:', value);
+      console.log("滑块变化:", value);
     },
 
     /**
      * 处理颜色变化
      */
     handleColorChange(color) {
-      console.log('颜色变化:', color);
+      console.log("颜色变化:", color);
     },
 
     /**
@@ -649,7 +665,7 @@ export default {
      */
     simulateLoading() {
       this.editorLoading = true;
-      this.loadingToolIds = ['save', 'export'];
+      this.loadingToolIds = ["save", "export"];
 
       setTimeout(() => {
         this.editorLoading = false;
@@ -661,28 +677,28 @@ export default {
      * 重置所有
      */
     resetAll() {
-      this.activeToolId = 'brush';
-      this.foregroundColor = '#000000';
-      this.backgroundColor = '#ffffff';
+      this.activeToolId = "brush";
+      this.foregroundColor = "#000000";
+      this.backgroundColor = "#ffffff";
       this.adjustmentValues = {
         brightness: 0,
         contrast: 0,
         saturation: 0,
-        hue: 0
+        hue: 0,
       };
       this.transformValues = {
         rotation: 0,
         scale: { x: 1, y: 1, uniform: true },
         flip: { horizontal: false, vertical: false },
-        position: { x: 0, y: 0 }
+        position: { x: 0, y: 0 },
       };
       this.demoSliderValue1 = 50;
       this.demoSliderValue2 = 0;
       this.demoSliderValue3 = 100;
-      this.demoColor1 = '#ff0000';
-      this.demoColor2 = 'rgba(0, 255, 0, 0.5)';
-    }
-  }
+      this.demoColor1 = "#ff0000";
+      this.demoColor2 = "rgba(0, 255, 0, 0.5)";
+    },
+  },
 };
 </script>
 

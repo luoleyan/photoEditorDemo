@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="color-picker"
-    :class="pickerClasses"
-  >
+  <div class="color-picker" :class="pickerClasses">
     <!-- 颜色显示按钮 -->
     <div
       class="color-display"
@@ -16,11 +13,7 @@
     </div>
 
     <!-- 颜色选择器面板 -->
-    <div
-      v-if="showPicker"
-      class="color-picker-panel"
-      ref="pickerPanel"
-    >
+    <div v-if="showPicker" class="color-picker-panel" ref="pickerPanel">
       <!-- 颜色选择区域 -->
       <div class="color-selection-area">
         <!-- 色相/饱和度选择器 -->
@@ -40,7 +33,7 @@
             class="sl-cursor"
             :style="{
               left: hsl.s + '%',
-              top: (100 - hsl.l) + '%'
+              top: 100 - hsl.l + '%',
             }"
           ></div>
         </div>
@@ -71,7 +64,7 @@
             <div
               class="alpha-slider-background"
               :style="{
-                background: `linear-gradient(to right, transparent, ${rgbString})`
+                background: `linear-gradient(to right, transparent, ${rgbString})`,
               }"
             ></div>
           </div>
@@ -153,7 +146,7 @@
             v-for="(preset, index) in presetColors"
             :key="index"
             class="preset-color"
-            :class="{ 'active': preset === currentColor }"
+            :class="{ active: preset === currentColor }"
             :style="{ backgroundColor: preset }"
             @click="selectPresetColor(preset)"
             :title="preset"
@@ -169,7 +162,7 @@
             v-for="(recent, index) in recentColors"
             :key="index"
             class="recent-color"
-            :class="{ 'active': recent === currentColor }"
+            :class="{ active: recent === currentColor }"
             :style="{ backgroundColor: recent }"
             @click="selectRecentColor(recent)"
             :title="recent"
@@ -179,16 +172,10 @@
 
       <!-- 操作按钮 -->
       <div class="color-actions">
-        <button
-          class="action-button cancel-button"
-          @click="cancelSelection"
-        >
+        <button class="action-button cancel-button" @click="cancelSelection">
           取消
         </button>
-        <button
-          class="action-button confirm-button"
-          @click="confirmSelection"
-        >
+        <button class="action-button confirm-button" @click="confirmSelection">
           确定
         </button>
       </div>
@@ -198,68 +185,84 @@
 
 <script>
 export default {
-  name: 'ColorPicker',
+  name: "ColorPicker",
   props: {
     // 当前颜色值
     value: {
       type: String,
-      default: '#000000'
+      default: "#000000",
     },
 
     // 显示选项
     showAlpha: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showPresets: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showRecent: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showTooltip: {
       type: Boolean,
-      default: true
+      default: true,
     },
 
     // 预设颜色
     presetColors: {
       type: Array,
       default: () => [
-        '#000000', '#ffffff', '#ff0000', '#00ff00', '#0000ff',
-        '#ffff00', '#ff00ff', '#00ffff', '#ff8000', '#8000ff',
-        '#808080', '#c0c0c0', '#800000', '#008000', '#000080',
-        '#808000', '#800080', '#008080', '#ffc0cb', '#ffd700'
-      ]
+        "#000000",
+        "#ffffff",
+        "#ff0000",
+        "#00ff00",
+        "#0000ff",
+        "#ffff00",
+        "#ff00ff",
+        "#00ffff",
+        "#ff8000",
+        "#8000ff",
+        "#808080",
+        "#c0c0c0",
+        "#800000",
+        "#008000",
+        "#000080",
+        "#808000",
+        "#800080",
+        "#008080",
+        "#ffc0cb",
+        "#ffd700",
+      ],
     },
 
     // 最大最近颜色数量
     maxRecentColors: {
       type: Number,
-      default: 10
+      default: 10,
     },
 
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
 
     // 样式
     size: {
       type: String,
-      default: 'medium',
-      validator: value => ['small', 'medium', 'large'].includes(value)
-    }
+      default: "medium",
+      validator: (value) => ["small", "medium", "large"].includes(value),
+    },
   },
 
   data() {
     return {
       showPicker: false,
       isDragging: false,
-      dragType: '', // 'sl', 'hue', 'alpha'
+      dragType: "", // 'sl', 'hue', 'alpha'
 
       // 颜色状态
       hsl: { h: 0, s: 0, l: 0 },
@@ -267,7 +270,7 @@ export default {
       alpha: 1,
 
       // 输入状态
-      hexInput: '',
+      hexInput: "",
       rgbInput: { r: 0, g: 0, b: 0 },
       alphaInput: 1,
 
@@ -275,10 +278,10 @@ export default {
       recentColors: [],
 
       // 初始颜色（用于取消操作）
-      initialColor: '',
+      initialColor: "",
 
       // 窗口点击监听器
-      windowClickListener: null
+      windowClickListener: null,
     };
   },
 
@@ -286,9 +289,9 @@ export default {
     pickerClasses() {
       return {
         [`size-${this.size}`]: true,
-        'disabled': this.disabled,
-        'picker-open': this.showPicker,
-        'with-alpha': this.showAlpha
+        disabled: this.disabled,
+        "picker-open": this.showPicker,
+        "with-alpha": this.showAlpha,
       };
     },
 
@@ -303,7 +306,7 @@ export default {
     // RGB字符串（不含透明度）
     rgbString() {
       return `rgb(${this.rgb.r}, ${this.rgb.g}, ${this.rgb.b})`;
-    }
+    },
   },
 
   watch: {
@@ -312,8 +315,8 @@ export default {
       handler(newValue) {
         this.parseColor(newValue);
         this.updateInputs();
-      }
-    }
+      },
+    },
   },
 
   mounted() {
@@ -321,25 +324,27 @@ export default {
     this.loadRecentColors();
 
     // 添加全局事件监听器
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("touchmove", this.handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.handleTouchEnd);
 
     // 监听窗口点击事件，用于关闭颜色选择器
     this.windowClickListener = this.handleWindowClick.bind(this);
-    window.addEventListener('click', this.windowClickListener);
+    window.addEventListener("click", this.windowClickListener);
   },
 
   beforeDestroy() {
     // 移除全局事件监听器
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("touchmove", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
 
     if (this.windowClickListener) {
-      window.removeEventListener('click', this.windowClickListener);
+      window.removeEventListener("click", this.windowClickListener);
     }
   },
 
@@ -355,26 +360,27 @@ export default {
         return;
       }
 
-      let rgb, alpha = 1;
+      let rgb,
+        alpha = 1;
 
       // 解析HEX格式
-      if (colorString.startsWith('#')) {
+      if (colorString.startsWith("#")) {
         rgb = this.hexToRgb(colorString);
       }
       // 解析RGB/RGBA格式
-      else if (colorString.startsWith('rgb')) {
+      else if (colorString.startsWith("rgb")) {
         const match = colorString.match(/rgba?\(([^)]+)\)/);
         if (match) {
-          const values = match[1].split(',').map(v => parseFloat(v.trim()));
+          const values = match[1].split(",").map((v) => parseFloat(v.trim()));
           rgb = { r: values[0], g: values[1], b: values[2] };
           alpha = values[3] !== undefined ? values[3] : 1;
         }
       }
       // 解析HSL格式
-      else if (colorString.startsWith('hsl')) {
+      else if (colorString.startsWith("hsl")) {
         const match = colorString.match(/hsla?\(([^)]+)\)/);
         if (match) {
-          const values = match[1].split(',').map(v => parseFloat(v.trim()));
+          const values = match[1].split(",").map((v) => parseFloat(v.trim()));
           const hsl = { h: values[0], s: values[1], l: values[2] };
           rgb = this.hslToRgb(hsl.h, hsl.s, hsl.l);
           alpha = values[3] !== undefined ? values[3] : 1;
@@ -429,7 +435,7 @@ export default {
      */
     handleSLMouseDown(event) {
       this.isDragging = true;
-      this.dragType = 'sl';
+      this.dragType = "sl";
       this.updateSLFromEvent(event);
 
       // 阻止默认行为
@@ -441,7 +447,7 @@ export default {
      */
     handleSLTouchStart(event) {
       this.isDragging = true;
-      this.dragType = 'sl';
+      this.dragType = "sl";
       this.updateSLFromEvent(event.touches[0]);
 
       // 阻止默认行为
@@ -453,7 +459,7 @@ export default {
      */
     handleHueMouseDown(event) {
       this.isDragging = true;
-      this.dragType = 'hue';
+      this.dragType = "hue";
       this.updateHueFromEvent(event);
 
       // 阻止默认行为
@@ -465,7 +471,7 @@ export default {
      */
     handleHueTouchStart(event) {
       this.isDragging = true;
-      this.dragType = 'hue';
+      this.dragType = "hue";
       this.updateHueFromEvent(event.touches[0]);
 
       // 阻止默认行为
@@ -477,7 +483,7 @@ export default {
      */
     handleAlphaMouseDown(event) {
       this.isDragging = true;
-      this.dragType = 'alpha';
+      this.dragType = "alpha";
       this.updateAlphaFromEvent(event);
 
       // 阻止默认行为
@@ -489,7 +495,7 @@ export default {
      */
     handleAlphaTouchStart(event) {
       this.isDragging = true;
-      this.dragType = 'alpha';
+      this.dragType = "alpha";
       this.updateAlphaFromEvent(event.touches[0]);
 
       // 阻止默认行为
@@ -503,13 +509,13 @@ export default {
       if (!this.isDragging) return;
 
       switch (this.dragType) {
-        case 'sl':
+        case "sl":
           this.updateSLFromEvent(event);
           break;
-        case 'hue':
+        case "hue":
           this.updateHueFromEvent(event);
           break;
-        case 'alpha':
+        case "alpha":
           this.updateAlphaFromEvent(event);
           break;
       }
@@ -525,13 +531,13 @@ export default {
       if (!this.isDragging) return;
 
       switch (this.dragType) {
-        case 'sl':
+        case "sl":
           this.updateSLFromEvent(event.touches[0]);
           break;
-        case 'hue':
+        case "hue":
           this.updateHueFromEvent(event.touches[0]);
           break;
-        case 'alpha':
+        case "alpha":
           this.updateAlphaFromEvent(event.touches[0]);
           break;
       }
@@ -545,7 +551,7 @@ export default {
      */
     handleMouseUp() {
       this.isDragging = false;
-      this.dragType = '';
+      this.dragType = "";
     },
 
     /**
@@ -553,7 +559,7 @@ export default {
      */
     handleTouchEnd() {
       this.isDragging = false;
-      this.dragType = '';
+      this.dragType = "";
     },
 
     /**
@@ -656,8 +662,8 @@ export default {
         this.hexInput = this.rgbToHex(this.rgb.r, this.rgb.g, this.rgb.b);
       }
       // 确保HEX值以#开头
-      else if (!this.hexInput.startsWith('#')) {
-        this.hexInput = '#' + this.hexInput;
+      else if (!this.hexInput.startsWith("#")) {
+        this.hexInput = "#" + this.hexInput;
       }
     },
 
@@ -736,8 +742,8 @@ export default {
      * 触发颜色变更事件
      */
     emitColorChange() {
-      this.$emit('input', this.currentColor);
-      this.$emit('change', this.currentColor);
+      this.$emit("input", this.currentColor);
+      this.$emit("change", this.currentColor);
     },
 
     /**
@@ -767,9 +773,9 @@ export default {
      */
     saveRecentColors() {
       try {
-        localStorage.setItem('recentColors', JSON.stringify(this.recentColors));
+        localStorage.setItem("recentColors", JSON.stringify(this.recentColors));
       } catch (e) {
-        console.error('Failed to save recent colors:', e);
+        console.error("Failed to save recent colors:", e);
       }
     },
 
@@ -778,12 +784,12 @@ export default {
      */
     loadRecentColors() {
       try {
-        const stored = localStorage.getItem('recentColors');
+        const stored = localStorage.getItem("recentColors");
         if (stored) {
           this.recentColors = JSON.parse(stored);
         }
       } catch (e) {
-        console.error('Failed to load recent colors:', e);
+        console.error("Failed to load recent colors:", e);
       }
     },
 
@@ -794,7 +800,7 @@ export default {
      */
     hexToRgb(hex) {
       // 移除#前缀
-      hex = hex.replace(/^#/, '');
+      hex = hex.replace(/^#/, "");
 
       // 处理3位HEX
       if (hex.length === 3) {
@@ -817,11 +823,13 @@ export default {
       g = Math.round(g);
       b = Math.round(b);
 
-      return '#' +
+      return (
+        "#" +
         ((1 << 24) + (r << 16) + (g << 8) + b)
           .toString(16)
           .slice(1)
-          .toUpperCase();
+          .toUpperCase()
+      );
     },
 
     /**
@@ -834,7 +842,9 @@ export default {
 
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
-      let h, s, l = (max + min) / 2;
+      let h,
+        s,
+        l = (max + min) / 2;
 
       if (max === min) {
         h = s = 0; // 灰色
@@ -843,9 +853,15 @@ export default {
         s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 
         switch (max) {
-          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-          case g: h = (b - r) / d + 2; break;
-          case b: h = (r - g) / d + 4; break;
+          case r:
+            h = (g - b) / d + (g < b ? 6 : 0);
+            break;
+          case g:
+            h = (b - r) / d + 2;
+            break;
+          case b:
+            h = (r - g) / d + 4;
+            break;
         }
 
         h /= 6;
@@ -854,7 +870,7 @@ export default {
       return {
         h: Math.round(h * 360),
         s: Math.round(s * 100),
-        l: Math.round(l * 100)
+        l: Math.round(l * 100),
       };
     },
 
@@ -874,27 +890,27 @@ export default {
         const hue2rgb = (p, q, t) => {
           if (t < 0) t += 1;
           if (t > 1) t -= 1;
-          if (t < 1/6) return p + (q - p) * 6 * t;
-          if (t < 1/2) return q;
-          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
           return p;
         };
 
         const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
         const p = 2 * l - q;
 
-        r = hue2rgb(p, q, h + 1/3);
+        r = hue2rgb(p, q, h + 1 / 3);
         g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
+        b = hue2rgb(p, q, h - 1 / 3);
       }
 
       return {
         r: Math.round(r * 255),
         g: Math.round(g * 255),
-        b: Math.round(b * 255)
+        b: Math.round(b * 255),
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -947,7 +963,7 @@ export default {
 }
 
 .icon-no-color::before {
-  content: '✕';
+  content: "✕";
   font-size: 16px;
 }
 
@@ -1027,7 +1043,13 @@ export default {
   height: 100%;
   background: linear-gradient(
     to right,
-    #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000
+    #ff0000,
+    #ffff00,
+    #00ff00,
+    #00ffff,
+    #0000ff,
+    #ff00ff,
+    #ff0000
   );
 }
 
@@ -1051,7 +1073,7 @@ export default {
   border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAGUlEQVQYV2M4gwH+YwCGIasIUwhT25BVBADtzYNYrHvv4gAAAABJRU5ErkJggg==');
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAGUlEQVQYV2M4gwH+YwCGIasIUwhT25BVBADtzYNYrHvv4gAAAABJRU5ErkJggg==");
   background-repeat: repeat;
 }
 

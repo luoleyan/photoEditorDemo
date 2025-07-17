@@ -1,4 +1,4 @@
-import { errorHandler } from '@/utils/ErrorHandler.js';
+import { errorHandler } from "@/utils/ErrorHandler.js";
 
 /**
  * 基础图像编辑器适配器接口
@@ -10,10 +10,10 @@ class BaseImageEditorAdapter {
     this.container = null;
     this.eventListeners = new Map();
     this.currentImageData = null;
-    this.adapterType = 'base';
+    this.adapterType = "base";
     this.errorContext = {
       adapterType: this.constructor.name,
-      version: '1.0.0'
+      version: "1.0.0",
     };
   }
 
@@ -25,16 +25,16 @@ class BaseImageEditorAdapter {
    */
   async initialize(container, options = {}) {
     if (this.isInitialized) {
-      throw new Error('Adapter is already initialized');
+      throw new Error("Adapter is already initialized");
     }
-    
+
     this.container = container;
     this.options = { ...this.getDefaultOptions(), ...options };
-    
+
     try {
       await this._doInitialize();
       this.isInitialized = true;
-      this.emit('initialized', { adapter: this.adapterType });
+      this.emit("initialized", { adapter: this.adapterType });
     } catch (error) {
       console.error(`Failed to initialize ${this.adapterType} adapter:`, error);
       throw error;
@@ -48,7 +48,9 @@ class BaseImageEditorAdapter {
     if (!this.isInitialized) return;
 
     try {
-      console.log(`BaseImageEditorAdapter: Starting destruction of ${this.adapterType} adapter`);
+      console.log(
+        `BaseImageEditorAdapter: Starting destruction of ${this.adapterType} adapter`
+      );
 
       // 调用子类的销毁方法
       this._doDestroy();
@@ -56,8 +58,9 @@ class BaseImageEditorAdapter {
       // 安全清理基类属性
       this._safeCleanup();
 
-      console.log(`BaseImageEditorAdapter: ${this.adapterType} adapter destroyed successfully`);
-
+      console.log(
+        `BaseImageEditorAdapter: ${this.adapterType} adapter destroyed successfully`
+      );
     } catch (error) {
       console.error(`Failed to destroy ${this.adapterType} adapter:`, error);
 
@@ -73,7 +76,10 @@ class BaseImageEditorAdapter {
   _safeCleanup() {
     try {
       // 清理事件监听器
-      if (this.eventListeners && typeof this.eventListeners.clear === 'function') {
+      if (
+        this.eventListeners &&
+        typeof this.eventListeners.clear === "function"
+      ) {
         this.eventListeners.clear();
       }
       this.eventListeners = null;
@@ -86,7 +92,6 @@ class BaseImageEditorAdapter {
 
       // 清理容器引用
       this.container = null;
-
     } catch (error) {
       console.warn(`Safe cleanup failed for ${this.adapterType}:`, error);
     }
@@ -98,14 +103,15 @@ class BaseImageEditorAdapter {
    */
   _emergencyCleanup() {
     try {
-      console.warn(`Performing emergency cleanup for ${this.adapterType} adapter`);
+      console.warn(
+        `Performing emergency cleanup for ${this.adapterType} adapter`
+      );
 
       // 强制清理所有属性
       this.eventListeners = null;
       this.currentImageData = null;
       this.isInitialized = false;
       this.container = null;
-
     } catch (error) {
       console.error(`Emergency cleanup failed for ${this.adapterType}:`, error);
     }
@@ -117,13 +123,13 @@ class BaseImageEditorAdapter {
    * @param {string} name - 集合名称（用于日志）
    * @protected
    */
-  _safeCollectionCleanup(collection, name = 'collection') {
+  _safeCollectionCleanup(collection, name = "collection") {
     if (!collection) {
       return;
     }
 
     try {
-      if (typeof collection.clear === 'function') {
+      if (typeof collection.clear === "function") {
         collection.clear();
         console.log(`${this.adapterType}: ${name} cleared successfully`);
       } else {
@@ -140,7 +146,7 @@ class BaseImageEditorAdapter {
    * @param {string} name - 元素名称（用于日志）
    * @protected
    */
-  _safeDOMCleanup(element, name = 'element') {
+  _safeDOMCleanup(element, name = "element") {
     if (!element) {
       return;
     }
@@ -151,7 +157,10 @@ class BaseImageEditorAdapter {
         console.log(`${this.adapterType}: ${name} removed from DOM`);
       }
     } catch (error) {
-      console.warn(`${this.adapterType}: Failed to remove ${name} from DOM:`, error);
+      console.warn(
+        `${this.adapterType}: Failed to remove ${name} from DOM:`,
+        error
+      );
     }
   }
 
@@ -161,7 +170,7 @@ class BaseImageEditorAdapter {
    * @param {string} name - 数组名称（用于日志）
    * @protected
    */
-  _safeArrayCleanup(array, name = 'array') {
+  _safeArrayCleanup(array, name = "array") {
     if (!Array.isArray(array)) {
       return;
     }
@@ -189,15 +198,15 @@ class BaseImageEditorAdapter {
    */
   async loadImage(source) {
     this._checkInitialized();
-    
+
     try {
       const imageData = await this._processImageSource(source);
       await this._doLoadImage(imageData);
       this.currentImageData = imageData;
-      this.emit('image-loaded', { imageData });
+      this.emit("image-loaded", { imageData });
     } catch (error) {
-      console.error('Failed to load image:', error);
-      this.emit('error', { type: 'load-image', error });
+      console.error("Failed to load image:", error);
+      this.emit("error", { type: "load-image", error });
       throw error;
     }
   }
@@ -219,7 +228,7 @@ class BaseImageEditorAdapter {
   async resize(width, height) {
     this._checkInitialized();
     await this._doResize(width, height);
-    this.emit('resized', { width, height });
+    this.emit("resized", { width, height });
   }
 
   /**
@@ -233,7 +242,7 @@ class BaseImageEditorAdapter {
   async crop(x, y, width, height) {
     this._checkInitialized();
     await this._doCrop(x, y, width, height);
-    this.emit('cropped', { x, y, width, height });
+    this.emit("cropped", { x, y, width, height });
   }
 
   /**
@@ -244,7 +253,7 @@ class BaseImageEditorAdapter {
   async rotate(angle) {
     this._checkInitialized();
     await this._doRotate(angle);
-    this.emit('rotated', { angle });
+    this.emit("rotated", { angle });
   }
 
   /**
@@ -256,7 +265,7 @@ class BaseImageEditorAdapter {
   async flip(horizontal, vertical) {
     this._checkInitialized();
     await this._doFlip(horizontal, vertical);
-    this.emit('flipped', { horizontal, vertical });
+    this.emit("flipped", { horizontal, vertical });
   }
 
   /**
@@ -267,7 +276,7 @@ class BaseImageEditorAdapter {
   async setBrightness(value) {
     this._checkInitialized();
     await this._doSetBrightness(value);
-    this.emit('brightness-changed', { value });
+    this.emit("brightness-changed", { value });
   }
 
   /**
@@ -278,7 +287,7 @@ class BaseImageEditorAdapter {
   async setContrast(value) {
     this._checkInitialized();
     await this._doSetContrast(value);
-    this.emit('contrast-changed', { value });
+    this.emit("contrast-changed", { value });
   }
 
   /**
@@ -290,7 +299,7 @@ class BaseImageEditorAdapter {
   async applyFilter(filterType, options = {}) {
     this._checkInitialized();
     await this._doApplyFilter(filterType, options);
-    this.emit('filter-applied', { filterType, options });
+    this.emit("filter-applied", { filterType, options });
   }
 
   /**
@@ -301,7 +310,7 @@ class BaseImageEditorAdapter {
   async removeFilter(filterType) {
     this._checkInitialized();
     await this._doRemoveFilter(filterType);
-    this.emit('filter-removed', { filterType });
+    this.emit("filter-removed", { filterType });
   }
 
   /**
@@ -313,7 +322,7 @@ class BaseImageEditorAdapter {
   async setScale(scaleX, scaleY) {
     this._checkInitialized();
     await this._doSetScale(scaleX, scaleY);
-    this.emit('scaled', { scaleX, scaleY });
+    this.emit("scaled", { scaleX, scaleY });
   }
 
   /**
@@ -325,7 +334,7 @@ class BaseImageEditorAdapter {
   async setPosition(x, y) {
     this._checkInitialized();
     await this._doSetPosition(x, y);
-    this.emit('positioned', { x, y });
+    this.emit("positioned", { x, y });
   }
 
   /**
@@ -334,7 +343,7 @@ class BaseImageEditorAdapter {
   select() {
     this._checkInitialized();
     this._doSelect();
-    this.emit('selected');
+    this.emit("selected");
   }
 
   /**
@@ -343,7 +352,7 @@ class BaseImageEditorAdapter {
   deselect() {
     this._checkInitialized();
     this._doDeselect();
-    this.emit('deselected');
+    this.emit("deselected");
   }
 
   /**
@@ -354,7 +363,7 @@ class BaseImageEditorAdapter {
     this._checkInitialized();
     const stateId = this._generateStateId();
     const state = this._doSaveState();
-    this.emit('state-saved', { stateId, state });
+    this.emit("state-saved", { stateId, state });
     return stateId;
   }
 
@@ -366,7 +375,7 @@ class BaseImageEditorAdapter {
   async restoreState(stateId) {
     this._checkInitialized();
     await this._doRestoreState(stateId);
-    this.emit('state-restored', { stateId });
+    this.emit("state-restored", { stateId });
   }
 
   /**
@@ -376,7 +385,7 @@ class BaseImageEditorAdapter {
   async reset() {
     this._checkInitialized();
     await this._doReset();
-    this.emit('reset');
+    this.emit("reset");
   }
 
   /**
@@ -385,10 +394,10 @@ class BaseImageEditorAdapter {
    * @param {number} quality - 图像质量
    * @returns {Promise<string>}
    */
-  async toDataURL(type = 'image/png', quality = 0.9) {
+  async toDataURL(type = "image/png", quality = 0.9) {
     this._checkInitialized();
     const dataURL = await this._doToDataURL(type, quality);
-    this.emit('exported', { type, quality, dataURL });
+    this.emit("exported", { type, quality, dataURL });
     return dataURL;
   }
 
@@ -398,10 +407,10 @@ class BaseImageEditorAdapter {
    * @param {number} quality - 图像质量
    * @returns {Promise<Blob>}
    */
-  async toBlob(type = 'image/png', quality = 0.9) {
+  async toBlob(type = "image/png", quality = 0.9) {
     this._checkInitialized();
     const blob = await this._doToBlob(type, quality);
-    this.emit('exported', { type, quality, blob });
+    this.emit("exported", { type, quality, blob });
     return blob;
   }
 
@@ -440,7 +449,7 @@ class BaseImageEditorAdapter {
   emit(eventName, data = {}) {
     if (this.eventListeners.has(eventName)) {
       const listeners = this.eventListeners.get(eventName);
-      listeners.forEach(callback => {
+      listeners.forEach((callback) => {
         try {
           callback(data);
         } catch (error) {
@@ -475,7 +484,7 @@ class BaseImageEditorAdapter {
    * @protected
    */
   async _doInitialize() {
-    throw new Error('_doInitialize must be implemented by subclass');
+    throw new Error("_doInitialize must be implemented by subclass");
   }
 
   /**
@@ -483,7 +492,7 @@ class BaseImageEditorAdapter {
    * @protected
    */
   _doDestroy() {
-    throw new Error('_doDestroy must be implemented by subclass');
+    throw new Error("_doDestroy must be implemented by subclass");
   }
 
   /**
@@ -493,7 +502,7 @@ class BaseImageEditorAdapter {
    * @protected
    */
   async _doLoadImage(imageData) {
-    throw new Error('_doLoadImage must be implemented by subclass');
+    throw new Error("_doLoadImage must be implemented by subclass");
   }
 
   // ========== 私有辅助方法 ==========
@@ -504,7 +513,7 @@ class BaseImageEditorAdapter {
    */
   _checkInitialized() {
     if (!this.isInitialized) {
-      throw new Error('Adapter is not initialized');
+      throw new Error("Adapter is not initialized");
     }
   }
 
@@ -515,16 +524,16 @@ class BaseImageEditorAdapter {
    * @private
    */
   async _processImageSource(source) {
-    if (typeof source === 'string') {
-      return { src: source, type: 'url' };
+    if (typeof source === "string") {
+      return { src: source, type: "url" };
     } else if (source instanceof File) {
       const dataURL = await this._fileToDataURL(source);
-      return { src: dataURL, type: 'file', file: source };
+      return { src: dataURL, type: "file", file: source };
     } else if (source instanceof Blob) {
       const dataURL = await this._blobToDataURL(source);
-      return { src: dataURL, type: 'blob', blob: source };
+      return { src: dataURL, type: "blob", blob: source };
     } else {
-      throw new Error('Unsupported image source type');
+      throw new Error("Unsupported image source type");
     }
   }
 
@@ -537,7 +546,7 @@ class BaseImageEditorAdapter {
   _fileToDataURL(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result);
+      reader.onload = (e) => resolve(e.target.result);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
@@ -552,7 +561,7 @@ class BaseImageEditorAdapter {
   _blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result);
+      reader.onload = (e) => resolve(e.target.result);
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
@@ -564,29 +573,67 @@ class BaseImageEditorAdapter {
    * @private
    */
   _generateStateId() {
-    return `${this.adapterType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `${this.adapterType}_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
   }
 
   // ========== 子类需要实现的抽象方法 ==========
-  
-  async _doResize(width, height) { throw new Error('Not implemented'); }
-  async _doCrop(x, y, width, height) { throw new Error('Not implemented'); }
-  async _doRotate(angle) { throw new Error('Not implemented'); }
-  async _doFlip(horizontal, vertical) { throw new Error('Not implemented'); }
-  async _doSetBrightness(value) { throw new Error('Not implemented'); }
-  async _doSetContrast(value) { throw new Error('Not implemented'); }
-  async _doApplyFilter(filterType, options) { throw new Error('Not implemented'); }
-  async _doRemoveFilter(filterType) { throw new Error('Not implemented'); }
-  async _doSetScale(scaleX, scaleY) { throw new Error('Not implemented'); }
-  async _doSetPosition(x, y) { throw new Error('Not implemented'); }
-  _doSelect() { throw new Error('Not implemented'); }
-  _doDeselect() { throw new Error('Not implemented'); }
-  _doSaveState() { throw new Error('Not implemented'); }
-  async _doRestoreState(stateId) { throw new Error('Not implemented'); }
-  async _doReset() { throw new Error('Not implemented'); }
-  async _doToDataURL(type, quality) { throw new Error('Not implemented'); }
-  async _doToBlob(type, quality) { throw new Error('Not implemented'); }
-  _doGetPerformanceMetrics() { return {}; }
+
+  async _doResize(width, height) {
+    throw new Error("Not implemented");
+  }
+  async _doCrop(x, y, width, height) {
+    throw new Error("Not implemented");
+  }
+  async _doRotate(angle) {
+    throw new Error("Not implemented");
+  }
+  async _doFlip(horizontal, vertical) {
+    throw new Error("Not implemented");
+  }
+  async _doSetBrightness(value) {
+    throw new Error("Not implemented");
+  }
+  async _doSetContrast(value) {
+    throw new Error("Not implemented");
+  }
+  async _doApplyFilter(filterType, options) {
+    throw new Error("Not implemented");
+  }
+  async _doRemoveFilter(filterType) {
+    throw new Error("Not implemented");
+  }
+  async _doSetScale(scaleX, scaleY) {
+    throw new Error("Not implemented");
+  }
+  async _doSetPosition(x, y) {
+    throw new Error("Not implemented");
+  }
+  _doSelect() {
+    throw new Error("Not implemented");
+  }
+  _doDeselect() {
+    throw new Error("Not implemented");
+  }
+  _doSaveState() {
+    throw new Error("Not implemented");
+  }
+  async _doRestoreState(stateId) {
+    throw new Error("Not implemented");
+  }
+  async _doReset() {
+    throw new Error("Not implemented");
+  }
+  async _doToDataURL(type, quality) {
+    throw new Error("Not implemented");
+  }
+  async _doToBlob(type, quality) {
+    throw new Error("Not implemented");
+  }
+  _doGetPerformanceMetrics() {
+    return {};
+  }
 
   // ========== 错误处理方法 ==========
 
@@ -598,12 +645,12 @@ class BaseImageEditorAdapter {
    * @returns {Object} 错误处理结果
    * @protected
    */
-  _handleError(error, operation = 'unknown', context = {}) {
+  _handleError(error, operation = "unknown", context = {}) {
     const errorContext = {
       ...this.errorContext,
       operation,
       timestamp: Date.now(),
-      ...context
+      ...context,
     };
 
     return errorHandler.handleError(
@@ -646,14 +693,17 @@ class BaseImageEditorAdapter {
    */
   _getErrorLevel(error, operation) {
     // 关键操作的错误级别较高
-    const criticalOperations = ['initialize', 'loadImage', 'destroy'];
-    const highOperations = ['applyFilter', 'resize', 'rotate'];
+    const criticalOperations = ["initialize", "loadImage", "destroy"];
+    const highOperations = ["applyFilter", "resize", "rotate"];
 
     if (criticalOperations.includes(operation)) {
       return errorHandler.errorLevels.CRITICAL;
     } else if (highOperations.includes(operation)) {
       return errorHandler.errorLevels.HIGH;
-    } else if (error.name === 'OutOfMemoryError' || error.message.includes('memory')) {
+    } else if (
+      error.name === "OutOfMemoryError" ||
+      error.message.includes("memory")
+    ) {
       return errorHandler.errorLevels.CRITICAL;
     } else {
       return errorHandler.errorLevels.MEDIUM;
@@ -668,10 +718,10 @@ class BaseImageEditorAdapter {
    */
   _getDefaultValue(operationName) {
     const defaults = {
-      'getPerformanceMetrics': {},
-      'getState': null,
-      'toDataURL': '',
-      'toBlob': null
+      getPerformanceMetrics: {},
+      getState: null,
+      toDataURL: "",
+      toBlob: null,
     };
 
     return defaults[operationName] || null;
@@ -691,7 +741,9 @@ class BaseImageEditorAdapter {
     }
 
     if (typeof value !== type) {
-      throw new Error(`参数 ${paramName} 类型错误，期望 ${type}，实际 ${typeof value}`);
+      throw new Error(
+        `参数 ${paramName} 类型错误，期望 ${type}，实际 ${typeof value}`
+      );
     }
   }
 
@@ -703,15 +755,15 @@ class BaseImageEditorAdapter {
    */
   _validateImageData(imageData) {
     if (!imageData) {
-      throw new Error('图像数据不能为空');
+      throw new Error("图像数据不能为空");
     }
 
     if (!imageData.src && !imageData.data) {
-      throw new Error('图像数据必须包含 src 或 data 属性');
+      throw new Error("图像数据必须包含 src 或 data 属性");
     }
 
-    if (imageData.src && typeof imageData.src !== 'string') {
-      throw new Error('图像 src 必须是字符串');
+    if (imageData.src && typeof imageData.src !== "string") {
+      throw new Error("图像 src 必须是字符串");
     }
   }
 }

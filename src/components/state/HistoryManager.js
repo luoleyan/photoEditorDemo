@@ -9,7 +9,7 @@ class HistoryManager {
     this.options = {
       maxEntries: options.maxEntries || 50,
       enableGrouping: options.enableGrouping || true,
-      groupTimeout: options.groupTimeout || 1000 // 1秒内的操作可以分组
+      groupTimeout: options.groupTimeout || 1000, // 1秒内的操作可以分组
     };
     this.lastOperationTime = 0;
     this.pendingGroup = null;
@@ -28,12 +28,12 @@ class HistoryManager {
    */
   addEntry(entry) {
     const now = Date.now();
-    
+
     // 验证条目
     if (!this._validateEntry(entry)) {
-      throw new Error('Invalid history entry');
+      throw new Error("Invalid history entry");
     }
-    
+
     // 设置默认值
     const historyEntry = {
       id: entry.id || this._generateEntryId(),
@@ -43,16 +43,19 @@ class HistoryManager {
       actionParams: entry.actionParams || {},
       libraryType: entry.libraryType,
       timestamp: entry.timestamp || now,
-      groupId: null
+      groupId: null,
     };
-    
+
     // 检查是否可以分组
-    if (this.options.enableGrouping && this._canGroupWithPrevious(historyEntry)) {
+    if (
+      this.options.enableGrouping &&
+      this._canGroupWithPrevious(historyEntry)
+    ) {
       this._addToGroup(historyEntry);
     } else {
       this._addNewEntry(historyEntry);
     }
-    
+
     this.lastOperationTime = now;
   }
 
@@ -75,14 +78,14 @@ class HistoryManager {
     if (!this.canUndo()) {
       return null;
     }
-    
+
     this.currentIndex--;
     const entry = this.getCurrentEntry();
-    
+
     if (entry) {
-      this._notifyHistoryChange('undo', entry);
+      this._notifyHistoryChange("undo", entry);
     }
-    
+
     return entry;
   }
 
@@ -94,14 +97,14 @@ class HistoryManager {
     if (!this.canRedo()) {
       return null;
     }
-    
+
     this.currentIndex++;
     const entry = this.getCurrentEntry();
-    
+
     if (entry) {
-      this._notifyHistoryChange('redo', entry);
+      this._notifyHistoryChange("redo", entry);
     }
-    
+
     return entry;
   }
 
@@ -130,15 +133,18 @@ class HistoryManager {
     if (index < 0 || index >= this.entries.length) {
       return null;
     }
-    
+
     const previousIndex = this.currentIndex;
     this.currentIndex = index;
     const entry = this.getCurrentEntry();
-    
+
     if (entry) {
-      this._notifyHistoryChange('goto', entry, { previousIndex, targetIndex: index });
+      this._notifyHistoryChange("goto", entry, {
+        previousIndex,
+        targetIndex: index,
+      });
     }
-    
+
     return entry;
   }
 
@@ -173,7 +179,7 @@ class HistoryManager {
     this.entries = [];
     this.currentIndex = -1;
     this.pendingGroup = null;
-    this._notifyHistoryChange('clear');
+    this._notifyHistoryChange("clear");
   }
 
   /**
@@ -183,13 +189,13 @@ class HistoryManager {
    */
   getSummary(maxEntries = 10) {
     const startIndex = Math.max(0, this.entries.length - maxEntries);
-    return this.entries.slice(startIndex).map(entry => ({
+    return this.entries.slice(startIndex).map((entry) => ({
       id: entry.id,
       actionType: entry.actionType,
       description: entry.description,
       timestamp: entry.timestamp,
       isGrouped: !!entry.groupId,
-      isCurrent: this.entries.indexOf(entry) === this.currentIndex
+      isCurrent: this.entries.indexOf(entry) === this.currentIndex,
     }));
   }
 
@@ -201,8 +207,8 @@ class HistoryManager {
     return JSON.stringify({
       entries: this.entries,
       currentIndex: this.currentIndex,
-      version: '1.0.0',
-      timestamp: Date.now()
+      version: "1.0.0",
+      timestamp: Date.now(),
     });
   }
 
@@ -213,24 +219,23 @@ class HistoryManager {
   deserialize(serializedHistory) {
     try {
       const data = JSON.parse(serializedHistory);
-      
+
       if (!Array.isArray(data.entries)) {
-        throw new Error('Invalid history data format');
+        throw new Error("Invalid history data format");
       }
-      
+
       this.entries = data.entries;
       this.currentIndex = data.currentIndex || -1;
-      
+
       // 验证索引范围
       if (this.currentIndex >= this.entries.length) {
         this.currentIndex = this.entries.length - 1;
       }
-      
-      this._notifyHistoryChange('deserialized');
-      
+
+      this._notifyHistoryChange("deserialized");
     } catch (error) {
-      console.error('Failed to deserialize history:', error);
-      throw new Error('History deserialization failed');
+      console.error("Failed to deserialize history:", error);
+      throw new Error("History deserialization failed");
     }
   }
 
@@ -243,21 +248,22 @@ class HistoryManager {
     const libraryTypes = {};
     let totalOperations = 0;
     let groupedOperations = 0;
-    
-    this.entries.forEach(entry => {
+
+    this.entries.forEach((entry) => {
       // 统计操作类型
       actionTypes[entry.actionType] = (actionTypes[entry.actionType] || 0) + 1;
-      
+
       // 统计库类型
-      libraryTypes[entry.libraryType] = (libraryTypes[entry.libraryType] || 0) + 1;
-      
+      libraryTypes[entry.libraryType] =
+        (libraryTypes[entry.libraryType] || 0) + 1;
+
       totalOperations++;
-      
+
       if (entry.groupId) {
         groupedOperations++;
       }
     });
-    
+
     return {
       totalEntries: this.entries.length,
       currentIndex: this.currentIndex,
@@ -267,7 +273,7 @@ class HistoryManager {
       libraryTypes,
       canUndo: this.canUndo(),
       canRedo: this.canRedo(),
-      memoryUsage: this._calculateMemoryUsage()
+      memoryUsage: this._calculateMemoryUsage(),
     };
   }
 
@@ -304,12 +310,17 @@ class HistoryManager {
    * @private
    */
   _validateEntry(entry) {
-    if (!entry || typeof entry !== 'object') {
+    if (!entry || typeof entry !== "object") {
       return false;
     }
-    
-    const requiredFields = ['stateId', 'actionType', 'description', 'libraryType'];
-    return requiredFields.every(field => field in entry && entry[field]);
+
+    const requiredFields = [
+      "stateId",
+      "actionType",
+      "description",
+      "libraryType",
+    ];
+    return requiredFields.every((field) => field in entry && entry[field]);
   }
 
   /**
@@ -322,10 +333,10 @@ class HistoryManager {
     if (this.entries.length === 0) {
       return false;
     }
-    
+
     const lastEntry = this.entries[this.entries.length - 1];
     const timeDiff = entry.timestamp - lastEntry.timestamp;
-    
+
     return (
       timeDiff < this.options.groupTimeout &&
       entry.actionType === lastEntry.actionType &&
@@ -342,8 +353,14 @@ class HistoryManager {
    */
   _canGroupActionTypes(actionType) {
     const groupableActions = [
-      'brightness', 'contrast', 'saturation', 'hue',
-      'rotate', 'scale', 'position', 'opacity'
+      "brightness",
+      "contrast",
+      "saturation",
+      "hue",
+      "rotate",
+      "scale",
+      "position",
+      "opacity",
     ];
     return groupableActions.includes(actionType);
   }
@@ -355,7 +372,7 @@ class HistoryManager {
    */
   _addToGroup(entry) {
     const lastEntry = this.entries[this.entries.length - 1];
-    
+
     if (!lastEntry.groupId) {
       // 创建新分组
       const groupId = this._generateGroupId();
@@ -365,10 +382,10 @@ class HistoryManager {
       // 添加到现有分组
       entry.groupId = lastEntry.groupId;
     }
-    
+
     // 更新分组描述
     entry.description = this._generateGroupDescription(entry.groupId);
-    
+
     this._addNewEntry(entry);
   }
 
@@ -382,15 +399,15 @@ class HistoryManager {
     if (this.currentIndex < this.entries.length - 1) {
       this.entries = this.entries.slice(0, this.currentIndex + 1);
     }
-    
+
     // 添加新条目
     this.entries.push(entry);
     this.currentIndex = this.entries.length - 1;
-    
+
     // 限制历史记录数量
     this._limitEntriesCount();
-    
-    this._notifyHistoryChange('added', entry);
+
+    this._notifyHistoryChange("added", entry);
   }
 
   /**
@@ -402,7 +419,7 @@ class HistoryManager {
       const removeCount = this.entries.length - this.options.maxEntries;
       this.entries.splice(0, removeCount);
       this.currentIndex -= removeCount;
-      
+
       // 确保索引不小于0
       if (this.currentIndex < 0) {
         this.currentIndex = 0;
@@ -435,11 +452,13 @@ class HistoryManager {
    * @private
    */
   _generateGroupDescription(groupId) {
-    const groupEntries = this.entries.filter(entry => entry.groupId === groupId);
+    const groupEntries = this.entries.filter(
+      (entry) => entry.groupId === groupId
+    );
     if (groupEntries.length <= 1) {
-      return groupEntries[0]?.description || 'Grouped operation';
+      return groupEntries[0]?.description || "Grouped operation";
     }
-    
+
     const actionType = groupEntries[0].actionType;
     return `${actionType} (${groupEntries.length} operations)`;
   }
@@ -455,7 +474,7 @@ class HistoryManager {
     if (!this.historyChangeCallbacks) {
       return;
     }
-    
+
     const eventData = {
       action,
       entry,
@@ -464,14 +483,14 @@ class HistoryManager {
       canUndo: this.canUndo(),
       canRedo: this.canRedo(),
       timestamp: Date.now(),
-      ...extra
+      ...extra,
     };
-    
-    this.historyChangeCallbacks.forEach(callback => {
+
+    this.historyChangeCallbacks.forEach((callback) => {
       try {
         callback(eventData);
       } catch (error) {
-        console.error('Error in history change callback:', error);
+        console.error("Error in history change callback:", error);
       }
     });
   }

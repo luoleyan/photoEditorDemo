@@ -5,15 +5,15 @@
       <div class="toolbar-section">
         <h3 class="toolbar-title">{{ title }}</h3>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 形状选择 -->
         <div class="shape-selector">
-          <button 
-            v-for="shape in availableShapes" 
+          <button
+            v-for="shape in availableShapes"
             :key="shape.type"
             class="shape-button"
-            :class="{ 'active': selectedShapeType === shape.type }"
+            :class="{ active: selectedShapeType === shape.type }"
             @click="selectShapeType(shape.type)"
             :title="shape.name"
             :disabled="disabled"
@@ -22,14 +22,14 @@
           </button>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 边框和填充控制 -->
         <div class="stroke-fill-controls">
           <div class="control-group">
             <label>边框:</label>
-            <div 
-              class="color-preview stroke-preview" 
+            <div
+              class="color-preview stroke-preview"
               :style="{ backgroundColor: strokeColor }"
               @click="toggleStrokeColorPicker"
             ></div>
@@ -41,11 +41,11 @@
               />
             </div>
           </div>
-          
+
           <div class="control-group">
             <label>填充:</label>
-            <div 
-              class="color-preview fill-preview" 
+            <div
+              class="color-preview fill-preview"
               :style="{ backgroundColor: fillColor }"
               @click="toggleFillColorPicker"
             ></div>
@@ -59,16 +59,16 @@
           </div>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 边框宽度控制 -->
         <div class="stroke-width-control">
           <label>边框宽度:</label>
-          <input 
-            type="range" 
+          <input
+            type="range"
             v-model.number="strokeWidth"
-            min="0" 
-            max="20" 
+            min="0"
+            max="20"
             step="1"
             @input="handleStrokeWidthChange"
             :disabled="disabled"
@@ -76,16 +76,19 @@
           <span class="stroke-width-value">{{ strokeWidth }}px</span>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 圆角控制 (仅对矩形有效) -->
-        <div class="corner-radius-control" v-if="selectedShapeType === 'rectangle'">
+        <div
+          class="corner-radius-control"
+          v-if="selectedShapeType === 'rectangle'"
+        >
           <label>圆角半径:</label>
-          <input 
-            type="range" 
+          <input
+            type="range"
             v-model.number="cornerRadius"
-            min="0" 
-            max="50" 
+            min="0"
+            max="50"
             step="1"
             @input="handleCornerRadiusChange"
             :disabled="disabled"
@@ -94,28 +97,28 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 绘图区域 -->
-    <div 
+    <div
       class="shape-canvas-container"
       ref="canvasContainer"
       @mousedown="handleCanvasMouseDown"
       @touchstart="handleCanvasTouchStart"
     >
       <!-- 背景图像 -->
-      <img 
+      <img
         v-if="backgroundImage"
         :src="backgroundImage"
         class="background-image"
         alt="背景图像"
       />
-      
+
       <!-- 形状元素 -->
-      <div 
-        v-for="shape in shapes" 
+      <div
+        v-for="shape in shapes"
         :key="shape.id"
         class="shape-element"
-        :class="{ 'active': activeShapeId === shape.id }"
+        :class="{ active: activeShapeId === shape.id }"
         :style="getShapeStyle(shape)"
         @mousedown.stop="handleShapeMouseDown(shape, $event)"
         @touchstart.stop="handleShapeTouchStart(shape, $event)"
@@ -123,55 +126,55 @@
         <!-- 形状内容 -->
         <div class="shape-content" :style="getShapeContentStyle(shape)">
           <!-- 矩形 -->
-          <div 
-            v-if="shape.type === 'rectangle'" 
+          <div
+            v-if="shape.type === 'rectangle'"
             class="shape-rectangle"
             :style="getRectangleStyle(shape)"
           ></div>
-          
+
           <!-- 圆形 -->
-          <div 
-            v-else-if="shape.type === 'circle'" 
+          <div
+            v-else-if="shape.type === 'circle'"
             class="shape-circle"
             :style="getCircleStyle(shape)"
           ></div>
-          
+
           <!-- 椭圆 -->
-          <div 
-            v-else-if="shape.type === 'ellipse'" 
+          <div
+            v-else-if="shape.type === 'ellipse'"
             class="shape-ellipse"
             :style="getEllipseStyle(shape)"
           ></div>
-          
+
           <!-- 线条 -->
-          <div 
-            v-else-if="shape.type === 'line'" 
+          <div
+            v-else-if="shape.type === 'line'"
             class="shape-line"
             :style="getLineStyle(shape)"
           ></div>
-          
+
           <!-- 多边形 -->
-          <div 
-            v-else-if="shape.type === 'polygon'" 
+          <div
+            v-else-if="shape.type === 'polygon'"
             class="shape-polygon"
             :style="getPolygonStyle(shape)"
           ></div>
         </div>
-        
+
         <!-- 变换控制 -->
         <div v-if="activeShapeId === shape.id" class="transform-controls">
           <!-- 旋转手柄 -->
-          <div 
+          <div
             class="rotate-handle"
             @mousedown.stop="handleRotateStart($event)"
             @touchstart.stop="handleRotateStart($event)"
           >
             <i class="icon-rotate"></i>
           </div>
-          
+
           <!-- 调整大小手柄 -->
-          <div 
-            v-for="(handle, index) in resizeHandles" 
+          <div
+            v-for="(handle, index) in resizeHandles"
             :key="index"
             class="resize-handle"
             :class="handle.class"
@@ -180,59 +183,59 @@
           ></div>
         </div>
       </div>
-      
+
       <!-- 绘制中的形状 -->
-      <div 
+      <div
         v-if="drawingShape"
         class="shape-element drawing"
         :style="getShapeStyle(drawingShape)"
       >
         <div class="shape-content" :style="getShapeContentStyle(drawingShape)">
           <!-- 矩形 -->
-          <div 
-            v-if="drawingShape.type === 'rectangle'" 
+          <div
+            v-if="drawingShape.type === 'rectangle'"
             class="shape-rectangle"
             :style="getRectangleStyle(drawingShape)"
           ></div>
-          
+
           <!-- 圆形 -->
-          <div 
-            v-else-if="drawingShape.type === 'circle'" 
+          <div
+            v-else-if="drawingShape.type === 'circle'"
             class="shape-circle"
             :style="getCircleStyle(drawingShape)"
           ></div>
-          
+
           <!-- 椭圆 -->
-          <div 
-            v-else-if="drawingShape.type === 'ellipse'" 
+          <div
+            v-else-if="drawingShape.type === 'ellipse'"
             class="shape-ellipse"
             :style="getEllipseStyle(drawingShape)"
           ></div>
-          
+
           <!-- 线条 -->
-          <div 
-            v-else-if="drawingShape.type === 'line'" 
+          <div
+            v-else-if="drawingShape.type === 'line'"
             class="shape-line"
             :style="getLineStyle(drawingShape)"
           ></div>
-          
+
           <!-- 多边形 -->
-          <div 
-            v-else-if="drawingShape.type === 'polygon'" 
+          <div
+            v-else-if="drawingShape.type === 'polygon'"
             class="shape-polygon"
             :style="getPolygonStyle(drawingShape)"
           ></div>
         </div>
       </div>
-      
+
       <!-- 多边形绘制点 -->
-      <div 
-        v-for="(point, index) in polygonPoints" 
+      <div
+        v-for="(point, index) in polygonPoints"
         :key="`point-${index}`"
         class="polygon-point"
         :style="{ left: point.x + 'px', top: point.y + 'px' }"
       ></div>
-      
+
       <!-- 空状态 -->
       <div v-if="shapes.length === 0 && !drawingShape" class="empty-state">
         <i class="icon-shapes"></i>
@@ -240,14 +243,14 @@
         <p class="instruction-text">{{ getInstructionText() }}</p>
       </div>
     </div>
-    
+
     <!-- 形状操作面板 -->
     <div v-if="showOperations && activeShape" class="shape-operations">
       <h4 class="operations-title">形状操作</h4>
-      
+
       <!-- 组合操作 -->
       <div class="operation-group" v-if="selectedShapes.length > 1">
-        <button 
+        <button
           class="operation-button"
           @click="handleGroupShapes"
           :disabled="disabled"
@@ -255,8 +258,8 @@
           <i class="icon-group"></i>
           <span>组合形状</span>
         </button>
-        
-        <button 
+
+        <button
           class="operation-button"
           @click="handleUngroupShapes"
           :disabled="disabled || !activeShape.isGroup"
@@ -265,11 +268,11 @@
           <span>取消组合</span>
         </button>
       </div>
-      
+
       <!-- 对齐操作 -->
       <div class="operation-group" v-if="selectedShapes.length > 1">
         <div class="align-buttons">
-          <button 
+          <button
             class="align-button"
             @click="handleAlignShapes('left')"
             :disabled="disabled"
@@ -277,8 +280,8 @@
           >
             <i class="icon-align-left"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
             @click="handleAlignShapes('center')"
             :disabled="disabled"
@@ -286,8 +289,8 @@
           >
             <i class="icon-align-center"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
             @click="handleAlignShapes('right')"
             :disabled="disabled"
@@ -295,8 +298,8 @@
           >
             <i class="icon-align-right"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
             @click="handleAlignShapes('top')"
             :disabled="disabled"
@@ -304,8 +307,8 @@
           >
             <i class="icon-align-top"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
             @click="handleAlignShapes('middle')"
             :disabled="disabled"
@@ -313,8 +316,8 @@
           >
             <i class="icon-align-middle"></i>
           </button>
-          
-          <button 
+
+          <button
             class="align-button"
             @click="handleAlignShapes('bottom')"
             :disabled="disabled"
@@ -324,11 +327,11 @@
           </button>
         </div>
       </div>
-      
+
       <!-- 分布操作 -->
       <div class="operation-group" v-if="selectedShapes.length > 2">
         <div class="distribute-buttons">
-          <button 
+          <button
             class="distribute-button"
             @click="handleDistributeShapes('horizontal')"
             :disabled="disabled"
@@ -336,8 +339,8 @@
           >
             <i class="icon-distribute-horizontal"></i>
           </button>
-          
-          <button 
+
+          <button
             class="distribute-button"
             @click="handleDistributeShapes('vertical')"
             :disabled="disabled"
@@ -347,10 +350,10 @@
           </button>
         </div>
       </div>
-      
+
       <!-- 删除操作 -->
       <div class="operation-group">
-        <button 
+        <button
           class="delete-button"
           @click="handleDeleteShapes"
           :disabled="disabled"
@@ -364,61 +367,61 @@
 </template>
 
 <script>
-import ColorPicker from './ColorPicker.vue';
+import ColorPicker from "./ColorPicker.vue";
 
 export default {
-  name: 'ShapeTool',
+  name: "ShapeTool",
   components: {
-    ColorPicker
+    ColorPicker,
   },
-  
+
   props: {
     // 工具标题
     title: {
       type: String,
-      default: '形状工具'
+      default: "形状工具",
     },
-    
+
     // 背景图像
     backgroundImage: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 初始形状
     initialShapes: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 显示选项
     showToolbar: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showOperations: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 文本选项
     emptyText: {
       type: String,
-      default: '暂无形状'
+      default: "暂无形状",
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'minimal', 'compact'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "minimal", "compact"].includes(value),
+    },
   },
 
   data() {
@@ -427,7 +430,7 @@ export default {
       shapes: [],
 
       // 活动形状
-      activeShapeId: '',
+      activeShapeId: "",
       selectedShapeIds: [],
 
       // 绘制状态
@@ -440,9 +443,9 @@ export default {
       polygonPoints: [],
 
       // 形状属性
-      selectedShapeType: 'rectangle',
-      strokeColor: '#000000',
-      fillColor: '#ffffff',
+      selectedShapeType: "rectangle",
+      strokeColor: "#000000",
+      fillColor: "#ffffff",
       strokeWidth: 2,
       cornerRadius: 0,
 
@@ -453,7 +456,7 @@ export default {
       interactionStartX: 0,
       interactionStartY: 0,
       interactionStartShape: null,
-      resizeDirection: '',
+      resizeDirection: "",
 
       // 颜色选择器
       showStrokeColorPicker: false,
@@ -461,27 +464,27 @@ export default {
 
       // 可用形状
       availableShapes: [
-        { type: 'rectangle', name: '矩形' },
-        { type: 'circle', name: '圆形' },
-        { type: 'ellipse', name: '椭圆' },
-        { type: 'line', name: '线条' },
-        { type: 'polygon', name: '多边形' }
+        { type: "rectangle", name: "矩形" },
+        { type: "circle", name: "圆形" },
+        { type: "ellipse", name: "椭圆" },
+        { type: "line", name: "线条" },
+        { type: "polygon", name: "多边形" },
       ],
 
       // 调整大小手柄
       resizeHandles: [
-        { position: 'nw', class: 'nw-handle' },
-        { position: 'n', class: 'n-handle' },
-        { position: 'ne', class: 'ne-handle' },
-        { position: 'e', class: 'e-handle' },
-        { position: 'se', class: 'se-handle' },
-        { position: 's', class: 's-handle' },
-        { position: 'sw', class: 'sw-handle' },
-        { position: 'w', class: 'w-handle' }
+        { position: "nw", class: "nw-handle" },
+        { position: "n", class: "n-handle" },
+        { position: "ne", class: "ne-handle" },
+        { position: "e", class: "e-handle" },
+        { position: "se", class: "se-handle" },
+        { position: "s", class: "s-handle" },
+        { position: "sw", class: "sw-handle" },
+        { position: "w", class: "w-handle" },
       ],
 
       // 防抖相关
-      shapesChangeTimeout: null
+      shapesChangeTimeout: null,
     };
   },
 
@@ -489,19 +492,23 @@ export default {
     shapeClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
     },
 
     // 当前活动形状
     activeShape() {
-      return this.shapes.find(shape => shape.id === this.activeShapeId) || null;
+      return (
+        this.shapes.find((shape) => shape.id === this.activeShapeId) || null
+      );
     },
 
     // 选中的形状
     selectedShapes() {
-      return this.shapes.filter(shape => this.selectedShapeIds.includes(shape.id));
-    }
+      return this.shapes.filter((shape) =>
+        this.selectedShapeIds.includes(shape.id)
+      );
+    },
   },
 
   watch: {
@@ -510,7 +517,7 @@ export default {
       deep: true,
       handler(newShapes) {
         this.shapes = [...newShapes];
-      }
+      },
     },
 
     shapes: {
@@ -522,34 +529,36 @@ export default {
         }
 
         this.shapesChangeTimeout = setTimeout(() => {
-          this.$emit('shapes-change', newShapes);
+          this.$emit("shapes-change", newShapes);
         }, 50); // 50ms防抖延迟
-      }
+      },
     },
 
     activeShape: {
       immediate: true,
       handler(newShape) {
         if (newShape) {
-          this.strokeColor = newShape.strokeColor || '#000000';
-          this.fillColor = newShape.fillColor || '#ffffff';
+          this.strokeColor = newShape.strokeColor || "#000000";
+          this.fillColor = newShape.fillColor || "#ffffff";
           this.strokeWidth = newShape.strokeWidth || 2;
           this.cornerRadius = newShape.cornerRadius || 0;
         }
-      }
-    }
+      },
+    },
   },
 
   mounted() {
     // 监听全局鼠标和触摸事件
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd);
-    document.addEventListener('click', this.handleDocumentClick);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("touchmove", this.handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.handleTouchEnd);
+    document.addEventListener("click", this.handleDocumentClick);
 
     // 监听键盘事件
-    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener("keydown", this.handleKeyDown);
   },
 
   beforeDestroy() {
@@ -560,12 +569,12 @@ export default {
     }
 
     // 移除事件监听器
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
-    document.removeEventListener('click', this.handleDocumentClick);
-    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("touchmove", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
+    document.removeEventListener("click", this.handleDocumentClick);
+    document.removeEventListener("keydown", this.handleKeyDown);
   },
 
   methods: {
@@ -578,7 +587,10 @@ export default {
       this.selectedShapeType = type;
 
       // 如果正在绘制多边形，完成绘制
-      if (this.selectedShapeType !== 'polygon' && this.polygonPoints.length > 0) {
+      if (
+        this.selectedShapeType !== "polygon" &&
+        this.polygonPoints.length > 0
+      ) {
         this.finishPolygonDrawing();
       }
     },
@@ -607,7 +619,7 @@ export default {
 
       if (this.activeShape) {
         this.activeShape.strokeColor = color;
-        this.$emit('shape-style-change', this.activeShape);
+        this.$emit("shape-style-change", this.activeShape);
       }
     },
 
@@ -619,7 +631,7 @@ export default {
 
       if (this.activeShape) {
         this.activeShape.fillColor = color;
-        this.$emit('shape-style-change', this.activeShape);
+        this.$emit("shape-style-change", this.activeShape);
       }
     },
 
@@ -629,7 +641,7 @@ export default {
     handleStrokeWidthChange() {
       if (this.activeShape) {
         this.activeShape.strokeWidth = this.strokeWidth;
-        this.$emit('shape-style-change', this.activeShape);
+        this.$emit("shape-style-change", this.activeShape);
       }
     },
 
@@ -637,9 +649,9 @@ export default {
      * 处理圆角半径变化
      */
     handleCornerRadiusChange() {
-      if (this.activeShape && this.activeShape.type === 'rectangle') {
+      if (this.activeShape && this.activeShape.type === "rectangle") {
         this.activeShape.cornerRadius = this.cornerRadius;
-        this.$emit('shape-style-change', this.activeShape);
+        this.$emit("shape-style-change", this.activeShape);
       }
     },
 
@@ -654,7 +666,7 @@ export default {
       const y = event.clientY - rect.top;
 
       // 如果是多边形模式
-      if (this.selectedShapeType === 'polygon') {
+      if (this.selectedShapeType === "polygon") {
         this.handlePolygonClick(x, y);
         return;
       }
@@ -676,7 +688,7 @@ export default {
       const x = touch.clientX - rect.left;
       const y = touch.clientY - rect.top;
 
-      if (this.selectedShapeType === 'polygon') {
+      if (this.selectedShapeType === "polygon") {
         this.handlePolygonClick(x, y);
         return;
       }
@@ -706,11 +718,11 @@ export default {
         strokeColor: this.strokeColor,
         fillColor: this.fillColor,
         strokeWidth: this.strokeWidth,
-        cornerRadius: this.cornerRadius
+        cornerRadius: this.cornerRadius,
       };
 
       // 清除选择
-      this.activeShapeId = '';
+      this.activeShapeId = "";
       this.selectedShapeIds = [];
     },
 
@@ -725,11 +737,11 @@ export default {
       if (this.polygonPoints.length === 1) {
         this.drawingShape = {
           id: `polygon-${Date.now()}`,
-          type: 'polygon',
+          type: "polygon",
           points: [...this.polygonPoints],
           strokeColor: this.strokeColor,
           fillColor: this.fillColor,
-          strokeWidth: this.strokeWidth
+          strokeWidth: this.strokeWidth,
         };
       } else {
         // 更新多边形点
@@ -743,10 +755,10 @@ export default {
     finishPolygonDrawing() {
       if (this.polygonPoints.length >= 3 && this.drawingShape) {
         // 计算边界框
-        const minX = Math.min(...this.polygonPoints.map(p => p.x));
-        const minY = Math.min(...this.polygonPoints.map(p => p.y));
-        const maxX = Math.max(...this.polygonPoints.map(p => p.x));
-        const maxY = Math.max(...this.polygonPoints.map(p => p.y));
+        const minX = Math.min(...this.polygonPoints.map((p) => p.x));
+        const minY = Math.min(...this.polygonPoints.map((p) => p.y));
+        const maxX = Math.max(...this.polygonPoints.map((p) => p.x));
+        const maxY = Math.max(...this.polygonPoints.map((p) => p.y));
 
         this.drawingShape.x = minX;
         this.drawingShape.y = minY;
@@ -754,15 +766,15 @@ export default {
         this.drawingShape.height = maxY - minY;
 
         // 转换为相对坐标
-        this.drawingShape.points = this.polygonPoints.map(p => ({
+        this.drawingShape.points = this.polygonPoints.map((p) => ({
           x: p.x - minX,
-          y: p.y - minY
+          y: p.y - minY,
         }));
 
         this.shapes.push(this.drawingShape);
         this.activeShapeId = this.drawingShape.id;
 
-        this.$emit('shape-add', this.drawingShape);
+        this.$emit("shape-add", this.drawingShape);
       }
 
       // 重置状态
@@ -796,7 +808,7 @@ export default {
       this.interactionStartY = event.clientY;
       this.interactionStartShape = { ...shape };
 
-      this.$emit('shape-select', shape);
+      this.$emit("shape-select", shape);
 
       event.preventDefault();
     },
@@ -816,7 +828,7 @@ export default {
       this.interactionStartY = touch.clientY;
       this.interactionStartShape = { ...shape };
 
-      this.$emit('shape-select', shape);
+      this.$emit("shape-select", shape);
 
       event.preventDefault();
     },
@@ -829,8 +841,10 @@ export default {
 
       this.isRotating = true;
 
-      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+      const clientX =
+        event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY =
+        event.clientY || (event.touches && event.touches[0].clientY);
 
       this.interactionStartX = clientX;
       this.interactionStartY = clientY;
@@ -848,8 +862,10 @@ export default {
       this.isResizing = true;
       this.resizeDirection = direction;
 
-      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+      const clientX =
+        event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY =
+        event.clientY || (event.touches && event.touches[0].clientY);
 
       this.interactionStartX = clientX;
       this.interactionStartY = clientY;
@@ -915,7 +931,7 @@ export default {
       this.drawingShape.height = height;
 
       // 对于圆形，保持宽高相等
-      if (this.drawingShape.type === 'circle') {
+      if (this.drawingShape.type === "circle") {
         const size = Math.min(width, height);
         this.drawingShape.width = size;
         this.drawingShape.height = size;
@@ -934,7 +950,7 @@ export default {
       this.activeShape.x = this.interactionStartShape.x + deltaX;
       this.activeShape.y = this.interactionStartShape.y + deltaY;
 
-      this.$emit('shape-move', this.activeShape);
+      this.$emit("shape-move", this.activeShape);
     },
 
     /**
@@ -953,17 +969,15 @@ export default {
         this.interactionStartX - centerX
       );
 
-      const currentAngle = Math.atan2(
-        clientY - centerY,
-        clientX - centerX
-      );
+      const currentAngle = Math.atan2(clientY - centerY, clientX - centerX);
 
       let angleDiff = currentAngle - startAngle;
       angleDiff = angleDiff * (180 / Math.PI);
 
-      this.activeShape.rotation = this.interactionStartShape.rotation + angleDiff;
+      this.activeShape.rotation =
+        this.interactionStartShape.rotation + angleDiff;
 
-      this.$emit('shape-rotate', this.activeShape);
+      this.$emit("shape-rotate", this.activeShape);
     },
 
     /**
@@ -979,37 +993,37 @@ export default {
 
       // 根据调整方向更新形状
       switch (this.resizeDirection) {
-        case 'nw':
+        case "nw":
           shape.x += deltaX;
           shape.y += deltaY;
           shape.width -= deltaX;
           shape.height -= deltaY;
           break;
-        case 'n':
+        case "n":
           shape.y += deltaY;
           shape.height -= deltaY;
           break;
-        case 'ne':
+        case "ne":
           shape.y += deltaY;
           shape.width += deltaX;
           shape.height -= deltaY;
           break;
-        case 'e':
+        case "e":
           shape.width += deltaX;
           break;
-        case 'se':
+        case "se":
           shape.width += deltaX;
           shape.height += deltaY;
           break;
-        case 's':
+        case "s":
           shape.height += deltaY;
           break;
-        case 'sw':
+        case "sw":
           shape.x += deltaX;
           shape.width -= deltaX;
           shape.height += deltaY;
           break;
-        case 'w':
+        case "w":
           shape.x += deltaX;
           shape.width -= deltaX;
           break;
@@ -1020,14 +1034,14 @@ export default {
       if (shape.height < 10) shape.height = 10;
 
       // 对于圆形，保持宽高相等
-      if (shape.type === 'circle') {
+      if (shape.type === "circle") {
         const size = Math.min(shape.width, shape.height);
 
-        if (this.resizeDirection.includes('w')) {
+        if (this.resizeDirection.includes("w")) {
           shape.x = shape.x + shape.width - size;
         }
 
-        if (this.resizeDirection.includes('n')) {
+        if (this.resizeDirection.includes("n")) {
           shape.y = shape.y + shape.height - size;
         }
 
@@ -1038,7 +1052,7 @@ export default {
       // 更新形状
       Object.assign(this.activeShape, shape);
 
-      this.$emit('shape-resize', this.activeShape);
+      this.$emit("shape-resize", this.activeShape);
     },
 
     /**
@@ -1086,7 +1100,7 @@ export default {
       this.activeShapeId = this.drawingShape.id;
       this.selectedShapeIds = [this.drawingShape.id];
 
-      this.$emit('shape-add', this.drawingShape);
+      this.$emit("shape-add", this.drawingShape);
 
       this.drawingShape = null;
     },
@@ -1096,16 +1110,20 @@ export default {
      */
     handleDocumentClick(event) {
       // 关闭颜色选择器
-      if (!event.target.closest('.color-picker-container') &&
-          !event.target.closest('.color-preview')) {
+      if (
+        !event.target.closest(".color-picker-container") &&
+        !event.target.closest(".color-preview")
+      ) {
         this.showStrokeColorPicker = false;
         this.showFillColorPicker = false;
       }
 
       // 如果点击了画布外部，完成多边形绘制
-      if (this.selectedShapeType === 'polygon' &&
-          this.polygonPoints.length >= 3 &&
-          !event.target.closest('.shape-canvas-container')) {
+      if (
+        this.selectedShapeType === "polygon" &&
+        this.polygonPoints.length >= 3 &&
+        !event.target.closest(".shape-canvas-container")
+      ) {
         this.finishPolygonDrawing();
       }
     },
@@ -1115,19 +1133,21 @@ export default {
      */
     handleKeyDown(event) {
       // 删除选中的形状
-      if (event.key === 'Delete' && this.selectedShapeIds.length > 0) {
+      if (event.key === "Delete" && this.selectedShapeIds.length > 0) {
         this.handleDeleteShapes();
       }
 
       // 完成多边形绘制
-      if (event.key === 'Enter' &&
-          this.selectedShapeType === 'polygon' &&
-          this.polygonPoints.length >= 3) {
+      if (
+        event.key === "Enter" &&
+        this.selectedShapeType === "polygon" &&
+        this.polygonPoints.length >= 3
+      ) {
         this.finishPolygonDrawing();
       }
 
       // 取消绘制
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         if (this.drawingShape) {
           this.drawingShape = null;
           this.isDrawing = false;
@@ -1145,41 +1165,41 @@ export default {
     handleGroupShapes() {
       if (this.disabled || this.selectedShapeIds.length <= 1) return;
 
-      const selectedShapes = this.shapes.filter(shape =>
+      const selectedShapes = this.shapes.filter((shape) =>
         this.selectedShapeIds.includes(shape.id)
       );
 
       // 计算组合边界
-      const minX = Math.min(...selectedShapes.map(s => s.x));
-      const minY = Math.min(...selectedShapes.map(s => s.y));
-      const maxX = Math.max(...selectedShapes.map(s => s.x + s.width));
-      const maxY = Math.max(...selectedShapes.map(s => s.y + s.height));
+      const minX = Math.min(...selectedShapes.map((s) => s.x));
+      const minY = Math.min(...selectedShapes.map((s) => s.y));
+      const maxX = Math.max(...selectedShapes.map((s) => s.x + s.width));
+      const maxY = Math.max(...selectedShapes.map((s) => s.y + s.height));
 
       // 创建组合形状
       const groupShape = {
         id: `group-${Date.now()}`,
-        type: 'group',
+        type: "group",
         x: minX,
         y: minY,
         width: maxX - minX,
         height: maxY - minY,
         rotation: 0,
         strokeColor: this.strokeColor,
-        fillColor: 'transparent',
+        fillColor: "transparent",
         strokeWidth: 1,
         isGroup: true,
-        children: selectedShapes.map(s => {
+        children: selectedShapes.map((s) => {
           // 转换为相对坐标
           const clone = { ...s };
           clone.x = clone.x - minX;
           clone.y = clone.y - minY;
           return clone;
-        })
+        }),
       };
 
       // 移除原始形状
-      this.shapes = this.shapes.filter(shape =>
-        !this.selectedShapeIds.includes(shape.id)
+      this.shapes = this.shapes.filter(
+        (shape) => !this.selectedShapeIds.includes(shape.id)
       );
 
       // 添加组合形状
@@ -1187,19 +1207,20 @@ export default {
       this.activeShapeId = groupShape.id;
       this.selectedShapeIds = [groupShape.id];
 
-      this.$emit('shapes-group', groupShape);
+      this.$emit("shapes-group", groupShape);
     },
 
     /**
      * 处理取消组合
      */
     handleUngroupShapes() {
-      if (this.disabled || !this.activeShape || !this.activeShape.isGroup) return;
+      if (this.disabled || !this.activeShape || !this.activeShape.isGroup)
+        return;
 
       const groupShape = this.activeShape;
 
       // 恢复子形状的绝对坐标
-      const ungroupedShapes = groupShape.children.map(child => {
+      const ungroupedShapes = groupShape.children.map((child) => {
         const shape = { ...child };
         shape.x = shape.x + groupShape.x;
         shape.y = shape.y + groupShape.y;
@@ -1207,7 +1228,7 @@ export default {
       });
 
       // 移除组合形状
-      const index = this.shapes.findIndex(s => s.id === groupShape.id);
+      const index = this.shapes.findIndex((s) => s.id === groupShape.id);
       if (index !== -1) {
         this.shapes.splice(index, 1);
       }
@@ -1216,10 +1237,10 @@ export default {
       this.shapes.push(...ungroupedShapes);
 
       // 选中所有子形状
-      this.selectedShapeIds = ungroupedShapes.map(s => s.id);
-      this.activeShapeId = ungroupedShapes[0]?.id || '';
+      this.selectedShapeIds = ungroupedShapes.map((s) => s.id);
+      this.activeShapeId = ungroupedShapes[0]?.id || "";
 
-      this.$emit('shapes-ungroup', ungroupedShapes);
+      this.$emit("shapes-ungroup", ungroupedShapes);
     },
 
     /**
@@ -1228,7 +1249,7 @@ export default {
     handleAlignShapes(alignment) {
       if (this.disabled || this.selectedShapeIds.length <= 1) return;
 
-      const selectedShapes = this.shapes.filter(shape =>
+      const selectedShapes = this.shapes.filter((shape) =>
         this.selectedShapeIds.includes(shape.id)
       );
 
@@ -1236,43 +1257,51 @@ export default {
       let alignValue;
 
       switch (alignment) {
-        case 'left':
-          alignValue = Math.min(...selectedShapes.map(s => s.x));
-          selectedShapes.forEach(shape => { shape.x = alignValue; });
+        case "left":
+          alignValue = Math.min(...selectedShapes.map((s) => s.x));
+          selectedShapes.forEach((shape) => {
+            shape.x = alignValue;
+          });
           break;
-        case 'center':
-          alignValue = (Math.min(...selectedShapes.map(s => s.x)) +
-                       Math.max(...selectedShapes.map(s => s.x + s.width))) / 2;
-          selectedShapes.forEach(shape => {
+        case "center":
+          alignValue =
+            (Math.min(...selectedShapes.map((s) => s.x)) +
+              Math.max(...selectedShapes.map((s) => s.x + s.width))) /
+            2;
+          selectedShapes.forEach((shape) => {
             shape.x = alignValue - shape.width / 2;
           });
           break;
-        case 'right':
-          alignValue = Math.max(...selectedShapes.map(s => s.x + s.width));
-          selectedShapes.forEach(shape => {
+        case "right":
+          alignValue = Math.max(...selectedShapes.map((s) => s.x + s.width));
+          selectedShapes.forEach((shape) => {
             shape.x = alignValue - shape.width;
           });
           break;
-        case 'top':
-          alignValue = Math.min(...selectedShapes.map(s => s.y));
-          selectedShapes.forEach(shape => { shape.y = alignValue; });
+        case "top":
+          alignValue = Math.min(...selectedShapes.map((s) => s.y));
+          selectedShapes.forEach((shape) => {
+            shape.y = alignValue;
+          });
           break;
-        case 'middle':
-          alignValue = (Math.min(...selectedShapes.map(s => s.y)) +
-                       Math.max(...selectedShapes.map(s => s.y + s.height))) / 2;
-          selectedShapes.forEach(shape => {
+        case "middle":
+          alignValue =
+            (Math.min(...selectedShapes.map((s) => s.y)) +
+              Math.max(...selectedShapes.map((s) => s.y + s.height))) /
+            2;
+          selectedShapes.forEach((shape) => {
             shape.y = alignValue - shape.height / 2;
           });
           break;
-        case 'bottom':
-          alignValue = Math.max(...selectedShapes.map(s => s.y + s.height));
-          selectedShapes.forEach(shape => {
+        case "bottom":
+          alignValue = Math.max(...selectedShapes.map((s) => s.y + s.height));
+          selectedShapes.forEach((shape) => {
             shape.y = alignValue - shape.height;
           });
           break;
       }
 
-      this.$emit('shapes-align', { alignment, shapes: selectedShapes });
+      this.$emit("shapes-align", { alignment, shapes: selectedShapes });
     },
 
     /**
@@ -1281,20 +1310,25 @@ export default {
     handleDistributeShapes(direction) {
       if (this.disabled || this.selectedShapeIds.length <= 2) return;
 
-      const selectedShapes = this.shapes.filter(shape =>
+      const selectedShapes = this.shapes.filter((shape) =>
         this.selectedShapeIds.includes(shape.id)
       );
 
-      if (direction === 'horizontal') {
+      if (direction === "horizontal") {
         // 按x坐标排序
         selectedShapes.sort((a, b) => a.x - b.x);
 
-        const totalWidth = selectedShapes[selectedShapes.length - 1].x +
-                          selectedShapes[selectedShapes.length - 1].width -
-                          selectedShapes[0].x;
+        const totalWidth =
+          selectedShapes[selectedShapes.length - 1].x +
+          selectedShapes[selectedShapes.length - 1].width -
+          selectedShapes[0].x;
 
-        const shapeWidthSum = selectedShapes.reduce((sum, s) => sum + s.width, 0);
-        const spacing = (totalWidth - shapeWidthSum) / (selectedShapes.length - 1);
+        const shapeWidthSum = selectedShapes.reduce(
+          (sum, s) => sum + s.width,
+          0
+        );
+        const spacing =
+          (totalWidth - shapeWidthSum) / (selectedShapes.length - 1);
 
         let currentX = selectedShapes[0].x;
         selectedShapes.forEach((shape, index) => {
@@ -1307,12 +1341,17 @@ export default {
         // 按y坐标排序
         selectedShapes.sort((a, b) => a.y - b.y);
 
-        const totalHeight = selectedShapes[selectedShapes.length - 1].y +
-                           selectedShapes[selectedShapes.length - 1].height -
-                           selectedShapes[0].y;
+        const totalHeight =
+          selectedShapes[selectedShapes.length - 1].y +
+          selectedShapes[selectedShapes.length - 1].height -
+          selectedShapes[0].y;
 
-        const shapeHeightSum = selectedShapes.reduce((sum, s) => sum + s.height, 0);
-        const spacing = (totalHeight - shapeHeightSum) / (selectedShapes.length - 1);
+        const shapeHeightSum = selectedShapes.reduce(
+          (sum, s) => sum + s.height,
+          0
+        );
+        const spacing =
+          (totalHeight - shapeHeightSum) / (selectedShapes.length - 1);
 
         let currentY = selectedShapes[0].y;
         selectedShapes.forEach((shape, index) => {
@@ -1323,7 +1362,7 @@ export default {
         });
       }
 
-      this.$emit('shapes-distribute', { direction, shapes: selectedShapes });
+      this.$emit("shapes-distribute", { direction, shapes: selectedShapes });
     },
 
     /**
@@ -1332,18 +1371,18 @@ export default {
     handleDeleteShapes() {
       if (this.disabled || this.selectedShapeIds.length === 0) return;
 
-      const deletedShapes = this.shapes.filter(shape =>
+      const deletedShapes = this.shapes.filter((shape) =>
         this.selectedShapeIds.includes(shape.id)
       );
 
-      this.shapes = this.shapes.filter(shape =>
-        !this.selectedShapeIds.includes(shape.id)
+      this.shapes = this.shapes.filter(
+        (shape) => !this.selectedShapeIds.includes(shape.id)
       );
 
-      this.activeShapeId = '';
+      this.activeShapeId = "";
       this.selectedShapeIds = [];
 
-      this.$emit('shapes-delete', deletedShapes);
+      this.$emit("shapes-delete", deletedShapes);
     },
 
     /**
@@ -1351,14 +1390,14 @@ export default {
      */
     getInstructionText() {
       const instructions = {
-        'rectangle': '点击并拖拽绘制矩形',
-        'circle': '点击并拖拽绘制圆形',
-        'ellipse': '点击并拖拽绘制椭圆',
-        'line': '点击并拖拽绘制线条',
-        'polygon': '点击添加多边形顶点，按Enter完成'
+        rectangle: "点击并拖拽绘制矩形",
+        circle: "点击并拖拽绘制圆形",
+        ellipse: "点击并拖拽绘制椭圆",
+        line: "点击并拖拽绘制线条",
+        polygon: "点击添加多边形顶点，按Enter完成",
       };
 
-      return instructions[this.selectedShapeType] || '选择形状类型开始绘制';
+      return instructions[this.selectedShapeType] || "选择形状类型开始绘制";
     },
 
     /**
@@ -1370,7 +1409,7 @@ export default {
         top: `${shape.y}px`,
         width: `${shape.width}px`,
         height: `${shape.height}px`,
-        transform: `rotate(${shape.rotation || 0}deg)`
+        transform: `rotate(${shape.rotation || 0}deg)`,
       };
     },
 
@@ -1379,8 +1418,8 @@ export default {
      */
     getShapeContentStyle(shape) {
       return {
-        width: '100%',
-        height: '100%'
+        width: "100%",
+        height: "100%",
       };
     },
 
@@ -1389,11 +1428,11 @@ export default {
      */
     getRectangleStyle(shape) {
       return {
-        width: '100%',
-        height: '100%',
-        backgroundColor: shape.fillColor || 'transparent',
-        border: `${shape.strokeWidth}px solid ${shape.strokeColor || 'black'}`,
-        borderRadius: `${shape.cornerRadius || 0}px`
+        width: "100%",
+        height: "100%",
+        backgroundColor: shape.fillColor || "transparent",
+        border: `${shape.strokeWidth}px solid ${shape.strokeColor || "black"}`,
+        borderRadius: `${shape.cornerRadius || 0}px`,
       };
     },
 
@@ -1402,11 +1441,11 @@ export default {
      */
     getCircleStyle(shape) {
       return {
-        width: '100%',
-        height: '100%',
-        backgroundColor: shape.fillColor || 'transparent',
-        border: `${shape.strokeWidth}px solid ${shape.strokeColor || 'black'}`,
-        borderRadius: '50%'
+        width: "100%",
+        height: "100%",
+        backgroundColor: shape.fillColor || "transparent",
+        border: `${shape.strokeWidth}px solid ${shape.strokeColor || "black"}`,
+        borderRadius: "50%",
       };
     },
 
@@ -1415,11 +1454,11 @@ export default {
      */
     getEllipseStyle(shape) {
       return {
-        width: '100%',
-        height: '100%',
-        backgroundColor: shape.fillColor || 'transparent',
-        border: `${shape.strokeWidth}px solid ${shape.strokeColor || 'black'}`,
-        borderRadius: '50%'
+        width: "100%",
+        height: "100%",
+        backgroundColor: shape.fillColor || "transparent",
+        border: `${shape.strokeWidth}px solid ${shape.strokeColor || "black"}`,
+        borderRadius: "50%",
       };
     },
 
@@ -1429,14 +1468,16 @@ export default {
     getLineStyle(shape) {
       // 计算线条角度
       const angle = Math.atan2(shape.height, shape.width) * (180 / Math.PI);
-      const length = Math.sqrt(shape.width * shape.width + shape.height * shape.height);
+      const length = Math.sqrt(
+        shape.width * shape.width + shape.height * shape.height
+      );
 
       return {
         width: `${length}px`,
         height: `${shape.strokeWidth}px`,
-        backgroundColor: shape.strokeColor || 'black',
-        transformOrigin: 'left center',
-        transform: `rotate(${angle}deg)`
+        backgroundColor: shape.strokeColor || "black",
+        transformOrigin: "left center",
+        transform: `rotate(${angle}deg)`,
       };
     },
 
@@ -1449,18 +1490,18 @@ export default {
       }
 
       // 创建SVG路径
-      const pathPoints = shape.points.map(p => `${p.x},${p.y}`).join(' ');
+      const pathPoints = shape.points.map((p) => `${p.x},${p.y}`).join(" ");
 
       return {
-        width: '100%',
-        height: '100%',
-        position: 'relative',
+        width: "100%",
+        height: "100%",
+        position: "relative",
         clipPath: `polygon(${pathPoints})`,
-        backgroundColor: shape.fillColor || 'transparent',
-        border: `${shape.strokeWidth}px solid ${shape.strokeColor || 'black'}`
+        backgroundColor: shape.fillColor || "transparent",
+        border: `${shape.strokeWidth}px solid ${shape.strokeColor || "black"}`,
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1930,24 +1971,79 @@ export default {
 }
 
 /* 图标样式 */
-.icon-shape-rectangle::before { content: '□'; font-size: 18px; }
-.icon-shape-circle::before { content: '○'; font-size: 18px; }
-.icon-shape-ellipse::before { content: '⬭'; font-size: 18px; }
-.icon-shape-line::before { content: '╱'; font-size: 18px; }
-.icon-shape-polygon::before { content: '⬟'; font-size: 18px; }
-.icon-rotate::before { content: '↻'; font-size: 12px; }
-.icon-group::before { content: '⊞'; font-size: 14px; }
-.icon-ungroup::before { content: '⊟'; font-size: 14px; }
-.icon-delete::before { content: '✕'; font-size: 14px; }
-.icon-shapes::before { content: '◩'; font-size: 24px; }
-.icon-align-left::before { content: '◧'; font-size: 14px; }
-.icon-align-center::before { content: '⧠'; font-size: 14px; }
-.icon-align-right::before { content: '◨'; font-size: 14px; }
-.icon-align-top::before { content: '◤'; font-size: 14px; }
-.icon-align-middle::before { content: '⧠'; font-size: 14px; transform: rotate(90deg); }
-.icon-align-bottom::before { content: '◢'; font-size: 14px; }
-.icon-distribute-horizontal::before { content: '⫴'; font-size: 14px; }
-.icon-distribute-vertical::before { content: '⫶'; font-size: 14px; }
+.icon-shape-rectangle::before {
+  content: "□";
+  font-size: 18px;
+}
+.icon-shape-circle::before {
+  content: "○";
+  font-size: 18px;
+}
+.icon-shape-ellipse::before {
+  content: "⬭";
+  font-size: 18px;
+}
+.icon-shape-line::before {
+  content: "╱";
+  font-size: 18px;
+}
+.icon-shape-polygon::before {
+  content: "⬟";
+  font-size: 18px;
+}
+.icon-rotate::before {
+  content: "↻";
+  font-size: 12px;
+}
+.icon-group::before {
+  content: "⊞";
+  font-size: 14px;
+}
+.icon-ungroup::before {
+  content: "⊟";
+  font-size: 14px;
+}
+.icon-delete::before {
+  content: "✕";
+  font-size: 14px;
+}
+.icon-shapes::before {
+  content: "◩";
+  font-size: 24px;
+}
+.icon-align-left::before {
+  content: "◧";
+  font-size: 14px;
+}
+.icon-align-center::before {
+  content: "⧠";
+  font-size: 14px;
+}
+.icon-align-right::before {
+  content: "◨";
+  font-size: 14px;
+}
+.icon-align-top::before {
+  content: "◤";
+  font-size: 14px;
+}
+.icon-align-middle::before {
+  content: "⧠";
+  font-size: 14px;
+  transform: rotate(90deg);
+}
+.icon-align-bottom::before {
+  content: "◢";
+  font-size: 14px;
+}
+.icon-distribute-horizontal::before {
+  content: "⫴";
+  font-size: 14px;
+}
+.icon-distribute-vertical::before {
+  content: "⫶";
+  font-size: 14px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

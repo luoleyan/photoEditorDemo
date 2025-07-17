@@ -7,24 +7,32 @@
 
     <div class="editor-container">
       <div class="image-wrapper">
-        <img 
-          ref="cropperImage" 
-          :src="imageSrc" 
+        <img
+          ref="cropperImage"
+          :src="imageSrc"
           alt="待裁剪图片"
-          style="max-width: 100%;"
+          style="max-width: 100%"
         />
       </div>
-      
+
       <div class="controls-panel">
         <h3>裁剪控制</h3>
-        
+
         <div class="control-group">
           <h4>裁剪比例</h4>
           <div class="button-group">
-            <button @click="setAspectRatio(16/9)" class="btn btn-secondary">16:9</button>
-            <button @click="setAspectRatio(4/3)" class="btn btn-secondary">4:3</button>
-            <button @click="setAspectRatio(1)" class="btn btn-secondary">1:1</button>
-            <button @click="setAspectRatio(0)" class="btn btn-secondary">自由</button>
+            <button @click="setAspectRatio(16 / 9)" class="btn btn-secondary">
+              16:9
+            </button>
+            <button @click="setAspectRatio(4 / 3)" class="btn btn-secondary">
+              4:3
+            </button>
+            <button @click="setAspectRatio(1)" class="btn btn-secondary">
+              1:1
+            </button>
+            <button @click="setAspectRatio(0)" class="btn btn-secondary">
+              自由
+            </button>
           </div>
         </div>
 
@@ -32,18 +40,22 @@
           <h4>旋转操作</h4>
           <div class="control-item">
             <label>旋转角度: {{ rotationAngle }}°</label>
-            <input 
-              type="range" 
-              min="-180" 
-              max="180" 
-              step="1" 
+            <input
+              type="range"
+              min="-180"
+              max="180"
+              step="1"
               v-model="rotationAngle"
               @input="rotateImage"
             />
           </div>
           <div class="button-group">
-            <button @click="rotateLeft" class="btn btn-secondary">向左90°</button>
-            <button @click="rotateRight" class="btn btn-secondary">向右90°</button>
+            <button @click="rotateLeft" class="btn btn-secondary">
+              向左90°
+            </button>
+            <button @click="rotateRight" class="btn btn-secondary">
+              向右90°
+            </button>
           </div>
         </div>
 
@@ -52,31 +64,41 @@
           <div class="button-group">
             <button @click="zoomIn" class="btn btn-secondary">放大</button>
             <button @click="zoomOut" class="btn btn-secondary">缩小</button>
-            <button @click="resetZoom" class="btn btn-secondary">重置缩放</button>
+            <button @click="resetZoom" class="btn btn-secondary">
+              重置缩放
+            </button>
           </div>
         </div>
 
         <div class="control-group">
           <h4>裁剪操作</h4>
           <div class="button-group">
-            <button @click="getCropData" class="btn btn-primary">获取裁剪数据</button>
+            <button @click="getCropData" class="btn btn-primary">
+              获取裁剪数据
+            </button>
             <button @click="cropImage" class="btn btn-success">裁剪图片</button>
-            <button @click="resetCropper" class="btn btn-secondary">重置</button>
+            <button @click="resetCropper" class="btn btn-secondary">
+              重置
+            </button>
           </div>
         </div>
 
         <div class="control-group">
           <h4>文件操作</h4>
           <div class="button-group">
-            <input 
-              type="file" 
-              ref="fileInput" 
-              @change="loadImage" 
+            <input
+              type="file"
+              ref="fileInput"
+              @change="loadImage"
               accept="image/*"
               style="display: none"
             />
-            <button @click="$refs.fileInput.click()" class="btn btn-primary">加载图片</button>
-            <button @click="downloadCroppedImage" class="btn btn-success">下载裁剪图片</button>
+            <button @click="$refs.fileInput.click()" class="btn btn-primary">
+              加载图片
+            </button>
+            <button @click="downloadCroppedImage" class="btn btn-success">
+              下载裁剪图片
+            </button>
           </div>
         </div>
 
@@ -133,26 +155,26 @@
 </template>
 
 <script>
-import Cropper from 'cropperjs'
-import 'cropperjs/dist/cropper.css'
+import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.css";
 
 export default {
-  name: 'CropperEditorView',
+  name: "CropperEditorView",
   data() {
     return {
       cropper: null,
-      imageSrc: require('@/assets/illust_104350264_20230531_093134.png'),
+      imageSrc: require("@/assets/illust_104350264_20230531_093134.png"),
       rotationAngle: 0,
       cropData: null,
-      croppedImageUrl: null
-    }
+      croppedImageUrl: null,
+    };
   },
   mounted() {
-    this.initCropper()
+    this.initCropper();
   },
   beforeDestroy() {
     if (this.cropper) {
-      this.cropper.destroy()
+      this.cropper.destroy();
     }
   },
   methods: {
@@ -161,7 +183,7 @@ export default {
         this.cropper = new Cropper(this.$refs.cropperImage, {
           aspectRatio: 0, // 自由比例
           viewMode: 1,
-          dragMode: 'crop',
+          dragMode: "crop",
           autoCropArea: 0.8,
           restore: false,
           guides: true,
@@ -170,128 +192,128 @@ export default {
           cropBoxMovable: true,
           cropBoxResizable: true,
           toggleDragModeOnDblclick: false,
-          
+
           crop: (event) => {
-            this.cropData = event.detail
-          }
-        })
-      })
+            this.cropData = event.detail;
+          },
+        });
+      });
     },
-    
+
     setAspectRatio(ratio) {
       if (this.cropper) {
-        this.cropper.setAspectRatio(ratio)
+        this.cropper.setAspectRatio(ratio);
       }
     },
-    
+
     rotateImage() {
       if (this.cropper) {
-        const currentRotation = this.cropper.getData().rotate || 0
-        const newRotation = parseFloat(this.rotationAngle)
-        const rotationDiff = newRotation - currentRotation
-        this.cropper.rotate(rotationDiff)
+        const currentRotation = this.cropper.getData().rotate || 0;
+        const newRotation = parseFloat(this.rotationAngle);
+        const rotationDiff = newRotation - currentRotation;
+        this.cropper.rotate(rotationDiff);
       }
     },
-    
+
     rotateLeft() {
       if (this.cropper) {
-        this.cropper.rotate(-90)
-        this.rotationAngle = (this.rotationAngle - 90) % 360
+        this.cropper.rotate(-90);
+        this.rotationAngle = (this.rotationAngle - 90) % 360;
       }
     },
-    
+
     rotateRight() {
       if (this.cropper) {
-        this.cropper.rotate(90)
-        this.rotationAngle = (this.rotationAngle + 90) % 360
+        this.cropper.rotate(90);
+        this.rotationAngle = (this.rotationAngle + 90) % 360;
       }
     },
-    
+
     zoomIn() {
       if (this.cropper) {
-        this.cropper.zoom(0.1)
+        this.cropper.zoom(0.1);
       }
     },
-    
+
     zoomOut() {
       if (this.cropper) {
-        this.cropper.zoom(-0.1)
+        this.cropper.zoom(-0.1);
       }
     },
-    
+
     resetZoom() {
       if (this.cropper) {
-        this.cropper.reset()
-        this.rotationAngle = 0
+        this.cropper.reset();
+        this.rotationAngle = 0;
       }
     },
-    
+
     getCropData() {
       if (this.cropper) {
-        this.cropData = this.cropper.getData()
-        console.log('裁剪数据:', this.cropData)
+        this.cropData = this.cropper.getData();
+        console.log("裁剪数据:", this.cropData);
       }
     },
-    
+
     cropImage() {
       if (this.cropper) {
         const croppedCanvas = this.cropper.getCroppedCanvas({
           width: 400,
           height: 300,
           imageSmoothingEnabled: true,
-          imageSmoothingQuality: 'high'
-        })
-        
+          imageSmoothingQuality: "high",
+        });
+
         if (croppedCanvas) {
-          this.croppedImageUrl = croppedCanvas.toDataURL('image/png')
+          this.croppedImageUrl = croppedCanvas.toDataURL("image/png");
         }
       }
     },
-    
+
     resetCropper() {
       if (this.cropper) {
-        this.cropper.reset()
-        this.rotationAngle = 0
-        this.cropData = null
-        this.croppedImageUrl = null
+        this.cropper.reset();
+        this.rotationAngle = 0;
+        this.cropData = null;
+        this.croppedImageUrl = null;
       }
     },
-    
+
     loadImage(event) {
-      const file = event.target.files[0]
+      const file = event.target.files[0];
       if (file) {
-        const reader = new FileReader()
+        const reader = new FileReader();
         reader.onload = (e) => {
-          this.imageSrc = e.target.result
-          
+          this.imageSrc = e.target.result;
+
           // 重新初始化cropper
           if (this.cropper) {
-            this.cropper.destroy()
+            this.cropper.destroy();
           }
-          
+
           this.$nextTick(() => {
-            this.initCropper()
-            this.rotationAngle = 0
-            this.cropData = null
-            this.croppedImageUrl = null
-          })
-        }
-        reader.readAsDataURL(file)
+            this.initCropper();
+            this.rotationAngle = 0;
+            this.cropData = null;
+            this.croppedImageUrl = null;
+          });
+        };
+        reader.readAsDataURL(file);
       }
     },
-    
+
     downloadCroppedImage() {
       if (this.croppedImageUrl) {
-        const link = document.createElement('a')
-        link.download = 'cropped-image.png'
-        link.href = this.croppedImageUrl
-        link.click()
+        const link = document.createElement("a");
+        link.download = "cropped-image.png";
+        link.href = this.croppedImageUrl;
+        link.click();
       } else {
-        alert('请先裁剪图片！')
+        alert("请先裁剪图片！");
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -327,7 +349,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
@@ -335,7 +357,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   height: fit-content;
 }
 
@@ -434,7 +456,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   margin-bottom: 3rem;
   text-align: center;
 }
@@ -463,7 +485,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .features-info h3 {
@@ -500,11 +522,11 @@ export default {
   .editor-container {
     grid-template-columns: 1fr;
   }
-  
+
   .controls-panel {
     order: -1;
   }
-  
+
   .button-group {
     flex-direction: row;
     flex-wrap: wrap;
@@ -515,15 +537,15 @@ export default {
   .editor-header h1 {
     font-size: 1.8rem;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .controls-panel {
     padding: 1rem;
   }
-  
+
   .preview-image {
     max-width: 100%;
   }

@@ -3,8 +3,8 @@
     <div class="panel-header" v-if="showHeader">
       <h3 class="panel-title">{{ title }}</h3>
       <div class="panel-actions">
-        <button 
-          v-if="showResetAll && hasActiveFilter" 
+        <button
+          v-if="showResetAll && hasActiveFilter"
           class="reset-all-button"
           @click="resetAllFilters"
           :disabled="disabled"
@@ -14,39 +14,43 @@
         </button>
       </div>
     </div>
-    
+
     <div class="panel-content">
       <!-- 滤镜预览网格 -->
       <div v-if="showPreviewGrid" class="filter-preview-grid">
-        <div 
-          v-for="filter in availableFilters" 
+        <div
+          v-for="filter in availableFilters"
           :key="filter.id"
           class="filter-preview-item"
-          :class="{ 'active': filter.id === activeFilterId }"
+          :class="{ active: filter.id === activeFilterId }"
           @click="handleFilterPreviewClick(filter)"
         >
           <div class="preview-image-container">
             <!-- 预览图像 -->
-            <img 
-              v-if="previewImageSrc" 
-              :src="previewImageSrc" 
+            <img
+              v-if="previewImageSrc"
+              :src="previewImageSrc"
               class="preview-image"
               :style="getFilterStyle(filter)"
               alt="滤镜预览"
             />
             <!-- 占位图 -->
-            <div v-else class="preview-placeholder" :style="getFilterStyle(filter)"></div>
+            <div
+              v-else
+              class="preview-placeholder"
+              :style="getFilterStyle(filter)"
+            ></div>
           </div>
           <div class="preview-name">{{ filter.name }}</div>
         </div>
       </div>
-      
+
       <!-- 当前滤镜参数调整 -->
       <div v-if="activeFilter" class="filter-parameters">
         <div class="filter-header">
           <h4 class="filter-name">{{ activeFilter.name }}</h4>
-          <button 
-            v-if="showResetButton" 
+          <button
+            v-if="showResetButton"
             class="reset-button"
             @click="resetActiveFilter"
             :disabled="disabled"
@@ -55,11 +59,11 @@
             <span>重置</span>
           </button>
         </div>
-        
+
         <!-- 滤镜参数滑块 -->
         <div class="filter-sliders">
-          <div 
-            v-for="param in activeFilter.parameters" 
+          <div
+            v-for="param in activeFilter.parameters"
             :key="param.id"
             class="filter-param-item"
           >
@@ -73,27 +77,30 @@
               :tooltip="param.description"
               :show-tooltip="true"
               :disabled="disabled"
-              @input="value => handleParamChange(param, value)"
+              @input="(value) => handleParamChange(param, value)"
               @change-complete="handleParamChangeComplete"
             />
           </div>
         </div>
       </div>
-      
+
       <!-- 自定义滤镜组合 -->
-      <div v-if="showCustomFilters && customFilters.length > 0" class="custom-filters-section">
+      <div
+        v-if="showCustomFilters && customFilters.length > 0"
+        class="custom-filters-section"
+      >
         <h4 class="section-title">自定义滤镜</h4>
         <div class="custom-filters-list">
-          <div 
-            v-for="filter in customFilters" 
+          <div
+            v-for="filter in customFilters"
             :key="filter.id"
             class="custom-filter-item"
-            :class="{ 'active': filter.id === activeFilterId }"
+            :class="{ active: filter.id === activeFilterId }"
             @click="handleCustomFilterClick(filter)"
           >
             <div class="custom-filter-name">{{ filter.name }}</div>
             <div class="custom-filter-actions">
-              <button 
+              <button
                 class="edit-button"
                 @click.stop="handleEditCustomFilter(filter)"
                 :disabled="disabled"
@@ -101,7 +108,7 @@
               >
                 <i class="icon-edit"></i>
               </button>
-              <button 
+              <button
                 class="delete-button"
                 @click.stop="handleDeleteCustomFilter(filter)"
                 :disabled="disabled"
@@ -112,9 +119,9 @@
             </div>
           </div>
         </div>
-        
-        <button 
-          v-if="showSaveButton" 
+
+        <button
+          v-if="showSaveButton"
           class="save-custom-button"
           @click="handleSaveCustomFilter"
           :disabled="disabled || !activeFilter"
@@ -123,16 +130,19 @@
           <span>保存当前滤镜</span>
         </button>
       </div>
-      
+
       <!-- 滤镜分类 -->
-      <div v-if="showCategories && filterCategories.length > 0" class="filter-categories">
+      <div
+        v-if="showCategories && filterCategories.length > 0"
+        class="filter-categories"
+      >
         <h4 class="section-title">滤镜分类</h4>
         <div class="categories-list">
-          <button 
-            v-for="category in filterCategories" 
+          <button
+            v-for="category in filterCategories"
             :key="category.id"
             class="category-button"
-            :class="{ 'active': category.id === activeCategoryId }"
+            :class="{ active: category.id === activeCategoryId }"
             @click="handleCategoryClick(category)"
             :disabled="disabled"
           >
@@ -141,7 +151,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 保存自定义滤镜对话框 -->
     <div v-if="showSaveDialog" class="save-dialog">
       <div class="dialog-content">
@@ -149,17 +159,17 @@
         <div class="dialog-form">
           <div class="form-group">
             <label for="filterName">滤镜名称</label>
-            <input 
-              type="text" 
-              id="filterName" 
+            <input
+              type="text"
+              id="filterName"
               v-model="customFilterName"
               placeholder="输入滤镜名称"
             />
           </div>
           <div class="form-group">
             <label for="filterDescription">描述 (可选)</label>
-            <textarea 
-              id="filterDescription" 
+            <textarea
+              id="filterDescription"
               v-model="customFilterDescription"
               placeholder="输入滤镜描述"
               rows="3"
@@ -167,11 +177,9 @@
           </div>
         </div>
         <div class="dialog-buttons">
-          <button class="cancel-button" @click="cancelSaveDialog">
-            取消
-          </button>
-          <button 
-            class="save-button" 
+          <button class="cancel-button" @click="cancelSaveDialog">取消</button>
+          <button
+            class="save-button"
             @click="saveCustomFilter"
             :disabled="!customFilterName"
           >
@@ -180,12 +188,16 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 确认删除对话框 -->
     <div v-if="showDeleteDialog" class="delete-dialog">
       <div class="dialog-content">
         <h4>删除自定义滤镜</h4>
-        <p>确定要删除"{{ filterToDelete ? filterToDelete.name : '' }}"滤镜吗？此操作无法撤销。</p>
+        <p>
+          确定要删除"{{
+            filterToDelete ? filterToDelete.name : ""
+          }}"滤镜吗？此操作无法撤销。
+        </p>
         <div class="dialog-buttons">
           <button class="cancel-button" @click="cancelDeleteDialog">
             取消
@@ -200,272 +212,274 @@
 </template>
 
 <script>
-import SliderControl from './SliderControl.vue';
+import SliderControl from "./SliderControl.vue";
 
 export default {
-  name: 'FilterPanel',
+  name: "FilterPanel",
   components: {
-    SliderControl
+    SliderControl,
   },
-  
+
   props: {
     // 面板标题
     title: {
       type: String,
-      default: '滤镜'
+      default: "滤镜",
     },
-    
+
     // 滤镜数据
     availableFilters: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     activeFilterId: {
       type: String,
-      default: ''
+      default: "",
     },
     customFilters: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     filterCategories: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     activeCategoryId: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 预览图像
     previewImageSrc: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 参数值
     parameterValues: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
-    
+
     // 显示选项
     showHeader: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showResetButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showResetAll: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showPreviewGrid: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showCustomFilters: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showSaveButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showCategories: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'compact', 'minimal'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "compact", "minimal"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 保存对话框
       showSaveDialog: false,
-      customFilterName: '',
-      customFilterDescription: '',
-      
+      customFilterName: "",
+      customFilterDescription: "",
+
       // 删除对话框
       showDeleteDialog: false,
-      filterToDelete: null
+      filterToDelete: null,
     };
   },
-  
+
   computed: {
     panelClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
     },
-    
+
     // 当前活动滤镜
     activeFilter() {
       if (!this.activeFilterId) return null;
-      
+
       // 先在可用滤镜中查找
-      let filter = this.availableFilters.find(f => f.id === this.activeFilterId);
-      
+      let filter = this.availableFilters.find(
+        (f) => f.id === this.activeFilterId
+      );
+
       // 如果没找到，在自定义滤镜中查找
       if (!filter && this.customFilters) {
-        filter = this.customFilters.find(f => f.id === this.activeFilterId);
+        filter = this.customFilters.find((f) => f.id === this.activeFilterId);
       }
-      
+
       return filter;
     },
-    
+
     // 是否有活动滤镜
     hasActiveFilter() {
       return !!this.activeFilter;
-    }
+    },
   },
-  
+
   methods: {
     /**
      * 处理滤镜预览点击
      */
     handleFilterPreviewClick(filter) {
       if (this.disabled) return;
-      
-      this.$emit('filter-select', filter);
+
+      this.$emit("filter-select", filter);
     },
-    
+
     /**
      * 处理自定义滤镜点击
      */
     handleCustomFilterClick(filter) {
       if (this.disabled) return;
-      
-      this.$emit('filter-select', filter);
+
+      this.$emit("filter-select", filter);
     },
-    
+
     /**
      * 处理参数变化
      */
     handleParamChange(param, value) {
       if (this.disabled) return;
-      
-      this.$emit('parameter-change', { 
+
+      this.$emit("parameter-change", {
         filterId: this.activeFilterId,
-        parameterId: param.id, 
-        value 
+        parameterId: param.id,
+        value,
       });
     },
-    
+
     /**
      * 处理参数变化完成
      */
     handleParamChangeComplete() {
-      this.$emit('parameter-change-complete', {
-        filterId: this.activeFilterId
+      this.$emit("parameter-change-complete", {
+        filterId: this.activeFilterId,
       });
     },
-    
+
     /**
      * 处理分类点击
      */
     handleCategoryClick(category) {
       if (this.disabled) return;
-      
-      this.$emit('category-select', category);
+
+      this.$emit("category-select", category);
     },
-    
+
     /**
      * 重置当前滤镜
      */
     resetActiveFilter() {
       if (this.disabled || !this.activeFilter) return;
-      
-      this.$emit('filter-reset', this.activeFilter);
+
+      this.$emit("filter-reset", this.activeFilter);
     },
-    
+
     /**
      * 重置所有滤镜
      */
     resetAllFilters() {
       if (this.disabled) return;
-      
-      this.$emit('all-filters-reset');
+
+      this.$emit("all-filters-reset");
     },
-    
+
     /**
      * 处理保存自定义滤镜
      */
     handleSaveCustomFilter() {
       if (this.disabled || !this.activeFilter) return;
-      
+
       this.showSaveDialog = true;
       this.customFilterName = `${this.activeFilter.name} 副本`;
-      this.customFilterDescription = '';
+      this.customFilterDescription = "";
     },
-    
+
     /**
      * 取消保存对话框
      */
     cancelSaveDialog() {
       this.showSaveDialog = false;
-      this.customFilterName = '';
-      this.customFilterDescription = '';
+      this.customFilterName = "";
+      this.customFilterDescription = "";
     },
-    
+
     /**
      * 保存自定义滤镜
      */
     saveCustomFilter() {
       if (!this.customFilterName) return;
-      
+
       const customFilter = {
         name: this.customFilterName,
         description: this.customFilterDescription,
         baseFilterId: this.activeFilterId,
-        parameterValues: { ...this.parameterValues }
+        parameterValues: { ...this.parameterValues },
       };
-      
-      this.$emit('custom-filter-save', customFilter);
+
+      this.$emit("custom-filter-save", customFilter);
       this.showSaveDialog = false;
-      this.customFilterName = '';
-      this.customFilterDescription = '';
+      this.customFilterName = "";
+      this.customFilterDescription = "";
     },
-    
+
     /**
      * 处理编辑自定义滤镜
      */
     handleEditCustomFilter(filter) {
       if (this.disabled) return;
-      
+
       this.showSaveDialog = true;
       this.customFilterName = filter.name;
-      this.customFilterDescription = filter.description || '';
-      
+      this.customFilterDescription = filter.description || "";
+
       // 标记为编辑模式
       this.filterToDelete = filter;
     },
-    
+
     /**
      * 处理删除自定义滤镜
      */
     handleDeleteCustomFilter(filter) {
       if (this.disabled) return;
-      
+
       this.showDeleteDialog = true;
       this.filterToDelete = filter;
     },
-    
+
     /**
      * 取消删除对话框
      */
@@ -473,18 +487,18 @@ export default {
       this.showDeleteDialog = false;
       this.filterToDelete = null;
     },
-    
+
     /**
      * 确认删除滤镜
      */
     confirmDeleteFilter() {
       if (!this.filterToDelete) return;
-      
-      this.$emit('custom-filter-delete', this.filterToDelete);
+
+      this.$emit("custom-filter-delete", this.filterToDelete);
       this.showDeleteDialog = false;
       this.filterToDelete = null;
     },
-    
+
     /**
      * 获取参数值
      */
@@ -492,37 +506,41 @@ export default {
       if (!this.parameterValues || !this.activeFilterId) {
         return param.defaultValue;
       }
-      
+
       const filterParams = this.parameterValues[this.activeFilterId];
       if (!filterParams) {
         return param.defaultValue;
       }
-      
-      return filterParams[param.id] !== undefined ? filterParams[param.id] : param.defaultValue;
+
+      return filterParams[param.id] !== undefined
+        ? filterParams[param.id]
+        : param.defaultValue;
     },
-    
+
     /**
      * 获取滤镜样式
      */
     getFilterStyle(filter) {
       if (!filter) return {};
-      
+
       // 基础滤镜
       if (filter.cssFilter) {
         return { filter: filter.cssFilter };
       }
-      
+
       // 自定义滤镜
       if (filter.baseFilterId && this.availableFilters) {
-        const baseFilter = this.availableFilters.find(f => f.id === filter.baseFilterId);
+        const baseFilter = this.availableFilters.find(
+          (f) => f.id === filter.baseFilterId
+        );
         if (baseFilter && baseFilter.cssFilter) {
           return { filter: baseFilter.cssFilter };
         }
       }
-      
+
       return {};
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -623,7 +641,7 @@ export default {
 }
 
 .icon-reset::before {
-  content: '↺';
+  content: "↺";
   font-size: 14px;
 }
 
@@ -854,17 +872,17 @@ export default {
 }
 
 .icon-save::before {
-  content: '💾';
+  content: "💾";
   font-size: 14px;
 }
 
 .icon-edit::before {
-  content: '✎';
+  content: "✎";
   font-size: 14px;
 }
 
 .icon-delete::before {
-  content: '✕';
+  content: "✕";
   font-size: 14px;
 }
 

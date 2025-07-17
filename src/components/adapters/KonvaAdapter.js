@@ -1,6 +1,6 @@
-import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
-import PerformanceOptimizer from '@/utils/PerformanceOptimizer.js';
-import { memoryManager } from '@/utils/MemoryManager.js';
+import BaseImageEditorAdapter from "./BaseImageEditorAdapter.js";
+import PerformanceOptimizer from "@/utils/PerformanceOptimizer.js";
+import { memoryManager } from "@/utils/MemoryManager.js";
 
 /**
  * Konva.js适配器实现
@@ -9,7 +9,7 @@ import { memoryManager } from '@/utils/MemoryManager.js';
 class KonvaAdapter extends BaseImageEditorAdapter {
   constructor() {
     super();
-    this.adapterType = 'konva';
+    this.adapterType = "konva";
     this.stage = null;
     this.layer = null;
     this.currentImage = null;
@@ -18,7 +18,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
     this.performanceMetrics = {
       renderTime: 0,
       lastRenderTime: Date.now(),
-      operationCount: 0
+      operationCount: 0,
     };
 
     // 性能优化器
@@ -40,7 +40,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
       width: 800,
       height: 600,
       draggable: true,
-      listening: true
+      listening: true,
     };
   }
 
@@ -51,8 +51,8 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doInitialize() {
     // 检查Konva是否已加载
-    if (typeof window.Konva === 'undefined') {
-      throw new Error('Konva.js library is not loaded');
+    if (typeof window.Konva === "undefined") {
+      throw new Error("Konva.js library is not loaded");
     }
 
     // 创建Stage
@@ -61,7 +61,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
       width: this.options.width,
       height: this.options.height,
       draggable: this.options.draggable,
-      listening: this.options.listening
+      listening: this.options.listening,
     });
 
     // 创建图层
@@ -96,8 +96,8 @@ class KonvaAdapter extends BaseImageEditorAdapter {
   async _doLoadImage(imageData) {
     return new Promise((resolve, reject) => {
       const imageObj = new Image();
-      imageObj.crossOrigin = 'anonymous';
-      
+      imageObj.crossOrigin = "anonymous";
+
       imageObj.onload = () => {
         // 清除现有内容
         this.layer.destroyChildren();
@@ -107,7 +107,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
           x: 0,
           y: 0,
           image: imageObj,
-          draggable: true
+          draggable: true,
         });
 
         // 计算适合舞台的尺寸
@@ -125,7 +125,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
           x: (stageWidth - imgWidth * scale) / 2,
           y: (stageHeight - imgHeight * scale) / 2,
           scaleX: scale,
-          scaleY: scale
+          scaleY: scale,
         });
 
         // 添加到图层
@@ -140,7 +140,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
           height: imgHeight,
           scale: scale,
           x: konvaImage.x(),
-          y: konvaImage.y()
+          y: konvaImage.y(),
         };
 
         this._updatePerformanceMetrics();
@@ -148,7 +148,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
       };
 
       imageObj.onerror = () => {
-        reject(new Error('Failed to load image'));
+        reject(new Error("Failed to load image"));
       };
 
       imageObj.src = imageData.src;
@@ -164,7 +164,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doResize(width, height) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     const originalWidth = this.currentImage.image().width;
@@ -175,7 +175,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
 
     this.currentImage.setAttrs({
       scaleX: scaleX,
-      scaleY: scaleY
+      scaleY: scaleY,
     });
 
     this.layer.draw();
@@ -193,14 +193,14 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doCrop(x, y, width, height) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.setAttrs({
       cropX: x,
       cropY: y,
       cropWidth: width,
-      cropHeight: height
+      cropHeight: height,
     });
 
     this.layer.draw();
@@ -215,19 +215,23 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doRotate(angle) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 获取图像中心点
-    const centerX = this.currentImage.x() + this.currentImage.width() * this.currentImage.scaleX() / 2;
-    const centerY = this.currentImage.y() + this.currentImage.height() * this.currentImage.scaleY() / 2;
+    const centerX =
+      this.currentImage.x() +
+      (this.currentImage.width() * this.currentImage.scaleX()) / 2;
+    const centerY =
+      this.currentImage.y() +
+      (this.currentImage.height() * this.currentImage.scaleY()) / 2;
 
     this.currentImage.setAttrs({
       rotation: angle,
       offsetX: this.currentImage.width() / 2,
       offsetY: this.currentImage.height() / 2,
       x: centerX,
-      y: centerY
+      y: centerY,
     });
 
     this.layer.draw();
@@ -243,7 +247,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doFlip(horizontal, vertical) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     const currentScaleX = this.currentImage.scaleX();
@@ -269,7 +273,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doSetBrightness(value) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 移除现有滤镜
@@ -294,7 +298,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doSetContrast(value) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 移除现有滤镜
@@ -320,23 +324,23 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doApplyFilter(filterType, options = {}) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     const filters = [];
-    
+
     switch (filterType.toLowerCase()) {
-      case 'blur':
+      case "blur":
         filters.push(window.Konva.Filters.Blur);
         this.currentImage.blurRadius(options.blur || 5);
         break;
-      case 'grayscale':
+      case "grayscale":
         filters.push(window.Konva.Filters.Grayscale);
         break;
-      case 'invert':
+      case "invert":
         filters.push(window.Konva.Filters.Invert);
         break;
-      case 'sepia':
+      case "sepia":
         filters.push(window.Konva.Filters.Sepia);
         break;
       default:
@@ -357,7 +361,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doRemoveFilter(filterType) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.filters([]);
@@ -375,12 +379,12 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doSetScale(scaleX, scaleY) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.setAttrs({
       scaleX: scaleX,
-      scaleY: scaleY
+      scaleY: scaleY,
     });
 
     this.layer.draw();
@@ -396,12 +400,12 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   async _doSetPosition(x, y) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.setAttrs({
       x: x,
-      y: y
+      y: y,
     });
 
     this.layer.draw();
@@ -439,7 +443,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
     const state = {
       stageState: this.stage.toJSON(),
       timestamp: Date.now(),
-      imageData: this.originalImageData ? { ...this.originalImageData } : null
+      imageData: this.originalImageData ? { ...this.originalImageData } : null,
     };
     return state;
   }
@@ -460,7 +464,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
     this.stage.destroy();
     this.stage = window.Konva.Node.create(state.stageState, this.container);
     this.layer = this.stage.children[0];
-    
+
     // 重新获取图像引用
     this.currentImage = this.layer.children[0];
   }
@@ -487,10 +491,10 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    * @returns {Promise<string>}
    * @protected
    */
-  async _doToDataURL(type = 'image/png', quality = 0.9) {
+  async _doToDataURL(type = "image/png", quality = 0.9) {
     return this.stage.toDataURL({
       mimeType: type,
-      quality: quality
+      quality: quality,
     });
   }
 
@@ -501,7 +505,7 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    * @returns {Promise<Blob>}
    * @protected
    */
-  async _doToBlob(type = 'image/png', quality = 0.9) {
+  async _doToBlob(type = "image/png", quality = 0.9) {
     return new Promise((resolve) => {
       this.stage.toCanvas().toBlob(resolve, type, quality);
     });
@@ -515,11 +519,13 @@ class KonvaAdapter extends BaseImageEditorAdapter {
   _doGetPerformanceMetrics() {
     return {
       ...this.performanceMetrics,
-      stageObjects: this.stage ? this.stage.find('Image').length : 0,
-      stageSize: this.stage ? {
-        width: this.stage.width(),
-        height: this.stage.height()
-      } : null
+      stageObjects: this.stage ? this.stage.find("Image").length : 0,
+      stageSize: this.stage
+        ? {
+            width: this.stage.width(),
+            height: this.stage.height(),
+          }
+        : null,
     };
   }
 
@@ -533,13 +539,13 @@ class KonvaAdapter extends BaseImageEditorAdapter {
     if (!this.stage) return;
 
     // 舞台事件
-    this.stage.on('dragend', () => {
-      this.emit('object-modified', { target: this.currentImage });
+    this.stage.on("dragend", () => {
+      this.emit("object-modified", { target: this.currentImage });
       this._updatePerformanceMetrics();
     });
 
     // 图层事件
-    this.layer.on('draw', () => {
+    this.layer.on("draw", () => {
       this._updatePerformanceMetrics();
     });
   }
@@ -550,7 +556,8 @@ class KonvaAdapter extends BaseImageEditorAdapter {
    */
   _updatePerformanceMetrics() {
     const now = Date.now();
-    this.performanceMetrics.renderTime = now - this.performanceMetrics.lastRenderTime;
+    this.performanceMetrics.renderTime =
+      now - this.performanceMetrics.lastRenderTime;
     this.performanceMetrics.lastRenderTime = now;
     this.performanceMetrics.operationCount++;
   }
@@ -581,9 +588,9 @@ class KonvaAdapter extends BaseImageEditorAdapter {
         this.stage.clearCache();
       }
 
-      console.log('KonvaAdapter 内存清理完成');
+      console.log("KonvaAdapter 内存清理完成");
     } catch (error) {
-      console.error('KonvaAdapter 内存清理失败:', error);
+      console.error("KonvaAdapter 内存清理失败:", error);
     }
   }
 }

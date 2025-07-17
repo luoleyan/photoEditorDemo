@@ -9,27 +9,27 @@
     <div class="demo-section">
       <h2>EditorContainer 编辑器容器</h2>
       <div class="demo-controls">
-        <tool-button 
+        <tool-button
           :active="containerTheme === 'dark'"
           @click="toggleTheme"
           icon="settings"
           label="切换主题"
           size="small"
         />
-        <tool-button 
+        <tool-button
           @click="toggleLoading"
           icon="settings"
           :label="containerLoading ? '停止加载' : '显示加载'"
           size="small"
         />
-        <tool-button 
+        <tool-button
           @click="resetContainer"
           icon="undo"
           label="重置容器"
           size="small"
         />
       </div>
-      
+
       <div class="demo-container">
         <editor-container
           :theme="containerTheme"
@@ -44,7 +44,12 @@
           <template #toolbar-top>
             <div class="demo-toolbar">
               <div class="toolbar-group">
-                <tool-button icon="save" label="保存" variant="primary" size="small" />
+                <tool-button
+                  icon="save"
+                  label="保存"
+                  variant="primary"
+                  size="small"
+                />
                 <tool-button icon="copy" label="复制" size="small" />
                 <tool-button icon="cut" label="剪切" size="small" />
                 <tool-button icon="paste" label="粘贴" size="small" />
@@ -92,7 +97,10 @@
                 <div class="placeholder-content">
                   <h3>画布区域</h3>
                   <p>这里是图像编辑的主要区域</p>
-                  <p>尺寸: {{ canvasDimensions.width }} × {{ canvasDimensions.height }}</p>
+                  <p>
+                    尺寸: {{ canvasDimensions.width }} ×
+                    {{ canvasDimensions.height }}
+                  </p>
                   <p>设备类型: {{ deviceType }}</p>
                 </div>
               </div>
@@ -143,7 +151,7 @@
     <!-- ToolButton演示 -->
     <div class="demo-section">
       <h2>ToolButton 工具按钮</h2>
-      
+
       <div class="button-demo-group">
         <h3>按钮变体</h3>
         <div class="button-row">
@@ -194,8 +202,16 @@
           <tool-button label="正常" />
           <tool-button label="激活" :active="true" />
           <tool-button label="禁用" :disabled="true" />
-          <tool-button label="加载中" :loading="buttonLoading" @click="toggleButtonLoading" />
-          <tool-button label="切换" :toggle="true" v-model:active="toggleActive" />
+          <tool-button
+            label="加载中"
+            :loading="buttonLoading"
+            @click="toggleButtonLoading"
+          />
+          <tool-button
+            label="切换"
+            :toggle="true"
+            v-model:active="toggleActive"
+          />
         </div>
       </div>
 
@@ -205,7 +221,12 @@
           <tool-button label="下拉菜单" :dropdown="true" />
           <tool-button label="徽章" badge="3" />
           <tool-button icon="settings" badge="99+" badge-type="danger" />
-          <tool-button label="主要徽章" variant="primary" badge="NEW" badge-type="success" />
+          <tool-button
+            label="主要徽章"
+            variant="primary"
+            badge="NEW"
+            badge-type="success"
+          />
         </div>
       </div>
     </div>
@@ -240,12 +261,42 @@
         <div class="tool-palette-demo">
           <h3>工具调色板</h3>
           <div class="tool-palette">
-            <tool-button icon="brush" shape="circle" :active="activeTool === 'brush'" @click="setActiveTool('brush')" />
-            <tool-button icon="eraser" shape="circle" :active="activeTool === 'eraser'" @click="setActiveTool('eraser')" />
-            <tool-button icon="text" shape="circle" :active="activeTool === 'text'" @click="setActiveTool('text')" />
-            <tool-button icon="shape" shape="circle" :active="activeTool === 'shape'" @click="setActiveTool('shape')" />
-            <tool-button icon="eyedropper" shape="circle" :active="activeTool === 'eyedropper'" @click="setActiveTool('eyedropper')" />
-            <tool-button icon="crop" shape="circle" :active="activeTool === 'crop'" @click="setActiveTool('crop')" />
+            <tool-button
+              icon="brush"
+              shape="circle"
+              :active="activeTool === 'brush'"
+              @click="setActiveTool('brush')"
+            />
+            <tool-button
+              icon="eraser"
+              shape="circle"
+              :active="activeTool === 'eraser'"
+              @click="setActiveTool('eraser')"
+            />
+            <tool-button
+              icon="text"
+              shape="circle"
+              :active="activeTool === 'text'"
+              @click="setActiveTool('text')"
+            />
+            <tool-button
+              icon="shape"
+              shape="circle"
+              :active="activeTool === 'shape'"
+              @click="setActiveTool('shape')"
+            />
+            <tool-button
+              icon="eyedropper"
+              shape="circle"
+              :active="activeTool === 'eyedropper'"
+              @click="setActiveTool('eyedropper')"
+            />
+            <tool-button
+              icon="crop"
+              shape="circle"
+              :active="activeTool === 'crop'"
+              @click="setActiveTool('crop')"
+            />
           </div>
         </div>
       </div>
@@ -254,42 +305,42 @@
 </template>
 
 <script>
-import EditorContainer from '@/components/ui/EditorContainer.vue';
-import ToolButton from '@/components/ui/ToolButton.vue';
+import EditorContainer from "@/components/ui/EditorContainer.vue";
+import ToolButton from "@/components/ui/ToolButton.vue";
 
 export default {
-  name: 'UIComponentsDemo',
+  name: "UIComponentsDemo",
   components: {
     EditorContainer,
-    ToolButton
+    ToolButton,
   },
-  
+
   data() {
     return {
       // 容器状态
-      containerTheme: 'light',
+      containerTheme: "light",
       containerLoading: false,
       canvasDimensions: {
         width: 0,
-        height: 0
+        height: 0,
       },
-      deviceType: 'desktop',
-      
+      deviceType: "desktop",
+
       // 按钮状态
       buttonLoading: false,
       toggleActive: false,
-      activeTool: 'brush'
+      activeTool: "brush",
     };
   },
-  
+
   methods: {
     toggleTheme() {
-      this.containerTheme = this.containerTheme === 'light' ? 'dark' : 'light';
+      this.containerTheme = this.containerTheme === "light" ? "dark" : "light";
     },
-    
+
     toggleLoading() {
       this.containerLoading = !this.containerLoading;
-      
+
       if (this.containerLoading) {
         // 3秒后自动停止加载
         setTimeout(() => {
@@ -297,15 +348,15 @@ export default {
         }, 3000);
       }
     },
-    
+
     resetContainer() {
-      this.containerTheme = 'light';
+      this.containerTheme = "light";
       this.containerLoading = false;
     },
-    
+
     toggleButtonLoading() {
       this.buttonLoading = !this.buttonLoading;
-      
+
       if (this.buttonLoading) {
         // 2秒后自动停止加载
         setTimeout(() => {
@@ -313,30 +364,30 @@ export default {
         }, 2000);
       }
     },
-    
+
     setActiveTool(tool) {
       this.activeTool = tool;
     },
-    
+
     handleDimensionsChange(dimensions) {
       this.canvasDimensions = {
         width: Math.round(dimensions.canvasWidth),
-        height: Math.round(dimensions.canvasHeight)
+        height: Math.round(dimensions.canvasHeight),
       };
-      
+
       if (dimensions.isMobile) {
-        this.deviceType = 'mobile';
+        this.deviceType = "mobile";
       } else if (dimensions.isTablet) {
-        this.deviceType = 'tablet';
+        this.deviceType = "tablet";
       } else {
-        this.deviceType = 'desktop';
+        this.deviceType = "desktop";
       }
     },
-    
+
     handleSidebarToggle(data) {
-      console.log('侧边栏切换:', data);
-    }
-  }
+      console.log("侧边栏切换:", data);
+    },
+  },
 };
 </script>
 
@@ -574,19 +625,19 @@ export default {
   .ui-components-demo {
     padding: 10px;
   }
-  
+
   .demo-container {
     height: 400px;
   }
-  
+
   .combo-demo {
     grid-template-columns: 1fr;
   }
-  
+
   .button-row {
     justify-content: center;
   }
-  
+
   .demo-controls {
     flex-direction: column;
     align-items: stretch;

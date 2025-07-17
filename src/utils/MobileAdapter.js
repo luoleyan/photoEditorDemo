@@ -10,14 +10,14 @@ class MobileAdapter {
     this.orientation = this._getOrientation();
     this.touchHandlers = new Map();
     this.gestureHandlers = new Map();
-    
+
     // 移动端性能配置
     this.mobileConfig = {
       maxCanvasSize: this.isMobile ? 2048 : 4096,
       compressionQuality: this.isMobile ? 0.7 : 0.8,
       maxMemoryUsage: this.isMobile ? 50 * 1024 * 1024 : 100 * 1024 * 1024, // 50MB vs 100MB
       enableHardwareAcceleration: true,
-      reducedAnimations: this.isMobile
+      reducedAnimations: this.isMobile,
     };
 
     this._setupEventListeners();
@@ -31,13 +31,21 @@ class MobileAdapter {
   _detectMobile() {
     const userAgent = navigator.userAgent.toLowerCase();
     const mobileKeywords = [
-      'android', 'iphone', 'ipad', 'ipod', 'blackberry', 
-      'windows phone', 'mobile', 'tablet'
+      "android",
+      "iphone",
+      "ipad",
+      "ipod",
+      "blackberry",
+      "windows phone",
+      "mobile",
+      "tablet",
     ];
-    
-    return mobileKeywords.some(keyword => userAgent.includes(keyword)) ||
-           window.innerWidth <= 768 ||
-           ('ontouchstart' in window);
+
+    return (
+      mobileKeywords.some((keyword) => userAgent.includes(keyword)) ||
+      window.innerWidth <= 768 ||
+      "ontouchstart" in window
+    );
   }
 
   /**
@@ -46,9 +54,11 @@ class MobileAdapter {
    * @private
    */
   _detectTouch() {
-    return 'ontouchstart' in window || 
-           navigator.maxTouchPoints > 0 || 
-           navigator.msMaxTouchPoints > 0;
+    return (
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      navigator.msMaxTouchPoints > 0
+    );
   }
 
   /**
@@ -58,10 +68,11 @@ class MobileAdapter {
    */
   _getOrientation() {
     if (screen.orientation) {
-      return screen.orientation.angle === 0 || screen.orientation.angle === 180 
-        ? 'portrait' : 'landscape';
+      return screen.orientation.angle === 0 || screen.orientation.angle === 180
+        ? "portrait"
+        : "landscape";
     }
-    return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+    return window.innerHeight > window.innerWidth ? "portrait" : "landscape";
   }
 
   /**
@@ -70,7 +81,7 @@ class MobileAdapter {
    */
   _setupEventListeners() {
     // 方向变化监听
-    window.addEventListener('orientationchange', () => {
+    window.addEventListener("orientationchange", () => {
       setTimeout(() => {
         this.orientation = this._getOrientation();
         this._handleOrientationChange();
@@ -78,14 +89,21 @@ class MobileAdapter {
     });
 
     // 窗口大小变化监听
-    window.addEventListener('resize', this._debounce(() => {
-      this._handleResize();
-    }, 250));
+    window.addEventListener(
+      "resize",
+      this._debounce(() => {
+        this._handleResize();
+      }, 250)
+    );
 
     // 阻止默认的触摸行为（如双击缩放）
     if (this.isTouch) {
-      document.addEventListener('touchstart', this._preventDefaultTouch, { passive: false });
-      document.addEventListener('touchmove', this._preventDefaultTouch, { passive: false });
+      document.addEventListener("touchstart", this._preventDefaultTouch, {
+        passive: false,
+      });
+      document.addEventListener("touchmove", this._preventDefaultTouch, {
+        passive: false,
+      });
     }
   }
 
@@ -104,7 +122,7 @@ class MobileAdapter {
       enableDoubleTap: true,
       minScale: 0.1,
       maxScale: 5,
-      ...options
+      ...options,
     };
 
     const touchHandler = new TouchHandler(element, config);
@@ -133,28 +151,28 @@ class MobileAdapter {
   optimizeCanvas(canvas, options = {}) {
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // 设备像素比优化
     const ratio = Math.min(this.devicePixelRatio, 2); // 限制最大比例
     const rect = canvas.getBoundingClientRect();
-    
+
     canvas.width = rect.width * ratio;
     canvas.height = rect.height * ratio;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
-    
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
+
     ctx.scale(ratio, ratio);
 
     // 移动端性能优化
     if (this.isMobile) {
       ctx.imageSmoothingEnabled = options.smoothing !== false;
-      ctx.imageSmoothingQuality = 'medium'; // 平衡质量和性能
-      
+      ctx.imageSmoothingQuality = "medium"; // 平衡质量和性能
+
       // 启用硬件加速
-      canvas.style.transform = 'translateZ(0)';
-      canvas.style.willChange = 'transform';
+      canvas.style.transform = "translateZ(0)";
+      canvas.style.willChange = "transform";
     }
 
     return { ratio, width: canvas.width, height: canvas.height };
@@ -180,13 +198,13 @@ class MobileAdapter {
       orientation: this.orientation,
       screenSize: {
         width: window.screen.width,
-        height: window.screen.height
+        height: window.screen.height,
       },
       viewportSize: {
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       },
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
   }
 
@@ -196,9 +214,11 @@ class MobileAdapter {
    */
   _handleOrientationChange() {
     // 触发自定义事件
-    window.dispatchEvent(new CustomEvent('mobile-orientation-change', {
-      detail: { orientation: this.orientation }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("mobile-orientation-change", {
+        detail: { orientation: this.orientation },
+      })
+    );
   }
 
   /**
@@ -208,11 +228,13 @@ class MobileAdapter {
   _handleResize() {
     // 重新检测移动设备状态
     this.isMobile = this._detectMobile();
-    
+
     // 触发自定义事件
-    window.dispatchEvent(new CustomEvent('mobile-resize', {
-      detail: this.getDeviceInfo()
-    }));
+    window.dispatchEvent(
+      new CustomEvent("mobile-resize", {
+        detail: this.getDeviceInfo(),
+      })
+    );
   }
 
   /**
@@ -223,7 +245,10 @@ class MobileAdapter {
   _preventDefaultTouch(event) {
     // 只在特定元素上阻止默认行为
     const target = event.target;
-    if (target.closest('.canvas-container') || target.closest('.image-editor')) {
+    if (
+      target.closest(".canvas-container") ||
+      target.closest(".image-editor")
+    ) {
       if (event.touches.length > 1) {
         event.preventDefault(); // 阻止多点触摸的默认行为
       }
@@ -254,16 +279,19 @@ class MobileAdapter {
    */
   destroy() {
     // 清理所有触摸处理器
-    this.touchHandlers.forEach(handler => handler.destroy());
+    this.touchHandlers.forEach((handler) => handler.destroy());
     this.touchHandlers.clear();
-    
+
     // 移除事件监听器
-    window.removeEventListener('orientationchange', this._handleOrientationChange);
-    window.removeEventListener('resize', this._handleResize);
-    
+    window.removeEventListener(
+      "orientationchange",
+      this._handleOrientationChange
+    );
+    window.removeEventListener("resize", this._handleResize);
+
     if (this.isTouch) {
-      document.removeEventListener('touchstart', this._preventDefaultTouch);
-      document.removeEventListener('touchmove', this._preventDefaultTouch);
+      document.removeEventListener("touchstart", this._preventDefaultTouch);
+      document.removeEventListener("touchmove", this._preventDefaultTouch);
     }
   }
 }
@@ -282,7 +310,7 @@ class TouchHandler {
       x: 0,
       y: 0,
       scale: 1,
-      rotation: 0
+      rotation: 0,
     };
 
     this._bindEvents();
@@ -293,10 +321,24 @@ class TouchHandler {
    * @private
    */
   _bindEvents() {
-    this.element.addEventListener('touchstart', this._handleTouchStart.bind(this), { passive: false });
-    this.element.addEventListener('touchmove', this._handleTouchMove.bind(this), { passive: false });
-    this.element.addEventListener('touchend', this._handleTouchEnd.bind(this), { passive: false });
-    this.element.addEventListener('touchcancel', this._handleTouchEnd.bind(this), { passive: false });
+    this.element.addEventListener(
+      "touchstart",
+      this._handleTouchStart.bind(this),
+      { passive: false }
+    );
+    this.element.addEventListener(
+      "touchmove",
+      this._handleTouchMove.bind(this),
+      { passive: false }
+    );
+    this.element.addEventListener("touchend", this._handleTouchEnd.bind(this), {
+      passive: false,
+    });
+    this.element.addEventListener(
+      "touchcancel",
+      this._handleTouchEnd.bind(this),
+      { passive: false }
+    );
   }
 
   /**
@@ -307,7 +349,7 @@ class TouchHandler {
   _handleTouchStart(event) {
     this.isActive = true;
     this.touches = Array.from(event.touches);
-    
+
     // 检测双击
     if (this.config.enableDoubleTap && event.touches.length === 1) {
       const now = Date.now();
@@ -317,7 +359,10 @@ class TouchHandler {
       this.lastTap = now;
     }
 
-    this._emitEvent('touchstart', { touches: this.touches, transform: this.transform });
+    this._emitEvent("touchstart", {
+      touches: this.touches,
+      transform: this.transform,
+    });
   }
 
   /**
@@ -338,7 +383,10 @@ class TouchHandler {
     }
 
     this.touches = touches;
-    this._emitEvent('touchmove', { touches: this.touches, transform: this.transform });
+    this._emitEvent("touchmove", {
+      touches: this.touches,
+      transform: this.transform,
+    });
   }
 
   /**
@@ -349,12 +397,15 @@ class TouchHandler {
   _handleTouchEnd(event) {
     this.isActive = false;
     this.touches = Array.from(event.touches);
-    
+
     if (this.touches.length === 0 && this.config.enableTap) {
       this._handleTap(event);
     }
 
-    this._emitEvent('touchend', { touches: this.touches, transform: this.transform });
+    this._emitEvent("touchend", {
+      touches: this.touches,
+      transform: this.transform,
+    });
   }
 
   /**
@@ -366,7 +417,7 @@ class TouchHandler {
     if (this.touches.length > 0) {
       const deltaX = touch.clientX - this.touches[0].clientX;
       const deltaY = touch.clientY - this.touches[0].clientY;
-      
+
       this.transform.x += deltaX;
       this.transform.y += deltaY;
     }
@@ -381,11 +432,11 @@ class TouchHandler {
     if (this.touches.length === 2) {
       const currentDistance = this._getDistance(touches[0], touches[1]);
       const lastDistance = this._getDistance(this.touches[0], this.touches[1]);
-      
+
       if (lastDistance > 0) {
         const scaleChange = currentDistance / lastDistance;
         const newScale = this.transform.scale * scaleChange;
-        
+
         // 限制缩放范围
         this.transform.scale = Math.max(
           this.config.minScale,
@@ -401,11 +452,11 @@ class TouchHandler {
    * @private
    */
   _handleTap(event) {
-    this._emitEvent('tap', { 
-      point: { 
-        x: event.changedTouches[0].clientX, 
-        y: event.changedTouches[0].clientY 
-      } 
+    this._emitEvent("tap", {
+      point: {
+        x: event.changedTouches[0].clientX,
+        y: event.changedTouches[0].clientY,
+      },
     });
   }
 
@@ -415,11 +466,11 @@ class TouchHandler {
    * @private
    */
   _handleDoubleTap(event) {
-    this._emitEvent('doubletap', { 
-      point: { 
-        x: event.touches[0].clientX, 
-        y: event.touches[0].clientY 
-      } 
+    this._emitEvent("doubletap", {
+      point: {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+      },
     });
   }
 
@@ -450,10 +501,10 @@ class TouchHandler {
    * 销毁处理器
    */
   destroy() {
-    this.element.removeEventListener('touchstart', this._handleTouchStart);
-    this.element.removeEventListener('touchmove', this._handleTouchMove);
-    this.element.removeEventListener('touchend', this._handleTouchEnd);
-    this.element.removeEventListener('touchcancel', this._handleTouchEnd);
+    this.element.removeEventListener("touchstart", this._handleTouchStart);
+    this.element.removeEventListener("touchmove", this._handleTouchMove);
+    this.element.removeEventListener("touchend", this._handleTouchEnd);
+    this.element.removeEventListener("touchcancel", this._handleTouchEnd);
   }
 }
 

@@ -15,7 +15,7 @@ class PerformanceOptimizer {
       processedImages: 0,
       compressionRatio: 0,
       averageProcessingTime: 0,
-      cacheHitRate: 0
+      cacheHitRate: 0,
     };
   }
 
@@ -27,7 +27,7 @@ class PerformanceOptimizer {
    */
   async optimizeImageLoad(imageSource, options = {}) {
     const startTime = performance.now();
-    
+
     try {
       // 检查缓存
       const cacheKey = this._generateCacheKey(imageSource, options);
@@ -38,10 +38,10 @@ class PerformanceOptimizer {
 
       // 获取图像信息
       const imageInfo = await this._getImageInfo(imageSource);
-      
+
       // 检查是否需要优化
       const needsOptimization = this._needsOptimization(imageInfo, options);
-      
+
       let optimizedImage;
       if (needsOptimization) {
         optimizedImage = await this._optimizeImage(imageInfo, options);
@@ -51,18 +51,17 @@ class PerformanceOptimizer {
 
       // 更新内存使用情况
       this._updateMemoryUsage(optimizedImage);
-      
+
       // 缓存结果
       this._cacheImage(cacheKey, optimizedImage);
-      
+
       // 更新性能指标
       const processingTime = performance.now() - startTime;
       this._updatePerformanceMetrics(processingTime, imageInfo, optimizedImage);
-      
+
       return optimizedImage;
-      
     } catch (error) {
-      console.error('图像优化失败:', error);
+      console.error("图像优化失败:", error);
       throw error;
     }
   }
@@ -78,12 +77,12 @@ class PerformanceOptimizer {
       maxWidth = this.maxImageDimension,
       maxHeight = this.maxImageDimension,
       quality = this.compressionQuality,
-      format = 'image/jpeg'
+      format = "image/jpeg",
     } = options;
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
     // 计算新尺寸
     const { width: newWidth, height: newHeight } = this._calculateOptimalSize(
       image.width || image.naturalWidth,
@@ -97,24 +96,28 @@ class PerformanceOptimizer {
 
     // 启用图像平滑
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality = "high";
 
     // 绘制压缩后的图像
     ctx.drawImage(image, 0, 0, newWidth, newHeight);
 
     // 转换为Blob
     return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve({
-          blob,
-          dataURL: canvas.toDataURL(format, quality),
-          width: newWidth,
-          height: newHeight,
-          originalSize: this._getImageSize(image),
-          compressedSize: blob.size,
-          compressionRatio: blob.size / this._getImageSize(image)
-        });
-      }, format, quality);
+      canvas.toBlob(
+        (blob) => {
+          resolve({
+            blob,
+            dataURL: canvas.toDataURL(format, quality),
+            width: newWidth,
+            height: newHeight,
+            originalSize: this._getImageSize(image),
+            compressedSize: blob.size,
+            compressionRatio: blob.size / this._getImageSize(image),
+          });
+        },
+        format,
+        quality
+      );
     });
   }
 
@@ -128,7 +131,7 @@ class PerformanceOptimizer {
     const tiles = [];
     const width = image.width || image.naturalWidth;
     const height = image.height || image.naturalHeight;
-    
+
     const cols = Math.ceil(width / tileSize);
     const rows = Math.ceil(height / tileSize);
 
@@ -139,12 +142,22 @@ class PerformanceOptimizer {
         const tileWidth = Math.min(tileSize, width - x);
         const tileHeight = Math.min(tileSize, height - y);
 
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = tileWidth;
         canvas.height = tileHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(image, x, y, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(
+          image,
+          x,
+          y,
+          tileWidth,
+          tileHeight,
+          0,
+          0,
+          tileWidth,
+          tileHeight
+        );
 
         tiles.push({
           canvas,
@@ -153,7 +166,7 @@ class PerformanceOptimizer {
           width: tileWidth,
           height: tileHeight,
           row,
-          col
+          col,
         });
       }
     }
@@ -167,10 +180,11 @@ class PerformanceOptimizer {
   cleanupMemory() {
     // 清理图像缓存
     const cacheSize = this.imageCache.size;
-    if (cacheSize > 50) { // 限制缓存大小
+    if (cacheSize > 50) {
+      // 限制缓存大小
       const entries = Array.from(this.imageCache.entries());
       const toDelete = entries.slice(0, cacheSize - 30);
-      
+
       toDelete.forEach(([key]) => {
         this.imageCache.delete(key);
       });
@@ -194,7 +208,7 @@ class PerformanceOptimizer {
       ...this.performanceMetrics,
       memoryUsage: this.memoryUsage,
       cacheSize: this.imageCache.size,
-      memoryThreshold: this.memoryThreshold
+      memoryThreshold: this.memoryThreshold,
     };
   }
 
@@ -207,7 +221,7 @@ class PerformanceOptimizer {
       processedImages: 0,
       compressionRatio: 0,
       averageProcessingTime: 0,
-      cacheHitRate: 0
+      cacheHitRate: 0,
     };
   }
 
@@ -222,25 +236,25 @@ class PerformanceOptimizer {
   async _getImageInfo(imageSource) {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      
+
       img.onload = () => {
         resolve({
           element: img,
           width: img.naturalWidth,
           height: img.naturalHeight,
           size: this._getImageSize(img),
-          src: img.src
+          src: img.src,
         });
       };
-      
+
       img.onerror = reject;
-      
-      if (typeof imageSource === 'string') {
+
+      if (typeof imageSource === "string") {
         img.src = imageSource;
       } else if (imageSource instanceof File || imageSource instanceof Blob) {
         img.src = URL.createObjectURL(imageSource);
       } else {
-        reject(new Error('不支持的图像源类型'));
+        reject(new Error("不支持的图像源类型"));
       }
     });
   }
@@ -255,11 +269,13 @@ class PerformanceOptimizer {
   _needsOptimization(imageInfo, options) {
     const { width, height, size } = imageInfo;
     const { forceOptimize = false } = options;
-    
-    return forceOptimize ||
-           width > this.maxImageDimension ||
-           height > this.maxImageDimension ||
-           size > this.memoryThreshold / 4; // 超过阈值的1/4就优化
+
+    return (
+      forceOptimize ||
+      width > this.maxImageDimension ||
+      height > this.maxImageDimension ||
+      size > this.memoryThreshold / 4
+    ); // 超过阈值的1/4就优化
   }
 
   /**
@@ -271,11 +287,11 @@ class PerformanceOptimizer {
    */
   async _optimizeImage(imageInfo, options) {
     const compressed = await this.compressImage(imageInfo.element, options);
-    
+
     // 创建新的图像元素
     const optimizedImg = new Image();
     optimizedImg.src = compressed.dataURL;
-    
+
     return new Promise((resolve) => {
       optimizedImg.onload = () => {
         resolve({
@@ -285,7 +301,7 @@ class PerformanceOptimizer {
           size: compressed.compressedSize,
           src: compressed.dataURL,
           originalSize: imageInfo.size,
-          compressionRatio: compressed.compressionRatio
+          compressionRatio: compressed.compressionRatio,
         });
       };
     });
@@ -302,23 +318,23 @@ class PerformanceOptimizer {
    */
   _calculateOptimalSize(width, height, maxWidth, maxHeight) {
     const aspectRatio = width / height;
-    
+
     let newWidth = width;
     let newHeight = height;
-    
+
     if (width > maxWidth) {
       newWidth = maxWidth;
       newHeight = newWidth / aspectRatio;
     }
-    
+
     if (newHeight > maxHeight) {
       newHeight = maxHeight;
       newWidth = newHeight * aspectRatio;
     }
-    
+
     return {
       width: Math.round(newWidth),
-      height: Math.round(newHeight)
+      height: Math.round(newHeight),
     };
   }
 
@@ -342,7 +358,10 @@ class PerformanceOptimizer {
    * @private
    */
   _generateCacheKey(imageSource, options) {
-    const sourceKey = typeof imageSource === 'string' ? imageSource : imageSource.name || 'blob';
+    const sourceKey =
+      typeof imageSource === "string"
+        ? imageSource
+        : imageSource.name || "blob";
     const optionsKey = JSON.stringify(options);
     return `${sourceKey}_${optionsKey}`;
   }
@@ -366,7 +385,7 @@ class PerformanceOptimizer {
     if (imageData) {
       this.memoryUsage += imageData.size || 0;
     }
-    
+
     this.performanceMetrics.memoryUsage = this.memoryUsage;
   }
 
@@ -379,17 +398,17 @@ class PerformanceOptimizer {
    */
   _updatePerformanceMetrics(processingTime, originalImage, optimizedImage) {
     this.performanceMetrics.processedImages++;
-    
+
     // 更新平均处理时间
     const currentAvg = this.performanceMetrics.averageProcessingTime;
     const count = this.performanceMetrics.processedImages;
-    this.performanceMetrics.averageProcessingTime = 
+    this.performanceMetrics.averageProcessingTime =
       (currentAvg * (count - 1) + processingTime) / count;
-    
+
     // 更新压缩比
     if (optimizedImage.compressionRatio) {
       const currentRatio = this.performanceMetrics.compressionRatio;
-      this.performanceMetrics.compressionRatio = 
+      this.performanceMetrics.compressionRatio =
         (currentRatio * (count - 1) + optimizedImage.compressionRatio) / count;
     }
   }

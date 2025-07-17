@@ -1,6 +1,6 @@
 <template>
-  <div 
-    class="image-preview" 
+  <div
+    class="image-preview"
     :class="previewClasses"
     ref="container"
     @wheel="handleWheel"
@@ -11,37 +11,33 @@
     <!-- 主预览区域 -->
     <div class="preview-area">
       <!-- 图像容器 -->
-      <div 
-        class="image-container"
-        :style="containerStyle"
-        ref="imageContainer"
-      >
+      <div class="image-container" :style="containerStyle" ref="imageContainer">
         <!-- 原始图像 -->
-        <img 
-          v-if="imageSrc && !loading" 
-          :src="imageSrc" 
+        <img
+          v-if="imageSrc && !loading"
+          :src="imageSrc"
           class="preview-image"
-          :class="{ 'dragging': isDragging }"
+          :class="{ dragging: isDragging }"
           :style="imageStyle"
           @load="handleImageLoad"
           @error="handleImageError"
           ref="image"
           alt="预览图像"
         />
-        
+
         <!-- 对比图像（用于前后对比模式） -->
-        <img 
-          v-if="compareMode && compareSrc && !loading" 
-          :src="compareSrc" 
+        <img
+          v-if="compareMode && compareSrc && !loading"
+          :src="compareSrc"
           class="compare-image"
           :style="compareImageStyle"
           ref="compareImage"
           alt="对比图像"
         />
-        
+
         <!-- 对比模式分隔线 -->
-        <div 
-          v-if="compareMode && !loading" 
+        <div
+          v-if="compareMode && !loading"
           class="compare-divider"
           :style="{ left: `${comparePosition * 100}%` }"
           @mousedown="handleDividerMouseDown"
@@ -49,23 +45,23 @@
         >
           <div class="divider-handle"></div>
         </div>
-        
+
         <!-- 加载指示器 -->
         <div v-if="loading" class="loading-indicator">
           <div class="spinner"></div>
           <div class="loading-text">{{ loadingText }}</div>
         </div>
-        
+
         <!-- 错误指示器 -->
         <div v-if="hasError" class="error-indicator">
           <div class="error-icon">!</div>
           <div class="error-text">{{ errorText }}</div>
         </div>
       </div>
-      
+
       <!-- 缩放控制 -->
       <div v-if="showControls" class="zoom-controls">
-        <button 
+        <button
           class="zoom-button zoom-out"
           @click="zoomOut"
           :disabled="scale <= minScale"
@@ -73,10 +69,10 @@
         >
           <i class="icon-zoom-out"></i>
         </button>
-        
+
         <div class="zoom-level">{{ Math.round(scale * 100) }}%</div>
-        
-        <button 
+
+        <button
           class="zoom-button zoom-in"
           @click="zoomIn"
           :disabled="scale >= maxScale"
@@ -84,16 +80,16 @@
         >
           <i class="icon-zoom-in"></i>
         </button>
-        
-        <button 
+
+        <button
           class="zoom-button zoom-fit"
           @click="zoomToFit"
           title="适合窗口"
         >
           <i class="icon-zoom-fit"></i>
         </button>
-        
-        <button 
+
+        <button
           class="zoom-button zoom-actual"
           @click="zoomToActual"
           title="实际大小"
@@ -101,38 +97,36 @@
           <i class="icon-zoom-actual"></i>
         </button>
       </div>
-      
+
       <!-- 全屏按钮 -->
-      <button 
-        v-if="showFullscreenButton" 
+      <button
+        v-if="showFullscreenButton"
         class="fullscreen-button"
         @click="toggleFullscreen"
         :title="isFullscreen ? '退出全屏' : '全屏预览'"
       >
-        <i :class="isFullscreen ? 'icon-fullscreen-exit' : 'icon-fullscreen'"></i>
+        <i
+          :class="isFullscreen ? 'icon-fullscreen-exit' : 'icon-fullscreen'"
+        ></i>
       </button>
-      
+
       <!-- 对比模式按钮 -->
-      <button 
-        v-if="showCompareButton && compareSrc" 
+      <button
+        v-if="showCompareButton && compareSrc"
         class="compare-button"
         @click="toggleCompareMode"
         :title="compareMode ? '退出对比模式' : '前后对比'"
-        :class="{ 'active': compareMode }"
+        :class="{ active: compareMode }"
       >
         <i class="icon-compare"></i>
       </button>
     </div>
-    
+
     <!-- 缩略图导航 -->
     <div v-if="showThumbnail && !loading" class="thumbnail-navigator">
       <div class="thumbnail-container">
-        <img 
-          :src="imageSrc" 
-          class="thumbnail-image" 
-          alt="缩略图"
-        />
-        <div 
+        <img :src="imageSrc" class="thumbnail-image" alt="缩略图" />
+        <div
           class="viewport-indicator"
           :style="viewportIndicatorStyle"
           @mousedown="handleIndicatorMouseDown"
@@ -145,237 +139,269 @@
 
 <script>
 export default {
-  name: 'ImagePreview',
+  name: "ImagePreview",
   props: {
     // 图像源
     imageSrc: {
       type: String,
-      default: ''
+      default: "",
     },
     compareSrc: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 显示选项
     showControls: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showThumbnail: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showFullscreenButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showCompareButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 缩放选项
     initialScale: {
       type: Number,
-      default: 1
+      default: 1,
     },
     minScale: {
       type: Number,
-      default: 0.1
+      default: 0.1,
     },
     maxScale: {
       type: Number,
-      default: 5
+      default: 5,
     },
     scaleStep: {
       type: Number,
-      default: 0.1
+      default: 0.1,
     },
-    
+
     // 状态
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     loadingText: {
       type: String,
-      default: '加载中...'
+      default: "加载中...",
     },
     hasError: {
       type: Boolean,
-      default: false
+      default: false,
     },
     errorText: {
       type: String,
-      default: '图像加载失败'
+      default: "图像加载失败",
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'minimal', 'dark'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "minimal", "dark"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 图像状态
       imageWidth: 0,
       imageHeight: 0,
       imageLoaded: false,
-      
+
       // 缩放和平移状态
       scale: this.initialScale,
       translateX: 0,
       translateY: 0,
-      
+
       // 拖拽状态
       isDragging: false,
       dragStartX: 0,
       dragStartY: 0,
       lastTranslateX: 0,
       lastTranslateY: 0,
-      
+
       // 全屏状态
       isFullscreen: false,
-      
+
       // 对比模式状态
       compareMode: false,
       comparePosition: 0.5, // 0-1之间的值，表示分隔线位置
       isDraggingDivider: false,
-      
+
       // 缩略图导航状态
       isDraggingIndicator: false,
-      
+
       // 触摸状态
       lastTouchDistance: 0,
-      
+
       // 容器尺寸
       containerWidth: 0,
-      containerHeight: 0
+      containerHeight: 0,
     };
   },
-  
+
   computed: {
     previewClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'fullscreen': this.isFullscreen,
-        'compare-mode': this.compareMode,
-        'has-thumbnail': this.showThumbnail,
-        'has-error': this.hasError,
-        'is-loading': this.loading
+        fullscreen: this.isFullscreen,
+        "compare-mode": this.compareMode,
+        "has-thumbnail": this.showThumbnail,
+        "has-error": this.hasError,
+        "is-loading": this.loading,
       };
     },
-    
+
     // 图像容器样式
     containerStyle() {
       return {
-        transform: `translate(${this.translateX}px, ${this.translateY}px)`
+        transform: `translate(${this.translateX}px, ${this.translateY}px)`,
       };
     },
-    
+
     // 图像样式
     imageStyle() {
       return {
         width: `${this.imageWidth * this.scale}px`,
         height: `${this.imageHeight * this.scale}px`,
-        clipPath: this.compareMode ? `inset(0 ${100 - this.comparePosition * 100}% 0 0)` : 'none'
+        clipPath: this.compareMode
+          ? `inset(0 ${100 - this.comparePosition * 100}% 0 0)`
+          : "none",
       };
     },
-    
+
     // 对比图像样式
     compareImageStyle() {
       return {
         width: `${this.imageWidth * this.scale}px`,
         height: `${this.imageHeight * this.scale}px`,
-        clipPath: `inset(0 0 0 ${this.comparePosition * 100}%)`
+        clipPath: `inset(0 0 0 ${this.comparePosition * 100}%)`,
       };
     },
-    
+
     // 缩略图视口指示器样式
     viewportIndicatorStyle() {
       if (!this.imageLoaded || !this.containerWidth || !this.containerHeight) {
         return {};
       }
-      
+
       // 计算缩略图中的视口位置和大小
-      const thumbnailWidth = this.$el.querySelector('.thumbnail-container').offsetWidth;
-      const thumbnailHeight = this.$el.querySelector('.thumbnail-container').offsetHeight;
-      
+      const thumbnailWidth = this.$el.querySelector(
+        ".thumbnail-container"
+      ).offsetWidth;
+      const thumbnailHeight = this.$el.querySelector(
+        ".thumbnail-container"
+      ).offsetHeight;
+
       // 计算图像在容器中的实际尺寸
       const scaledWidth = this.imageWidth * this.scale;
       const scaledHeight = this.imageHeight * this.scale;
-      
+
       // 计算视口在图像中的比例
       const viewportWidthRatio = Math.min(this.containerWidth / scaledWidth, 1);
-      const viewportHeightRatio = Math.min(this.containerHeight / scaledHeight, 1);
-      
+      const viewportHeightRatio = Math.min(
+        this.containerHeight / scaledHeight,
+        1
+      );
+
       // 计算视口在缩略图中的位置
       const translateXRatio = -this.translateX / scaledWidth;
       const translateYRatio = -this.translateY / scaledHeight;
-      
+
       // 计算视口在缩略图中的尺寸
       const indicatorWidth = thumbnailWidth * viewportWidthRatio;
       const indicatorHeight = thumbnailHeight * viewportHeightRatio;
-      
+
       // 计算视口在缩略图中的位置
       const indicatorLeft = thumbnailWidth * translateXRatio;
       const indicatorTop = thumbnailHeight * translateYRatio;
-      
+
       return {
         width: `${indicatorWidth}px`,
         height: `${indicatorHeight}px`,
         left: `${indicatorLeft}px`,
-        top: `${indicatorTop}px`
+        top: `${indicatorTop}px`,
       };
-    }
+    },
   },
-  
+
   watch: {
     imageSrc() {
       this.resetView();
     },
-    
+
     initialScale(newValue) {
       this.scale = newValue;
-    }
+    },
   },
-  
+
   mounted() {
     this.updateContainerSize();
-    
+
     // 监听窗口大小变化
-    window.addEventListener('resize', this.handleWindowResize);
-    
+    window.addEventListener("resize", this.handleWindowResize);
+
     // 监听全屏变化
-    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', this.handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', this.handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', this.handleFullscreenChange);
-    
+    document.addEventListener("fullscreenchange", this.handleFullscreenChange);
+    document.addEventListener(
+      "webkitfullscreenchange",
+      this.handleFullscreenChange
+    );
+    document.addEventListener(
+      "mozfullscreenchange",
+      this.handleFullscreenChange
+    );
+    document.addEventListener(
+      "MSFullscreenChange",
+      this.handleFullscreenChange
+    );
+
     // 监听全局鼠标和触摸事件
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("touchmove", this.handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.handleTouchEnd);
   },
-  
+
   beforeDestroy() {
     // 移除事件监听器
-    window.removeEventListener('resize', this.handleWindowResize);
+    window.removeEventListener("resize", this.handleWindowResize);
 
-    document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
-    document.removeEventListener('webkitfullscreenchange', this.handleFullscreenChange);
-    document.removeEventListener('mozfullscreenchange', this.handleFullscreenChange);
-    document.removeEventListener('MSFullscreenChange', this.handleFullscreenChange);
+    document.removeEventListener(
+      "fullscreenchange",
+      this.handleFullscreenChange
+    );
+    document.removeEventListener(
+      "webkitfullscreenchange",
+      this.handleFullscreenChange
+    );
+    document.removeEventListener(
+      "mozfullscreenchange",
+      this.handleFullscreenChange
+    );
+    document.removeEventListener(
+      "MSFullscreenChange",
+      this.handleFullscreenChange
+    );
 
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("touchmove", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
 
     // 退出全屏
     if (this.isFullscreen) {
@@ -421,9 +447,9 @@ export default {
           this.zoomToFit();
         }
 
-        this.$emit('image-loaded', {
+        this.$emit("image-loaded", {
           width: this.imageWidth,
-          height: this.imageHeight
+          height: this.imageHeight,
         });
       }
     },
@@ -432,7 +458,7 @@ export default {
      * 处理图像加载错误
      */
     handleImageError() {
-      this.$emit('image-error');
+      this.$emit("image-error");
     },
 
     /**
@@ -501,7 +527,7 @@ export default {
       // 限制平移范围
       this.constrainTranslation();
 
-      this.$emit('scale-change', this.scale);
+      this.$emit("scale-change", this.scale);
     },
 
     /**
@@ -529,15 +555,33 @@ export default {
       const scaledHeight = this.imageHeight * this.scale;
 
       // 计算最大和最小平移值
-      const maxTranslateX = Math.max(0, (this.containerWidth - scaledWidth) / 2);
-      const minTranslateX = Math.min(0, this.containerWidth - scaledWidth - maxTranslateX);
+      const maxTranslateX = Math.max(
+        0,
+        (this.containerWidth - scaledWidth) / 2
+      );
+      const minTranslateX = Math.min(
+        0,
+        this.containerWidth - scaledWidth - maxTranslateX
+      );
 
-      const maxTranslateY = Math.max(0, (this.containerHeight - scaledHeight) / 2);
-      const minTranslateY = Math.min(0, this.containerHeight - scaledHeight - maxTranslateY);
+      const maxTranslateY = Math.max(
+        0,
+        (this.containerHeight - scaledHeight) / 2
+      );
+      const minTranslateY = Math.min(
+        0,
+        this.containerHeight - scaledHeight - maxTranslateY
+      );
 
       // 限制平移范围
-      this.translateX = Math.min(Math.max(this.translateX, minTranslateX), maxTranslateX);
-      this.translateY = Math.min(Math.max(this.translateY, minTranslateY), maxTranslateY);
+      this.translateX = Math.min(
+        Math.max(this.translateX, minTranslateX),
+        maxTranslateX
+      );
+      this.translateY = Math.min(
+        Math.max(this.translateY, minTranslateY),
+        maxTranslateY
+      );
     },
 
     /**
@@ -547,7 +591,10 @@ export default {
       event.preventDefault();
 
       const delta = event.deltaY > 0 ? -this.scaleStep : this.scaleStep;
-      const newScale = Math.min(Math.max(this.scale + delta, this.minScale), this.maxScale);
+      const newScale = Math.min(
+        Math.max(this.scale + delta, this.minScale),
+        this.maxScale
+      );
 
       // 以鼠标位置为中心缩放
       const rect = this.$refs.container.getBoundingClientRect();
@@ -622,7 +669,7 @@ export default {
         const touch2 = event.touches[1];
         this.lastTouchDistance = Math.sqrt(
           Math.pow(touch2.clientX - touch1.clientX, 2) +
-          Math.pow(touch2.clientY - touch1.clientY, 2)
+            Math.pow(touch2.clientY - touch1.clientY, 2)
         );
       }
 
@@ -649,7 +696,7 @@ export default {
         const touch2 = event.touches[1];
         const currentDistance = Math.sqrt(
           Math.pow(touch2.clientX - touch1.clientX, 2) +
-          Math.pow(touch2.clientY - touch1.clientY, 2)
+            Math.pow(touch2.clientY - touch1.clientY, 2)
         );
 
         if (this.lastTouchDistance > 0) {
@@ -754,7 +801,7 @@ export default {
         }
       });
 
-      this.$emit('fullscreen-change', this.isFullscreen);
+      this.$emit("fullscreen-change", this.isFullscreen);
     },
 
     /**
@@ -762,7 +809,7 @@ export default {
      */
     toggleCompareMode() {
       this.compareMode = !this.compareMode;
-      this.$emit('compare-mode-change', this.compareMode);
+      this.$emit("compare-mode-change", this.compareMode);
     },
 
     /**
@@ -791,7 +838,7 @@ export default {
       const relativeX = clientX - rect.left;
       this.comparePosition = Math.min(Math.max(relativeX / rect.width, 0), 1);
 
-      this.$emit('compare-position-change', this.comparePosition);
+      this.$emit("compare-position-change", this.comparePosition);
     },
 
     /**
@@ -816,7 +863,7 @@ export default {
      * 处理缩略图指示器移动
      */
     handleIndicatorMove(clientX, clientY) {
-      const thumbnailContainer = this.$el.querySelector('.thumbnail-container');
+      const thumbnailContainer = this.$el.querySelector(".thumbnail-container");
       if (!thumbnailContainer) return;
 
       const rect = thumbnailContainer.getBoundingClientRect();
@@ -847,8 +894,8 @@ export default {
       if (this.imageLoaded && this.scale < 1) {
         this.zoomToFit();
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -956,7 +1003,7 @@ export default {
 }
 
 .divider-handle::before {
-  content: '⋮';
+  content: "⋮";
   color: white;
   font-size: 16px;
   font-weight: bold;
@@ -987,8 +1034,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 错误指示器 */
@@ -1174,13 +1225,36 @@ export default {
 }
 
 /* 图标样式 */
-.icon-zoom-in::before { content: '+'; font-size: 16px; font-weight: bold; }
-.icon-zoom-out::before { content: '−'; font-size: 16px; font-weight: bold; }
-.icon-zoom-fit::before { content: '⊞'; font-size: 14px; }
-.icon-zoom-actual::before { content: '1:1'; font-size: 10px; }
-.icon-fullscreen::before { content: '⛶'; font-size: 14px; }
-.icon-fullscreen-exit::before { content: '⛷'; font-size: 14px; }
-.icon-compare::before { content: '⚏'; font-size: 14px; }
+.icon-zoom-in::before {
+  content: "+";
+  font-size: 16px;
+  font-weight: bold;
+}
+.icon-zoom-out::before {
+  content: "−";
+  font-size: 16px;
+  font-weight: bold;
+}
+.icon-zoom-fit::before {
+  content: "⊞";
+  font-size: 14px;
+}
+.icon-zoom-actual::before {
+  content: "1:1";
+  font-size: 10px;
+}
+.icon-fullscreen::before {
+  content: "⛶";
+  font-size: 14px;
+}
+.icon-fullscreen-exit::before {
+  content: "⛷";
+  font-size: 14px;
+}
+.icon-compare::before {
+  content: "⚏";
+  font-size: 14px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

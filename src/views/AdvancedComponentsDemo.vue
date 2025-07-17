@@ -11,7 +11,7 @@
       <div class="demo-description">
         <p>支持缩放、平移、适合窗口、全屏预览和前后对比等功能</p>
       </div>
-      
+
       <div class="preview-demo-container">
         <div class="preview-wrapper">
           <image-preview
@@ -28,44 +28,44 @@
             @compare-mode-change="handleCompareModeChange"
           />
         </div>
-        
+
         <div class="preview-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <label>选择图像:</label>
             <div class="image-selector">
-              <div 
-                v-for="(image, index) in demoImages" 
+              <div
+                v-for="(image, index) in demoImages"
                 :key="index"
                 class="image-option"
-                :class="{ 'active': currentImage === image.src }"
+                :class="{ active: currentImage === image.src }"
                 @click="selectImage(image.src)"
               >
                 <img :src="image.src" :alt="image.name" />
               </div>
             </div>
           </div>
-          
+
           <div class="control-group">
             <label>对比图像:</label>
             <div class="image-selector">
-              <div 
-                v-for="(image, index) in demoImages" 
+              <div
+                v-for="(image, index) in demoImages"
                 :key="index"
                 class="image-option"
-                :class="{ 'active': compareImage === image.src }"
+                :class="{ active: compareImage === image.src }"
                 @click="selectCompareImage(image.src)"
               >
                 <img :src="image.src" :alt="image.name" />
               </div>
             </div>
           </div>
-          
+
           <div class="control-group">
             <label>显示缩略图:</label>
             <input type="checkbox" v-model="showThumbnail" />
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="previewVariant">
@@ -84,7 +84,7 @@
       <div class="demo-description">
         <p>显示操作历史和撤销/重做功能，支持历史搜索和分支历史管理</p>
       </div>
-      
+
       <div class="history-demo-container">
         <div class="history-wrapper">
           <history-panel
@@ -101,14 +101,16 @@
             @clear-history="handleClearHistory"
           />
         </div>
-        
+
         <div class="history-controls">
           <h3>控制选项</h3>
           <div class="control-group">
             <button @click="addHistoryItem()">添加历史项</button>
-            <button @click="toggleBranches">{{ showBranches ? '隐藏分支' : '显示分支' }}</button>
+            <button @click="toggleBranches">
+              {{ showBranches ? "隐藏分支" : "显示分支" }}
+            </button>
           </div>
-          
+
           <div class="control-group">
             <label>变体样式:</label>
             <select v-model="historyVariant">
@@ -117,11 +119,18 @@
               <option value="minimal">简约</option>
             </select>
           </div>
-          
+
           <div class="history-preview">
             <h4>当前状态</h4>
             <p>活动索引: {{ activeHistoryIndex }}</p>
-            <p>活动项: {{ activeHistoryIndex >= 0 ? historyItems[activeHistoryIndex].name : '无' }}</p>
+            <p>
+              活动项:
+              {{
+                activeHistoryIndex >= 0
+                  ? historyItems[activeHistoryIndex].name
+                  : "无"
+              }}
+            </p>
             <p>历史项数量: {{ historyItems.length }}</p>
             <p>活动分支: {{ activeBranchName }}</p>
           </div>
@@ -135,7 +144,7 @@
       <div class="demo-description">
         <p>提供各种图像滤镜效果，支持参数调整和自定义滤镜组合</p>
       </div>
-      
+
       <div class="filter-demo-container">
         <div class="filter-wrapper">
           <filter-panel
@@ -156,22 +165,27 @@
             @custom-filter-delete="handleCustomFilterDelete"
           />
         </div>
-        
+
         <div class="filter-preview-area">
           <h3>滤镜效果预览</h3>
           <div class="filter-result-container">
-            <img 
-              :src="filterPreviewImage" 
+            <img
+              :src="filterPreviewImage"
               class="filter-result-image"
               :style="currentFilterStyle"
               alt="滤镜效果预览"
             />
           </div>
-          
+
           <div class="filter-info">
             <h4>当前滤镜: {{ currentFilterName }}</h4>
-            <p v-if="activeFilter && activeFilter.description">{{ activeFilter.description }}</p>
-            <div v-if="activeFilter && activeFilter.parameters" class="filter-params-info">
+            <p v-if="activeFilter && activeFilter.description">
+              {{ activeFilter.description }}
+            </p>
+            <div
+              v-if="activeFilter && activeFilter.parameters"
+              class="filter-params-info"
+            >
               <p>参数值:</p>
               <ul>
                 <li v-for="param in activeFilter.parameters" :key="param.id">
@@ -190,7 +204,7 @@
       <div class="demo-description">
         <p>展示三个组件的集成效果，模拟完整的图像编辑流程</p>
       </div>
-      
+
       <div class="integrated-demo-container">
         <div class="integrated-editor">
           <editor-container
@@ -251,12 +265,16 @@
                 <span>当前工具: {{ activeToolName }}</span>
                 <span>缩放: {{ Math.round(currentScale * 100) }}%</span>
                 <span>滤镜: {{ currentFilterName }}</span>
-                <span>历史: {{ activeHistoryIndex + 1 }}/{{ historyItems.length }}</span>
+                <span
+                  >历史: {{ activeHistoryIndex + 1 }}/{{
+                    historyItems.length
+                  }}</span
+                >
               </div>
             </template>
           </editor-container>
         </div>
-        
+
         <div class="integrated-controls">
           <h3>集成控制</h3>
           <div class="control-group">
@@ -266,7 +284,7 @@
               <option value="dark">暗色</option>
             </select>
           </div>
-          
+
           <div class="control-group">
             <button @click="simulateLoading">模拟加载</button>
             <button @click="applyRandomFilter">应用随机滤镜</button>
@@ -279,263 +297,265 @@
 </template>
 
 <script>
-import ImagePreview from '@/components/ui/ImagePreview.vue';
-import HistoryPanel from '@/components/ui/HistoryPanel.vue';
-import FilterPanel from '@/components/ui/FilterPanel.vue';
-import EditorContainer from '@/components/ui/EditorContainer.vue';
-import EditorToolbar from '@/components/ui/EditorToolbar.vue';
+import ImagePreview from "@/components/ui/ImagePreview.vue";
+import HistoryPanel from "@/components/ui/HistoryPanel.vue";
+import FilterPanel from "@/components/ui/FilterPanel.vue";
+import EditorContainer from "@/components/ui/EditorContainer.vue";
+import EditorToolbar from "@/components/ui/EditorToolbar.vue";
 
 export default {
-  name: 'AdvancedComponentsDemo',
+  name: "AdvancedComponentsDemo",
   components: {
     ImagePreview,
     HistoryPanel,
     FilterPanel,
     EditorContainer,
-    EditorToolbar
+    EditorToolbar,
   },
 
   data() {
     return {
       // 图像预览相关
-      currentImage: 'https://picsum.photos/800/600?random=1',
-      compareImage: 'https://picsum.photos/800/600?random=2',
+      currentImage: "https://picsum.photos/800/600?random=1",
+      compareImage: "https://picsum.photos/800/600?random=2",
       showThumbnail: true,
-      previewVariant: 'default',
+      previewVariant: "default",
       currentScale: 1,
 
       // 演示图像
       demoImages: [
-        { name: '风景1', src: 'https://picsum.photos/800/600?random=1' },
-        { name: '风景2', src: 'https://picsum.photos/800/600?random=2' },
-        { name: '风景3', src: 'https://picsum.photos/800/600?random=3' },
-        { name: '风景4', src: 'https://picsum.photos/800/600?random=4' }
+        { name: "风景1", src: "https://picsum.photos/800/600?random=1" },
+        { name: "风景2", src: "https://picsum.photos/800/600?random=2" },
+        { name: "风景3", src: "https://picsum.photos/800/600?random=3" },
+        { name: "风景4", src: "https://picsum.photos/800/600?random=4" },
       ],
 
       // 历史记录相关
       historyItems: [
         {
-          id: 'init',
-          name: '初始状态',
-          description: '打开图像',
-          icon: 'image',
-          timestamp: Date.now() - 300000
+          id: "init",
+          name: "初始状态",
+          description: "打开图像",
+          icon: "image",
+          timestamp: Date.now() - 300000,
         },
         {
-          id: 'crop',
-          name: '裁剪',
-          description: '裁剪图像为 800x600',
-          icon: 'crop',
-          timestamp: Date.now() - 240000
+          id: "crop",
+          name: "裁剪",
+          description: "裁剪图像为 800x600",
+          icon: "crop",
+          timestamp: Date.now() - 240000,
         },
         {
-          id: 'brightness',
-          name: '调整亮度',
-          description: '亮度 +20',
-          icon: 'brightness',
-          timestamp: Date.now() - 180000
+          id: "brightness",
+          name: "调整亮度",
+          description: "亮度 +20",
+          icon: "brightness",
+          timestamp: Date.now() - 180000,
         },
         {
-          id: 'filter',
-          name: '应用滤镜',
-          description: '应用复古滤镜',
-          icon: 'filter',
-          timestamp: Date.now() - 120000
+          id: "filter",
+          name: "应用滤镜",
+          description: "应用复古滤镜",
+          icon: "filter",
+          timestamp: Date.now() - 120000,
         },
         {
-          id: 'rotate',
-          name: '旋转',
-          description: '顺时针旋转 90°',
-          icon: 'rotate',
-          timestamp: Date.now() - 60000
-        }
+          id: "rotate",
+          name: "旋转",
+          description: "顺时针旋转 90°",
+          icon: "rotate",
+          timestamp: Date.now() - 60000,
+        },
       ],
       activeHistoryIndex: 4,
-      historyVariant: 'default',
+      historyVariant: "default",
       showBranches: false,
       historyBranches: [
         {
-          id: 'main',
-          name: '主分支',
-          itemCount: 5
+          id: "main",
+          name: "主分支",
+          itemCount: 5,
         },
         {
-          id: 'experiment',
-          name: '实验分支',
-          itemCount: 3
-        }
+          id: "experiment",
+          name: "实验分支",
+          itemCount: 3,
+        },
       ],
-      activeBranchId: 'main',
+      activeBranchId: "main",
 
       // 滤镜相关
-      activeFilterId: '',
-      filterVariant: 'default',
-      filterPreviewImage: 'https://picsum.photos/400/300?random=5',
+      activeFilterId: "",
+      filterVariant: "default",
+      filterPreviewImage: "https://picsum.photos/400/300?random=5",
       filterParameterValues: {},
       customFilters: [
         {
-          id: 'custom1',
-          name: '我的复古风格',
-          description: '自定义复古滤镜',
-          baseFilterId: 'vintage',
+          id: "custom1",
+          name: "我的复古风格",
+          description: "自定义复古滤镜",
+          baseFilterId: "vintage",
           parameterValues: {
-            vintage: { sepia: 80, contrast: 110, brightness: 95 }
-          }
-        }
+            vintage: { sepia: 80, contrast: 110, brightness: 95 },
+          },
+        },
       ],
-      activeCategoryId: 'all',
+      activeCategoryId: "all",
 
       // 可用滤镜
       availableFilters: [
         {
-          id: 'none',
-          name: '无滤镜',
-          cssFilter: 'none',
-          parameters: []
+          id: "none",
+          name: "无滤镜",
+          cssFilter: "none",
+          parameters: [],
         },
         {
-          id: 'grayscale',
-          name: '灰度',
-          cssFilter: 'grayscale(100%)',
+          id: "grayscale",
+          name: "灰度",
+          cssFilter: "grayscale(100%)",
           parameters: [
             {
-              id: 'intensity',
-              name: '强度',
+              id: "intensity",
+              name: "强度",
               min: 0,
               max: 100,
               step: 1,
               defaultValue: 100,
-              description: '灰度效果强度'
-            }
-          ]
+              description: "灰度效果强度",
+            },
+          ],
         },
         {
-          id: 'sepia',
-          name: '复古',
-          cssFilter: 'sepia(100%)',
+          id: "sepia",
+          name: "复古",
+          cssFilter: "sepia(100%)",
           parameters: [
             {
-              id: 'intensity',
-              name: '强度',
+              id: "intensity",
+              name: "强度",
               min: 0,
               max: 100,
               step: 1,
               defaultValue: 100,
-              description: '复古效果强度'
-            }
-          ]
+              description: "复古效果强度",
+            },
+          ],
         },
         {
-          id: 'blur',
-          name: '模糊',
-          cssFilter: 'blur(5px)',
+          id: "blur",
+          name: "模糊",
+          cssFilter: "blur(5px)",
           parameters: [
             {
-              id: 'radius',
-              name: '模糊半径',
+              id: "radius",
+              name: "模糊半径",
               min: 0,
               max: 20,
               step: 0.5,
               defaultValue: 5,
-              description: '模糊效果半径'
-            }
-          ]
+              description: "模糊效果半径",
+            },
+          ],
         },
         {
-          id: 'brightness',
-          name: '亮度',
-          cssFilter: 'brightness(120%)',
+          id: "brightness",
+          name: "亮度",
+          cssFilter: "brightness(120%)",
           parameters: [
             {
-              id: 'value',
-              name: '亮度值',
+              id: "value",
+              name: "亮度值",
               min: 0,
               max: 200,
               step: 1,
               defaultValue: 120,
-              description: '图像亮度调整'
-            }
-          ]
+              description: "图像亮度调整",
+            },
+          ],
         },
         {
-          id: 'contrast',
-          name: '对比度',
-          cssFilter: 'contrast(120%)',
+          id: "contrast",
+          name: "对比度",
+          cssFilter: "contrast(120%)",
           parameters: [
             {
-              id: 'value',
-              name: '对比度值',
+              id: "value",
+              name: "对比度值",
               min: 0,
               max: 200,
               step: 1,
               defaultValue: 120,
-              description: '图像对比度调整'
-            }
-          ]
+              description: "图像对比度调整",
+            },
+          ],
         },
         {
-          id: 'saturate',
-          name: '饱和度',
-          cssFilter: 'saturate(150%)',
+          id: "saturate",
+          name: "饱和度",
+          cssFilter: "saturate(150%)",
           parameters: [
             {
-              id: 'value',
-              name: '饱和度值',
+              id: "value",
+              name: "饱和度值",
               min: 0,
               max: 300,
               step: 1,
               defaultValue: 150,
-              description: '图像饱和度调整'
-            }
-          ]
-        }
+              description: "图像饱和度调整",
+            },
+          ],
+        },
       ],
 
       // 滤镜分类
       filterCategories: [
-        { id: 'all', name: '全部' },
-        { id: 'basic', name: '基础' },
-        { id: 'artistic', name: '艺术' },
-        { id: 'vintage', name: '复古' }
+        { id: "all", name: "全部" },
+        { id: "basic", name: "基础" },
+        { id: "artistic", name: "艺术" },
+        { id: "vintage", name: "复古" },
       ],
 
       // 集成演示相关
-      editorTheme: 'light',
+      editorTheme: "light",
       editorLoading: false,
-      activeToolId: 'select',
+      activeToolId: "select",
 
       // 编辑器工具组
       editorToolGroups: [
         {
-          id: 'file',
-          title: '文件',
+          id: "file",
+          title: "文件",
           tools: [
-            { id: 'open', label: '打开', icon: 'folder' },
-            { id: 'save', label: '保存', icon: 'save' }
-          ]
+            { id: "open", label: "打开", icon: "folder" },
+            { id: "save", label: "保存", icon: "save" },
+          ],
         },
         {
-          id: 'edit',
-          title: '编辑',
+          id: "edit",
+          title: "编辑",
           tools: [
-            { id: 'select', label: '选择', icon: 'cursor' },
-            { id: 'crop', label: '裁剪', icon: 'crop' },
-            { id: 'rotate', label: '旋转', icon: 'rotate' }
-          ]
-        }
-      ]
+            { id: "select", label: "选择", icon: "cursor" },
+            { id: "crop", label: "裁剪", icon: "crop" },
+            { id: "rotate", label: "旋转", icon: "rotate" },
+          ],
+        },
+      ],
     };
   },
 
   computed: {
     // 当前活动滤镜
     activeFilter() {
-      return this.availableFilters.find(f => f.id === this.activeFilterId) || null;
+      return (
+        this.availableFilters.find((f) => f.id === this.activeFilterId) || null
+      );
     },
 
     // 当前滤镜名称
     currentFilterName() {
-      return this.activeFilter ? this.activeFilter.name : '无';
+      return this.activeFilter ? this.activeFilter.name : "无";
     },
 
     // 当前滤镜样式
@@ -545,27 +565,30 @@ export default {
       let filterValue = this.activeFilter.cssFilter;
 
       // 应用参数值
-      if (this.activeFilter.parameters && this.filterParameterValues[this.activeFilterId]) {
+      if (
+        this.activeFilter.parameters &&
+        this.filterParameterValues[this.activeFilterId]
+      ) {
         const params = this.filterParameterValues[this.activeFilterId];
 
         // 根据滤镜类型应用参数
         switch (this.activeFilterId) {
-          case 'grayscale':
+          case "grayscale":
             filterValue = `grayscale(${params.intensity || 100}%)`;
             break;
-          case 'sepia':
+          case "sepia":
             filterValue = `sepia(${params.intensity || 100}%)`;
             break;
-          case 'blur':
+          case "blur":
             filterValue = `blur(${params.radius || 5}px)`;
             break;
-          case 'brightness':
+          case "brightness":
             filterValue = `brightness(${params.value || 120}%)`;
             break;
-          case 'contrast':
+          case "contrast":
             filterValue = `contrast(${params.value || 120}%)`;
             break;
-          case 'saturate':
+          case "saturate":
             filterValue = `saturate(${params.value || 150}%)`;
             break;
         }
@@ -576,34 +599,37 @@ export default {
 
     // 活动分支名称
     activeBranchName() {
-      const branch = this.historyBranches.find(b => b.id === this.activeBranchId);
-      return branch ? branch.name : '未知分支';
+      const branch = this.historyBranches.find(
+        (b) => b.id === this.activeBranchId
+      );
+      return branch ? branch.name : "未知分支";
     },
 
     // 当前工具名称
     activeToolName() {
       const toolNames = {
-        'select': '选择工具',
-        'crop': '裁剪工具',
-        'rotate': '旋转工具',
-        'open': '打开文件',
-        'save': '保存文件'
+        select: "选择工具",
+        crop: "裁剪工具",
+        rotate: "旋转工具",
+        open: "打开文件",
+        save: "保存文件",
       };
       return toolNames[this.activeToolId] || this.activeToolId;
-    }
+    },
   },
 
   mounted() {
     // 确保页面加载时保持在顶部
     this.$nextTick(() => {
       // 保存当前滚动位置
-      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const currentScrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
 
       // 如果页面不在顶部，平滑滚动到顶部
       if (currentScrollTop > 0) {
         window.scrollTo({
           top: 0,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     });
@@ -617,7 +643,7 @@ export default {
      */
     selectImage(src) {
       this.currentImage = src;
-      this.addHistoryItem('change-image', '更换图像', '更换为新图像');
+      this.addHistoryItem("change-image", "更换图像", "更换为新图像");
     },
 
     /**
@@ -631,7 +657,7 @@ export default {
      * 处理图像加载完成
      */
     handleImageLoaded(data) {
-      console.log('图像加载完成:', data);
+      console.log("图像加载完成:", data);
     },
 
     /**
@@ -645,14 +671,14 @@ export default {
      * 处理全屏变化
      */
     handleFullscreenChange(isFullscreen) {
-      console.log('全屏状态变化:', isFullscreen);
+      console.log("全屏状态变化:", isFullscreen);
     },
 
     /**
      * 处理对比模式变化
      */
     handleCompareModeChange(compareMode) {
-      console.log('对比模式变化:', compareMode);
+      console.log("对比模式变化:", compareMode);
     },
 
     // ========== 历史记录相关方法 ==========
@@ -662,7 +688,7 @@ export default {
      */
     handleHistoryItemClick(event) {
       this.activeHistoryIndex = event.index;
-      console.log('历史记录项点击:', event);
+      console.log("历史记录项点击:", event);
     },
 
     /**
@@ -671,7 +697,7 @@ export default {
     handleUndo() {
       if (this.activeHistoryIndex > 0) {
         this.activeHistoryIndex--;
-        console.log('撤销到:', this.historyItems[this.activeHistoryIndex].name);
+        console.log("撤销到:", this.historyItems[this.activeHistoryIndex].name);
       }
     },
 
@@ -681,7 +707,7 @@ export default {
     handleRedo() {
       if (this.activeHistoryIndex < this.historyItems.length - 1) {
         this.activeHistoryIndex++;
-        console.log('重做到:', this.historyItems[this.activeHistoryIndex].name);
+        console.log("重做到:", this.historyItems[this.activeHistoryIndex].name);
       }
     },
 
@@ -690,7 +716,7 @@ export default {
      */
     handleBranchClick(branch) {
       this.activeBranchId = branch.id;
-      console.log('切换到分支:', branch.name);
+      console.log("切换到分支:", branch.name);
     },
 
     /**
@@ -699,7 +725,7 @@ export default {
     handleClearHistory() {
       this.historyItems = [this.historyItems[0]]; // 保留初始状态
       this.activeHistoryIndex = 0;
-      console.log('历史记录已清空');
+      console.log("历史记录已清空");
     },
 
     /**
@@ -707,8 +733,11 @@ export default {
      */
     addHistoryItem(id = null, name = null, description = null) {
       // 验证参数类型，防止传入事件对象
-      if (typeof id === 'object' && id !== null && !(id instanceof String)) {
-        console.warn('addHistoryItem: 检测到非字符串id参数，可能是事件对象:', id);
+      if (typeof id === "object" && id !== null && !(id instanceof String)) {
+        console.warn(
+          "addHistoryItem: 检测到非字符串id参数，可能是事件对象:",
+          id
+        );
         id = null; // 重置为null，使用默认生成逻辑
       }
 
@@ -716,7 +745,7 @@ export default {
       let uniqueId;
       if (id) {
         // 检查是否已存在相同的id，如果存在则添加时间戳后缀
-        const existingIds = this.historyItems.map(item => item.id);
+        const existingIds = this.historyItems.map((item) => item.id);
         if (existingIds.includes(id)) {
           uniqueId = `${id}-${Date.now()}`;
         } else {
@@ -729,14 +758,17 @@ export default {
       const newItem = {
         id: uniqueId,
         name: name || `操作 ${this.historyItems.length}`,
-        description: description || '新的编辑操作',
-        icon: 'edit',
-        timestamp: Date.now()
+        description: description || "新的编辑操作",
+        icon: "edit",
+        timestamp: Date.now(),
       };
 
       // 如果当前不在最新状态，删除后续历史
       if (this.activeHistoryIndex < this.historyItems.length - 1) {
-        this.historyItems = this.historyItems.slice(0, this.activeHistoryIndex + 1);
+        this.historyItems = this.historyItems.slice(
+          0,
+          this.activeHistoryIndex + 1
+        );
       }
 
       this.historyItems.push(newItem);
@@ -764,14 +796,22 @@ export default {
 
         // 设置默认参数值
         if (filter.parameters) {
-          filter.parameters.forEach(param => {
-            this.$set(this.filterParameterValues[filter.id], param.id, param.defaultValue);
+          filter.parameters.forEach((param) => {
+            this.$set(
+              this.filterParameterValues[filter.id],
+              param.id,
+              param.defaultValue
+            );
           });
         }
       }
 
-      this.addHistoryItem(`filter-${filter.id}`, `应用滤镜`, `应用${filter.name}滤镜`);
-      console.log('选择滤镜:', filter.name);
+      this.addHistoryItem(
+        `filter-${filter.id}`,
+        `应用滤镜`,
+        `应用${filter.name}滤镜`
+      );
+      console.log("选择滤镜:", filter.name);
     },
 
     /**
@@ -782,8 +822,12 @@ export default {
         this.$set(this.filterParameterValues, event.filterId, {});
       }
 
-      this.$set(this.filterParameterValues[event.filterId], event.parameterId, event.value);
-      console.log('滤镜参数变化:', event);
+      this.$set(
+        this.filterParameterValues[event.filterId],
+        event.parameterId,
+        event.value
+      );
+      console.log("滤镜参数变化:", event);
     },
 
     /**
@@ -791,7 +835,7 @@ export default {
      */
     handleCategorySelect(category) {
       this.activeCategoryId = category.id;
-      console.log('选择分类:', category.name);
+      console.log("选择分类:", category.name);
     },
 
     /**
@@ -800,21 +844,21 @@ export default {
     handleFilterReset(filter) {
       if (filter.parameters) {
         const resetValues = {};
-        filter.parameters.forEach(param => {
+        filter.parameters.forEach((param) => {
           resetValues[param.id] = param.defaultValue;
         });
         this.$set(this.filterParameterValues, filter.id, resetValues);
       }
-      console.log('重置滤镜:', filter.name);
+      console.log("重置滤镜:", filter.name);
     },
 
     /**
      * 处理所有滤镜重置
      */
     handleAllFiltersReset() {
-      this.activeFilterId = '';
+      this.activeFilterId = "";
       this.filterParameterValues = {};
-      console.log('重置所有滤镜');
+      console.log("重置所有滤镜");
     },
 
     /**
@@ -823,20 +867,20 @@ export default {
     handleCustomFilterSave(customFilter) {
       const newFilter = {
         ...customFilter,
-        id: `custom-${Date.now()}`
+        id: `custom-${Date.now()}`,
       };
       this.customFilters.push(newFilter);
-      console.log('保存自定义滤镜:', newFilter);
+      console.log("保存自定义滤镜:", newFilter);
     },
 
     /**
      * 处理自定义滤镜删除
      */
     handleCustomFilterDelete(filter) {
-      const index = this.customFilters.findIndex(f => f.id === filter.id);
+      const index = this.customFilters.findIndex((f) => f.id === filter.id);
       if (index !== -1) {
         this.customFilters.splice(index, 1);
-        console.log('删除自定义滤镜:', filter.name);
+        console.log("删除自定义滤镜:", filter.name);
       }
     },
 
@@ -844,7 +888,10 @@ export default {
      * 获取当前参数值
      */
     getCurrentParamValue(param) {
-      if (!this.activeFilterId || !this.filterParameterValues[this.activeFilterId]) {
+      if (
+        !this.activeFilterId ||
+        !this.filterParameterValues[this.activeFilterId]
+      ) {
         return param.defaultValue;
       }
 
@@ -861,8 +908,12 @@ export default {
       this.activeToolId = event.toolId;
 
       // 添加历史记录
-      this.addHistoryItem(`tool-${event.toolId}`, `使用工具`, `使用${this.activeToolName}`);
-      console.log('工具点击:', event);
+      this.addHistoryItem(
+        `tool-${event.toolId}`,
+        `使用工具`,
+        `使用${this.activeToolName}`
+      );
+      console.log("工具点击:", event);
     },
 
     /**
@@ -880,7 +931,9 @@ export default {
      * 应用随机滤镜
      */
     applyRandomFilter() {
-      const randomIndex = Math.floor(Math.random() * this.availableFilters.length);
+      const randomIndex = Math.floor(
+        Math.random() * this.availableFilters.length
+      );
       const randomFilter = this.availableFilters[randomIndex];
       this.handleFilterSelect(randomFilter);
     },
@@ -889,8 +942,8 @@ export default {
      * 重置演示
      */
     resetIntegrated() {
-      this.activeToolId = 'select';
-      this.activeFilterId = '';
+      this.activeToolId = "select";
+      this.activeFilterId = "";
       this.filterParameterValues = {};
       this.currentScale = 1;
       this.editorLoading = false;
@@ -899,9 +952,9 @@ export default {
       this.historyItems = [this.historyItems[0]];
       this.activeHistoryIndex = 0;
 
-      console.log('演示已重置');
-    }
-  }
+      console.log("演示已重置");
+    },
+  },
 };
 </script>
 

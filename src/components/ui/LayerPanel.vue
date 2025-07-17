@@ -3,7 +3,7 @@
     <div class="panel-header" v-if="showHeader">
       <h3 class="panel-title">{{ title }}</h3>
       <div class="panel-actions">
-        <button 
+        <button
           class="add-layer-button"
           @click="handleAddLayer"
           :disabled="disabled"
@@ -11,9 +11,9 @@
         >
           <i class="icon-plus"></i>
         </button>
-        
-        <button 
-          v-if="showDeleteButton && selectedLayers.length > 0" 
+
+        <button
+          v-if="showDeleteButton && selectedLayers.length > 0"
           class="delete-layer-button"
           @click="handleDeleteLayers"
           :disabled="disabled"
@@ -23,7 +23,7 @@
         </button>
       </div>
     </div>
-    
+
     <div class="panel-content">
       <!-- 图层列表 -->
       <div class="layers-list" ref="layersList">
@@ -41,36 +41,39 @@
             v-for="(layer, index) in layersData"
             :key="getLayerKey(layer, index)"
             class="layer-item"
-            :class="{ 
-              'active': isLayerSelected(layer),
-              'disabled': layer.locked || disabled,
-              'hidden': !layer.visible
+            :class="{
+              active: isLayerSelected(layer),
+              disabled: layer.locked || disabled,
+              hidden: !layer.visible,
             }"
             @click="handleLayerClick(layer, $event)"
             @contextmenu="handleLayerContextMenu(layer, $event)"
           >
             <!-- 图层缩略图 -->
             <div class="layer-thumbnail">
-              <img 
-                v-if="layer.thumbnail" 
-                :src="layer.thumbnail" 
+              <img
+                v-if="layer.thumbnail"
+                :src="layer.thumbnail"
                 :alt="layer.name"
                 class="thumbnail-image"
               />
               <div v-else class="thumbnail-placeholder">
                 <i :class="`icon-${layer.type || 'layer'}`"></i>
               </div>
-              
+
               <!-- 图层类型标识 -->
-              <div v-if="layer.type && layer.type !== 'image'" class="layer-type-badge">
+              <div
+                v-if="layer.type && layer.type !== 'image'"
+                class="layer-type-badge"
+              >
                 <i :class="`icon-${layer.type}`"></i>
               </div>
             </div>
-            
+
             <!-- 图层信息 -->
             <div class="layer-info">
               <div class="layer-name-container">
-                <input 
+                <input
                   v-if="editingLayerId === layer.id"
                   type="text"
                   class="layer-name-input"
@@ -80,7 +83,7 @@
                   @keyup.esc="handleNameEditCancel"
                   ref="nameInput"
                 />
-                <div 
+                <div
                   v-else
                   class="layer-name"
                   @dblclick="handleNameEdit(layer)"
@@ -88,30 +91,34 @@
                   {{ layer.name }}
                 </div>
               </div>
-              
+
               <div class="layer-details">
-                <span class="layer-blend-mode">{{ getBlendModeName(layer.blendMode) }}</span>
-                <span class="layer-opacity">{{ Math.round(layer.opacity * 100) }}%</span>
+                <span class="layer-blend-mode">{{
+                  getBlendModeName(layer.blendMode)
+                }}</span>
+                <span class="layer-opacity"
+                  >{{ Math.round(layer.opacity * 100) }}%</span
+                >
               </div>
             </div>
-            
+
             <!-- 图层控制 -->
             <div class="layer-controls">
               <!-- 可见性控制 -->
-              <button 
+              <button
                 class="visibility-button"
-                :class="{ 'visible': layer.visible }"
+                :class="{ visible: layer.visible }"
                 @click.stop="handleVisibilityToggle(layer)"
                 :disabled="disabled"
                 :title="layer.visible ? '隐藏图层' : '显示图层'"
               >
                 <i :class="layer.visible ? 'icon-eye' : 'icon-eye-off'"></i>
               </button>
-              
+
               <!-- 锁定控制 -->
-              <button 
+              <button
                 class="lock-button"
-                :class="{ 'locked': layer.locked }"
+                :class="{ locked: layer.locked }"
                 @click.stop="handleLockToggle(layer)"
                 :disabled="disabled"
                 :title="layer.locked ? '解锁图层' : '锁定图层'"
@@ -122,7 +129,7 @@
           </div>
         </draggable>
       </div>
-      
+
       <!-- 空状态 -->
       <div v-if="layersData.length === 0" class="empty-state">
         <i class="icon-layers"></i>
@@ -132,40 +139,42 @@
         </button>
       </div>
     </div>
-    
+
     <!-- 图层属性面板 -->
     <div v-if="showProperties && selectedLayer" class="layer-properties">
       <h4 class="properties-title">图层属性</h4>
-      
+
       <!-- 不透明度控制 -->
       <div class="property-group">
         <label>不透明度</label>
         <div class="opacity-control">
-          <input 
-            type="range" 
+          <input
+            type="range"
             class="opacity-slider"
             :value="selectedLayer.opacity * 100"
-            min="0" 
-            max="100" 
+            min="0"
+            max="100"
             step="1"
             @input="handleOpacityChange"
             :disabled="disabled || selectedLayer.locked"
           />
-          <span class="opacity-value">{{ Math.round(selectedLayer.opacity * 100) }}%</span>
+          <span class="opacity-value"
+            >{{ Math.round(selectedLayer.opacity * 100) }}%</span
+          >
         </div>
       </div>
-      
+
       <!-- 混合模式控制 -->
       <div class="property-group">
         <label>混合模式</label>
-        <select 
+        <select
           class="blend-mode-select"
           :value="selectedLayer.blendMode"
           @change="handleBlendModeChange"
           :disabled="disabled || selectedLayer.locked"
         >
-          <option 
-            v-for="mode in blendModes" 
+          <option
+            v-for="mode in blendModes"
             :key="mode.value"
             :value="mode.value"
           >
@@ -173,12 +182,12 @@
           </option>
         </select>
       </div>
-      
+
       <!-- 图层操作 -->
       <div class="property-group">
         <label>操作</label>
         <div class="layer-actions">
-          <button 
+          <button
             class="action-button"
             @click="handleDuplicateLayer"
             :disabled="disabled || selectedLayer.locked"
@@ -186,8 +195,8 @@
             <i class="icon-copy"></i>
             <span>复制</span>
           </button>
-          
-          <button 
+
+          <button
             class="action-button"
             @click="handleMergeDown"
             :disabled="disabled || selectedLayer.locked || !canMergeDown"
@@ -195,8 +204,8 @@
             <i class="icon-merge"></i>
             <span>向下合并</span>
           </button>
-          
-          <button 
+
+          <button
             class="action-button"
             @click="handleFlattenLayer"
             :disabled="disabled || selectedLayer.locked"
@@ -207,10 +216,10 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 右键菜单 -->
-    <div 
-      v-if="showContextMenu" 
+    <div
+      v-if="showContextMenu"
       class="context-menu"
       :style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
       ref="contextMenu"
@@ -224,7 +233,11 @@
         <span>删除图层</span>
       </div>
       <div class="menu-separator"></div>
-      <div class="menu-item" @click="handleMergeDown" :class="{ 'disabled': !canMergeDown }">
+      <div
+        class="menu-item"
+        @click="handleMergeDown"
+        :class="{ disabled: !canMergeDown }"
+      >
         <i class="icon-merge"></i>
         <span>向下合并</span>
       </div>
@@ -242,7 +255,7 @@
         <span>移到底层</span>
       </div>
     </div>
-    
+
     <!-- 确认对话框 -->
     <div v-if="showConfirmDialog" class="confirm-dialog">
       <div class="dialog-content">
@@ -262,157 +275,161 @@
 </template>
 
 <script>
-import draggable from 'vuedraggable';
+import draggable from "vuedraggable";
 
 export default {
-  name: 'LayerPanel',
+  name: "LayerPanel",
   components: {
-    draggable
+    draggable,
   },
-  
+
   props: {
     // 面板标题
     title: {
       type: String,
-      default: '图层'
+      default: "图层",
     },
-    
+
     // 图层数据
     layers: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 选中的图层ID
     selectedLayerIds: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
-    
+
     // 显示选项
     showHeader: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showDeleteButton: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showProperties: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    
+
     // 文本选项
     emptyText: {
       type: String,
-      default: '暂无图层'
+      default: "暂无图层",
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'compact', 'minimal'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "compact", "minimal"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 图层数据副本（用于拖拽排序）
       layersData: [],
-      
+
       // 编辑状态
-      editingLayerId: '',
-      editingLayerName: '',
-      
+      editingLayerId: "",
+      editingLayerName: "",
+
       // 右键菜单
       showContextMenu: false,
       contextMenuX: 0,
       contextMenuY: 0,
       contextMenuLayer: null,
-      
+
       // 确认对话框
       showConfirmDialog: false,
-      confirmDialogTitle: '',
-      confirmDialogMessage: '',
+      confirmDialogTitle: "",
+      confirmDialogMessage: "",
       confirmDialogCallback: null,
-      
+
       // 混合模式选项
       blendModes: [
-        { value: 'normal', name: '正常' },
-        { value: 'multiply', name: '正片叠底' },
-        { value: 'screen', name: '滤色' },
-        { value: 'overlay', name: '叠加' },
-        { value: 'soft-light', name: '柔光' },
-        { value: 'hard-light', name: '强光' },
-        { value: 'color-dodge', name: '颜色减淡' },
-        { value: 'color-burn', name: '颜色加深' },
-        { value: 'darken', name: '变暗' },
-        { value: 'lighten', name: '变亮' },
-        { value: 'difference', name: '差值' },
-        { value: 'exclusion', name: '排除' }
-      ]
+        { value: "normal", name: "正常" },
+        { value: "multiply", name: "正片叠底" },
+        { value: "screen", name: "滤色" },
+        { value: "overlay", name: "叠加" },
+        { value: "soft-light", name: "柔光" },
+        { value: "hard-light", name: "强光" },
+        { value: "color-dodge", name: "颜色减淡" },
+        { value: "color-burn", name: "颜色加深" },
+        { value: "darken", name: "变暗" },
+        { value: "lighten", name: "变亮" },
+        { value: "difference", name: "差值" },
+        { value: "exclusion", name: "排除" },
+      ],
     };
   },
-  
+
   computed: {
     panelClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled
+        disabled: this.disabled,
       };
     },
-    
+
     // 选中的图层
     selectedLayers() {
-      return this.layersData.filter(layer => this.selectedLayerIds.includes(layer.id));
+      return this.layersData.filter((layer) =>
+        this.selectedLayerIds.includes(layer.id)
+      );
     },
-    
+
     // 当前选中的单个图层
     selectedLayer() {
       return this.selectedLayers.length === 1 ? this.selectedLayers[0] : null;
     },
-    
+
     // 是否可以向下合并
     canMergeDown() {
       if (!this.selectedLayer) return false;
-      
-      const index = this.layersData.findIndex(layer => layer.id === this.selectedLayer.id);
+
+      const index = this.layersData.findIndex(
+        (layer) => layer.id === this.selectedLayer.id
+      );
       return index < this.layersData.length - 1;
-    }
+    },
   },
-  
+
   watch: {
     layers: {
       immediate: true,
       deep: true,
       handler(newLayers) {
         this.layersData = [...newLayers];
-      }
+      },
     },
-    
+
     layersData: {
       deep: true,
       handler(newLayers) {
-        this.$emit('layers-change', newLayers);
-      }
-    }
+        this.$emit("layers-change", newLayers);
+      },
+    },
   },
-  
+
   mounted() {
     // 监听全局点击事件，用于关闭右键菜单
-    document.addEventListener('click', this.handleDocumentClick);
+    document.addEventListener("click", this.handleDocumentClick);
   },
-  
+
   beforeDestroy() {
-    document.removeEventListener('click', this.handleDocumentClick);
+    document.removeEventListener("click", this.handleDocumentClick);
   },
 
   methods: {
@@ -426,15 +443,21 @@ export default {
       // 确保返回原始值（字符串或数字）
       if (layer && layer.id !== null && layer.id !== undefined) {
         // 如果id是对象或数组，转换为字符串
-        if (typeof layer.id === 'object') {
-          console.warn('LayerPanel: layer.id is not a primitive value, converting to string:', layer.id);
+        if (typeof layer.id === "object") {
+          console.warn(
+            "LayerPanel: layer.id is not a primitive value, converting to string:",
+            layer.id
+          );
           return `layer-${JSON.stringify(layer.id)}-${index}`;
         }
         // 确保id是字符串
         return String(layer.id);
       }
       // 如果没有有效的id，使用索引作为fallback
-      console.warn('LayerPanel: layer.id is missing or invalid, using index as key:', layer);
+      console.warn(
+        "LayerPanel: layer.id is missing or invalid, using index as key:",
+        layer
+      );
       return `layer-fallback-${index}`;
     },
 
@@ -456,19 +479,25 @@ export default {
         }
       } else if (event.shiftKey && selectedIds.length > 0) {
         // Shift + 点击：范围选择
-        const lastSelectedIndex = this.layersData.findIndex(l => l.id === selectedIds[selectedIds.length - 1]);
-        const currentIndex = this.layersData.findIndex(l => l.id === layer.id);
+        const lastSelectedIndex = this.layersData.findIndex(
+          (l) => l.id === selectedIds[selectedIds.length - 1]
+        );
+        const currentIndex = this.layersData.findIndex(
+          (l) => l.id === layer.id
+        );
 
         const startIndex = Math.min(lastSelectedIndex, currentIndex);
         const endIndex = Math.max(lastSelectedIndex, currentIndex);
 
-        selectedIds = this.layersData.slice(startIndex, endIndex + 1).map(l => l.id);
+        selectedIds = this.layersData
+          .slice(startIndex, endIndex + 1)
+          .map((l) => l.id);
       } else {
         // 普通点击：单选
         selectedIds = [layer.id];
       }
 
-      this.$emit('layer-select', selectedIds);
+      this.$emit("layer-select", selectedIds);
     },
 
     /**
@@ -481,7 +510,7 @@ export default {
 
       // 如果右键的图层没有被选中，则选中它
       if (!this.selectedLayerIds.includes(layer.id)) {
-        this.$emit('layer-select', [layer.id]);
+        this.$emit("layer-select", [layer.id]);
       }
 
       this.contextMenuLayer = layer;
@@ -494,7 +523,11 @@ export default {
      * 处理文档点击（关闭右键菜单）
      */
     handleDocumentClick(event) {
-      if (this.showContextMenu && this.$refs.contextMenu && !this.$refs.contextMenu.contains(event.target)) {
+      if (
+        this.showContextMenu &&
+        this.$refs.contextMenu &&
+        !this.$refs.contextMenu.contains(event.target)
+      ) {
         this.showContextMenu = false;
       }
     },
@@ -512,9 +545,9 @@ export default {
     handleVisibilityToggle(layer) {
       if (this.disabled) return;
 
-      this.$emit('layer-visibility-change', {
+      this.$emit("layer-visibility-change", {
         layerId: layer.id,
-        visible: !layer.visible
+        visible: !layer.visible,
       });
     },
 
@@ -524,9 +557,9 @@ export default {
     handleLockToggle(layer) {
       if (this.disabled) return;
 
-      this.$emit('layer-lock-change', {
+      this.$emit("layer-lock-change", {
         layerId: layer.id,
-        locked: !layer.locked
+        locked: !layer.locked,
       });
     },
 
@@ -534,12 +567,13 @@ export default {
      * 处理不透明度变化
      */
     handleOpacityChange(event) {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked) return;
+      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked)
+        return;
 
       const opacity = parseFloat(event.target.value) / 100;
-      this.$emit('layer-opacity-change', {
+      this.$emit("layer-opacity-change", {
         layerId: this.selectedLayer.id,
-        opacity
+        opacity,
       });
     },
 
@@ -547,11 +581,12 @@ export default {
      * 处理混合模式变化
      */
     handleBlendModeChange(event) {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked) return;
+      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked)
+        return;
 
-      this.$emit('layer-blend-mode-change', {
+      this.$emit("layer-blend-mode-change", {
         layerId: this.selectedLayer.id,
-        blendMode: event.target.value
+        blendMode: event.target.value,
       });
     },
 
@@ -577,22 +612,22 @@ export default {
      */
     handleNameEditComplete() {
       if (this.editingLayerId && this.editingLayerName.trim()) {
-        this.$emit('layer-name-change', {
+        this.$emit("layer-name-change", {
           layerId: this.editingLayerId,
-          name: this.editingLayerName.trim()
+          name: this.editingLayerName.trim(),
         });
       }
 
-      this.editingLayerId = '';
-      this.editingLayerName = '';
+      this.editingLayerId = "";
+      this.editingLayerName = "";
     },
 
     /**
      * 处理名称编辑取消
      */
     handleNameEditCancel() {
-      this.editingLayerId = '';
-      this.editingLayerName = '';
+      this.editingLayerId = "";
+      this.editingLayerName = "";
     },
 
     /**
@@ -601,7 +636,7 @@ export default {
     handleAddLayer() {
       if (this.disabled) return;
 
-      this.$emit('layer-add');
+      this.$emit("layer-add");
     },
 
     /**
@@ -610,13 +645,15 @@ export default {
     handleDeleteLayers() {
       if (this.disabled || this.selectedLayers.length === 0) return;
 
-      const layerNames = this.selectedLayers.map(layer => layer.name).join('、');
+      const layerNames = this.selectedLayers
+        .map((layer) => layer.name)
+        .join("、");
 
       this.showConfirmDialog = true;
-      this.confirmDialogTitle = '删除图层';
+      this.confirmDialogTitle = "删除图层";
       this.confirmDialogMessage = `确定要删除图层"${layerNames}"吗？此操作无法撤销。`;
       this.confirmDialogCallback = () => {
-        this.$emit('layer-delete', this.selectedLayerIds);
+        this.$emit("layer-delete", this.selectedLayerIds);
         this.showContextMenu = false;
       };
     },
@@ -625,9 +662,10 @@ export default {
      * 处理复制图层
      */
     handleDuplicateLayer() {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked) return;
+      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked)
+        return;
 
-      this.$emit('layer-duplicate', this.selectedLayer.id);
+      this.$emit("layer-duplicate", this.selectedLayer.id);
       this.showContextMenu = false;
     },
 
@@ -635,9 +673,15 @@ export default {
      * 处理向下合并
      */
     handleMergeDown() {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked || !this.canMergeDown) return;
+      if (
+        this.disabled ||
+        !this.selectedLayer ||
+        this.selectedLayer.locked ||
+        !this.canMergeDown
+      )
+        return;
 
-      this.$emit('layer-merge-down', this.selectedLayer.id);
+      this.$emit("layer-merge-down", this.selectedLayer.id);
       this.showContextMenu = false;
     },
 
@@ -645,13 +689,14 @@ export default {
      * 处理拼合图层
      */
     handleFlattenLayer() {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked) return;
+      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked)
+        return;
 
       this.showConfirmDialog = true;
-      this.confirmDialogTitle = '拼合图层';
-      this.confirmDialogMessage = '确定要拼合所有可见图层吗？此操作无法撤销。';
+      this.confirmDialogTitle = "拼合图层";
+      this.confirmDialogMessage = "确定要拼合所有可见图层吗？此操作无法撤销。";
       this.confirmDialogCallback = () => {
-        this.$emit('layer-flatten');
+        this.$emit("layer-flatten");
         this.showContextMenu = false;
       };
     },
@@ -660,9 +705,10 @@ export default {
      * 处理图层移到顶层
      */
     handleLayerToTop() {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked) return;
+      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked)
+        return;
 
-      this.$emit('layer-move-to-top', this.selectedLayer.id);
+      this.$emit("layer-move-to-top", this.selectedLayer.id);
       this.showContextMenu = false;
     },
 
@@ -670,9 +716,10 @@ export default {
      * 处理图层移到底层
      */
     handleLayerToBottom() {
-      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked) return;
+      if (this.disabled || !this.selectedLayer || this.selectedLayer.locked)
+        return;
 
-      this.$emit('layer-move-to-bottom', this.selectedLayer.id);
+      this.$emit("layer-move-to-bottom", this.selectedLayer.id);
       this.showContextMenu = false;
     },
 
@@ -694,15 +741,15 @@ export default {
      * 处理图层重新排序
      */
     handleLayersReorder() {
-      this.$emit('layers-reorder', this.layersData);
+      this.$emit("layers-reorder", this.layersData);
     },
 
     /**
      * 获取混合模式名称
      */
     getBlendModeName(blendMode) {
-      const mode = this.blendModes.find(m => m.value === blendMode);
-      return mode ? mode.name : '正常';
+      const mode = this.blendModes.find((m) => m.value === blendMode);
+      return mode ? mode.name : "正常";
     },
 
     /**
@@ -721,8 +768,8 @@ export default {
         this.confirmDialogCallback();
       }
       this.showConfirmDialog = false;
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1323,22 +1370,72 @@ export default {
 }
 
 /* 图标样式 */
-.icon-plus::before { content: '+'; font-size: 16px; font-weight: bold; }
-.icon-trash::before { content: '🗑'; font-size: 14px; }
-.icon-eye::before { content: '👁'; font-size: 14px; }
-.icon-eye-off::before { content: '🙈'; font-size: 14px; }
-.icon-lock::before { content: '🔒'; font-size: 12px; }
-.icon-unlock::before { content: '🔓'; font-size: 12px; }
-.icon-layers::before { content: '📄'; font-size: 24px; }
-.icon-layer::before { content: '📄'; font-size: 16px; }
-.icon-image::before { content: '🖼'; font-size: 16px; }
-.icon-text::before { content: 'T'; font-size: 16px; font-weight: bold; }
-.icon-shape::before { content: '⬜'; font-size: 16px; }
-.icon-copy::before { content: '📋'; font-size: 12px; }
-.icon-merge::before { content: '⬇'; font-size: 12px; }
-.icon-flatten::before { content: '📐'; font-size: 12px; }
-.icon-to-top::before { content: '⬆'; font-size: 12px; }
-.icon-to-bottom::before { content: '⬇'; font-size: 12px; }
+.icon-plus::before {
+  content: "+";
+  font-size: 16px;
+  font-weight: bold;
+}
+.icon-trash::before {
+  content: "🗑";
+  font-size: 14px;
+}
+.icon-eye::before {
+  content: "👁";
+  font-size: 14px;
+}
+.icon-eye-off::before {
+  content: "🙈";
+  font-size: 14px;
+}
+.icon-lock::before {
+  content: "🔒";
+  font-size: 12px;
+}
+.icon-unlock::before {
+  content: "🔓";
+  font-size: 12px;
+}
+.icon-layers::before {
+  content: "📄";
+  font-size: 24px;
+}
+.icon-layer::before {
+  content: "📄";
+  font-size: 16px;
+}
+.icon-image::before {
+  content: "🖼";
+  font-size: 16px;
+}
+.icon-text::before {
+  content: "T";
+  font-size: 16px;
+  font-weight: bold;
+}
+.icon-shape::before {
+  content: "⬜";
+  font-size: 16px;
+}
+.icon-copy::before {
+  content: "📋";
+  font-size: 12px;
+}
+.icon-merge::before {
+  content: "⬇";
+  font-size: 12px;
+}
+.icon-flatten::before {
+  content: "📐";
+  font-size: 12px;
+}
+.icon-to-top::before {
+  content: "⬆";
+  font-size: 12px;
+}
+.icon-to-bottom::before {
+  content: "⬇";
+  font-size: 12px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

@@ -9,9 +9,25 @@
 export class BlendModeEngine {
   constructor() {
     this.supportedModes = [
-      'normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-light',
-      'color-dodge', 'color-burn', 'darken', 'lighten', 'difference', 'exclusion',
-      'hue', 'saturation', 'color', 'luminosity', 'add', 'subtract', 'divide'
+      "normal",
+      "multiply",
+      "screen",
+      "overlay",
+      "soft-light",
+      "hard-light",
+      "color-dodge",
+      "color-burn",
+      "darken",
+      "lighten",
+      "difference",
+      "exclusion",
+      "hue",
+      "saturation",
+      "color",
+      "luminosity",
+      "add",
+      "subtract",
+      "divide",
     ];
   }
 
@@ -30,7 +46,7 @@ export class BlendModeEngine {
 
     const width = Math.min(baseImageData.width, blendImageData.width);
     const height = Math.min(baseImageData.height, blendImageData.height);
-    
+
     const result = new ImageData(width, height);
     const baseData = baseImageData.data;
     const blendData = blendImageData.data;
@@ -58,9 +74,15 @@ export class BlendModeEngine {
       const finalAlpha = blendA * opacity;
       const invAlpha = 1 - finalAlpha;
 
-      resultData[i] = Math.round((blended.r * finalAlpha + baseR * invAlpha) * 255);
-      resultData[i + 1] = Math.round((blended.g * finalAlpha + baseG * invAlpha) * 255);
-      resultData[i + 2] = Math.round((blended.b * finalAlpha + baseB * invAlpha) * 255);
+      resultData[i] = Math.round(
+        (blended.r * finalAlpha + baseR * invAlpha) * 255
+      );
+      resultData[i + 1] = Math.round(
+        (blended.g * finalAlpha + baseG * invAlpha) * 255
+      );
+      resultData[i + 2] = Math.round(
+        (blended.b * finalAlpha + baseB * invAlpha) * 255
+      );
       resultData[i + 3] = Math.round(Math.max(baseA, finalAlpha) * 255);
     }
 
@@ -77,119 +99,119 @@ export class BlendModeEngine {
    */
   _applyBlendMode(base, blend, mode) {
     switch (mode) {
-      case 'normal':
+      case "normal":
         return blend;
 
-      case 'multiply':
+      case "multiply":
         return {
           r: base.r * blend.r,
           g: base.g * blend.g,
           b: base.b * blend.b,
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'screen':
+      case "screen":
         return {
           r: 1 - (1 - base.r) * (1 - blend.r),
           g: 1 - (1 - base.g) * (1 - blend.g),
           b: 1 - (1 - base.b) * (1 - blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'overlay':
+      case "overlay":
         return {
           r: this._overlayBlend(base.r, blend.r),
           g: this._overlayBlend(base.g, blend.g),
           b: this._overlayBlend(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'soft-light':
+      case "soft-light":
         return {
           r: this._softLightBlend(base.r, blend.r),
           g: this._softLightBlend(base.g, blend.g),
           b: this._softLightBlend(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'hard-light':
+      case "hard-light":
         return {
           r: this._hardLightBlend(base.r, blend.r),
           g: this._hardLightBlend(base.g, blend.g),
           b: this._hardLightBlend(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'color-dodge':
+      case "color-dodge":
         return {
           r: this._colorDodgeBlend(base.r, blend.r),
           g: this._colorDodgeBlend(base.g, blend.g),
           b: this._colorDodgeBlend(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'color-burn':
+      case "color-burn":
         return {
           r: this._colorBurnBlend(base.r, blend.r),
           g: this._colorBurnBlend(base.g, blend.g),
           b: this._colorBurnBlend(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'darken':
+      case "darken":
         return {
           r: Math.min(base.r, blend.r),
           g: Math.min(base.g, blend.g),
           b: Math.min(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'lighten':
+      case "lighten":
         return {
           r: Math.max(base.r, blend.r),
           g: Math.max(base.g, blend.g),
           b: Math.max(base.b, blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'difference':
+      case "difference":
         return {
           r: Math.abs(base.r - blend.r),
           g: Math.abs(base.g - blend.g),
           b: Math.abs(base.b - blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'exclusion':
+      case "exclusion":
         return {
           r: base.r + blend.r - 2 * base.r * blend.r,
           g: base.g + blend.g - 2 * base.g * blend.g,
           b: base.b + blend.b - 2 * base.b * blend.b,
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'add':
+      case "add":
         return {
           r: Math.min(1, base.r + blend.r),
           g: Math.min(1, base.g + blend.g),
           b: Math.min(1, base.b + blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'subtract':
+      case "subtract":
         return {
           r: Math.max(0, base.r - blend.r),
           g: Math.max(0, base.g - blend.g),
           b: Math.max(0, base.b - blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
-      case 'divide':
+      case "divide":
         return {
           r: blend.r === 0 ? 1 : Math.min(1, base.r / blend.r),
           g: blend.g === 0 ? 1 : Math.min(1, base.g / blend.g),
           b: blend.b === 0 ? 1 : Math.min(1, base.b / blend.b),
-          a: blend.a
+          a: blend.a,
         };
 
       default:
@@ -265,22 +287,31 @@ export class BlendModeEngine {
    * @returns {HTMLCanvasElement} 预览画布
    */
   getBlendPreview(blendMode, baseCanvas, blendCanvas, opacity = 1) {
-    const previewCanvas = document.createElement('canvas');
+    const previewCanvas = document.createElement("canvas");
     previewCanvas.width = Math.min(baseCanvas.width, blendCanvas.width);
     previewCanvas.height = Math.min(baseCanvas.height, blendCanvas.height);
-    
-    const ctx = previewCanvas.getContext('2d');
-    
+
+    const ctx = previewCanvas.getContext("2d");
+
     // 获取图像数据
-    const baseImageData = baseCanvas.getContext('2d').getImageData(0, 0, previewCanvas.width, previewCanvas.height);
-    const blendImageData = blendCanvas.getContext('2d').getImageData(0, 0, previewCanvas.width, previewCanvas.height);
-    
+    const baseImageData = baseCanvas
+      .getContext("2d")
+      .getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+    const blendImageData = blendCanvas
+      .getContext("2d")
+      .getImageData(0, 0, previewCanvas.width, previewCanvas.height);
+
     // 应用混合
-    const blendedImageData = this.blend(baseImageData, blendImageData, blendMode, opacity);
-    
+    const blendedImageData = this.blend(
+      baseImageData,
+      blendImageData,
+      blendMode,
+      opacity
+    );
+
     // 绘制结果
     ctx.putImageData(blendedImageData, 0, 0);
-    
+
     return previewCanvas;
   }
 

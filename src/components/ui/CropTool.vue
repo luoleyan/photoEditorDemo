@@ -5,19 +5,19 @@
       <div class="toolbar-section">
         <h3 class="toolbar-title">{{ title }}</h3>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 裁剪比例选择 -->
         <div class="aspect-ratio-selector">
           <label>比例:</label>
-          <select 
+          <select
             v-model="selectedAspectRatio"
             @change="handleAspectRatioChange"
             :disabled="disabled"
           >
             <option value="free">自由</option>
-            <option 
-              v-for="ratio in aspectRatios" 
+            <option
+              v-for="ratio in aspectRatios"
               :key="ratio.value"
               :value="ratio.value"
             >
@@ -25,18 +25,14 @@
             </option>
           </select>
         </div>
-        
+
         <!-- 网格线控制 -->
         <div class="grid-controls">
           <label>
-            <input 
-              type="checkbox" 
-              v-model="showGrid"
-              :disabled="disabled"
-            />
+            <input type="checkbox" v-model="showGrid" :disabled="disabled" />
             网格线
           </label>
-          
+
           <label>
             <input
               type="checkbox"
@@ -48,11 +44,11 @@
           </label>
         </div>
       </div>
-      
+
       <div class="toolbar-section">
         <!-- 操作按钮 -->
         <div class="action-buttons">
-          <button 
+          <button
             class="reset-button"
             @click="handleReset"
             :disabled="disabled"
@@ -60,8 +56,8 @@
             <i class="icon-reset"></i>
             <span>重置</span>
           </button>
-          
-          <button 
+
+          <button
             class="apply-button"
             @click="handleApply"
             :disabled="disabled || !hasCropArea"
@@ -69,8 +65,8 @@
             <i class="icon-crop"></i>
             <span>应用</span>
           </button>
-          
-          <button 
+
+          <button
             class="cancel-button"
             @click="handleCancel"
             :disabled="disabled"
@@ -81,16 +77,16 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 裁剪区域 -->
-    <div 
+    <div
       class="crop-container"
       ref="cropContainer"
       @mousedown="handleContainerMouseDown"
       @touchstart="handleContainerTouchStart"
     >
       <!-- 图像 -->
-      <img 
+      <img
         v-if="imageSrc"
         :src="imageSrc"
         class="crop-image"
@@ -99,9 +95,9 @@
         @error="handleImageError"
         alt="裁剪图像"
       />
-      
+
       <!-- 裁剪框 -->
-      <div 
+      <div
         v-if="cropArea && imageLoaded"
         class="crop-box"
         :style="cropBoxStyle"
@@ -110,7 +106,7 @@
       >
         <!-- 裁剪框边框 -->
         <div class="crop-border"></div>
-        
+
         <!-- 网格线 -->
         <div v-if="showGrid" class="crop-grid">
           <div class="grid-line grid-line-v" style="left: 33.33%"></div>
@@ -118,132 +114,134 @@
           <div class="grid-line grid-line-h" style="top: 33.33%"></div>
           <div class="grid-line grid-line-h" style="top: 66.67%"></div>
         </div>
-        
+
         <!-- 参考线 -->
         <div v-if="localShowGuides" class="crop-guides">
           <div class="guide-line guide-line-v" style="left: 50%"></div>
           <div class="guide-line guide-line-h" style="top: 50%"></div>
         </div>
-        
+
         <!-- 调整手柄 -->
         <div class="resize-handles">
           <!-- 角落手柄 -->
-          <div 
+          <div
             class="resize-handle corner-handle nw-handle"
             @mousedown="handleResizeStart('nw', $event)"
             @touchstart="handleResizeStart('nw', $event)"
           ></div>
-          <div 
+          <div
             class="resize-handle corner-handle ne-handle"
             @mousedown="handleResizeStart('ne', $event)"
             @touchstart="handleResizeStart('ne', $event)"
           ></div>
-          <div 
+          <div
             class="resize-handle corner-handle sw-handle"
             @mousedown="handleResizeStart('sw', $event)"
             @touchstart="handleResizeStart('sw', $event)"
           ></div>
-          <div 
+          <div
             class="resize-handle corner-handle se-handle"
             @mousedown="handleResizeStart('se', $event)"
             @touchstart="handleResizeStart('se', $event)"
           ></div>
-          
+
           <!-- 边缘手柄 -->
-          <div 
+          <div
             class="resize-handle edge-handle n-handle"
             @mousedown="handleResizeStart('n', $event)"
             @touchstart="handleResizeStart('n', $event)"
           ></div>
-          <div 
+          <div
             class="resize-handle edge-handle s-handle"
             @mousedown="handleResizeStart('s', $event)"
             @touchstart="handleResizeStart('s', $event)"
           ></div>
-          <div 
+          <div
             class="resize-handle edge-handle w-handle"
             @mousedown="handleResizeStart('w', $event)"
             @touchstart="handleResizeStart('w', $event)"
           ></div>
-          <div 
+          <div
             class="resize-handle edge-handle e-handle"
             @mousedown="handleResizeStart('e', $event)"
             @touchstart="handleResizeStart('e', $event)"
           ></div>
         </div>
-        
+
         <!-- 裁剪信息显示 -->
         <div v-if="showInfo" class="crop-info">
           {{ Math.round(cropArea.width) }} × {{ Math.round(cropArea.height) }}
         </div>
       </div>
-      
+
       <!-- 遮罩层 -->
       <div v-if="cropArea && imageLoaded" class="crop-overlay">
         <!-- 上遮罩 -->
-        <div 
+        <div
           class="overlay-section overlay-top"
           :style="{ height: cropArea.y + 'px' }"
         ></div>
-        
+
         <!-- 下遮罩 -->
-        <div 
+        <div
           class="overlay-section overlay-bottom"
-          :style="{ 
-            top: (cropArea.y + cropArea.height) + 'px',
-            height: (containerHeight - cropArea.y - cropArea.height) + 'px'
+          :style="{
+            top: cropArea.y + cropArea.height + 'px',
+            height: containerHeight - cropArea.y - cropArea.height + 'px',
           }"
         ></div>
-        
+
         <!-- 左遮罩 -->
-        <div 
+        <div
           class="overlay-section overlay-left"
-          :style="{ 
+          :style="{
             top: cropArea.y + 'px',
             height: cropArea.height + 'px',
-            width: cropArea.x + 'px'
+            width: cropArea.x + 'px',
           }"
         ></div>
-        
+
         <!-- 右遮罩 -->
-        <div 
+        <div
           class="overlay-section overlay-right"
-          :style="{ 
+          :style="{
             top: cropArea.y + 'px',
-            left: (cropArea.x + cropArea.width) + 'px',
+            left: cropArea.x + cropArea.width + 'px',
             height: cropArea.height + 'px',
-            width: (containerWidth - cropArea.x - cropArea.width) + 'px'
+            width: containerWidth - cropArea.x - cropArea.width + 'px',
           }"
         ></div>
       </div>
-      
+
       <!-- 加载指示器 -->
       <div v-if="loading" class="loading-indicator">
         <div class="spinner"></div>
         <div class="loading-text">{{ loadingText }}</div>
       </div>
-      
+
       <!-- 错误指示器 -->
       <div v-if="hasError" class="error-indicator">
         <div class="error-icon">!</div>
         <div class="error-text">{{ errorText }}</div>
       </div>
     </div>
-    
+
     <!-- 裁剪预设面板 -->
     <div v-if="showPresets && presets.length > 0" class="crop-presets">
       <h4 class="presets-title">预设尺寸</h4>
       <div class="presets-grid">
-        <button 
-          v-for="preset in presets" 
+        <button
+          v-for="preset in presets"
           :key="preset.id"
           class="preset-button"
-          :class="{ 'active': activePreset === preset.id }"
+          :class="{ active: activePreset === preset.id }"
           @click="applyPreset(preset)"
           :disabled="disabled"
         >
           <div class="preset-name">{{ preset.name }}</div>
-          <div class="preset-size">{{ preset.width }} × {{ preset.height }}</div>
+          <div class="preset-size">
+            {{ preset.width }} × {{ preset.height }}
+          </div>
         </button>
       </div>
     </div>
@@ -252,177 +250,191 @@
 
 <script>
 export default {
-  name: 'CropTool',
+  name: "CropTool",
   props: {
     // 工具标题
     title: {
       type: String,
-      default: '裁剪工具'
+      default: "裁剪工具",
     },
-    
+
     // 图像源
     imageSrc: {
       type: String,
-      default: ''
+      default: "",
     },
-    
+
     // 初始裁剪区域
     initialCropArea: {
       type: Object,
-      default: null
+      default: null,
     },
-    
+
     // 显示选项
     showToolbar: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showGrid: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showGuides: {
       type: Boolean,
-      default: false
+      default: false,
     },
     showInfo: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showPresets: {
       type: Boolean,
-      default: true
+      default: true,
     },
-    
+
     // 预设
     presets: {
       type: Array,
       default: () => [
-        { id: 'square', name: '正方形', width: 300, height: 300, aspectRatio: 1 },
-        { id: '4-3', name: '4:3', width: 400, height: 300, aspectRatio: 4/3 },
-        { id: '16-9', name: '16:9', width: 400, height: 225, aspectRatio: 16/9 },
-        { id: '3-2', name: '3:2', width: 300, height: 200, aspectRatio: 3/2 }
-      ]
+        {
+          id: "square",
+          name: "正方形",
+          width: 300,
+          height: 300,
+          aspectRatio: 1,
+        },
+        { id: "4-3", name: "4:3", width: 400, height: 300, aspectRatio: 4 / 3 },
+        {
+          id: "16-9",
+          name: "16:9",
+          width: 400,
+          height: 225,
+          aspectRatio: 16 / 9,
+        },
+        { id: "3-2", name: "3:2", width: 300, height: 200, aspectRatio: 3 / 2 },
+      ],
     },
-    
+
     // 状态
     disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     loadingText: {
       type: String,
-      default: '加载中...'
+      default: "加载中...",
     },
     hasError: {
       type: Boolean,
-      default: false
+      default: false,
     },
     errorText: {
       type: String,
-      default: '图像加载失败'
+      default: "图像加载失败",
     },
-    
+
     // 样式
     variant: {
       type: String,
-      default: 'default',
-      validator: value => ['default', 'minimal', 'compact'].includes(value)
-    }
+      default: "default",
+      validator: (value) => ["default", "minimal", "compact"].includes(value),
+    },
   },
-  
+
   data() {
     return {
       // 图像状态
       imageLoaded: false,
       imageWidth: 0,
       imageHeight: 0,
-      
+
       // 容器尺寸
       containerWidth: 0,
       containerHeight: 0,
-      
+
       // 裁剪区域
       cropArea: null,
-      
+
       // 交互状态
       isDragging: false,
       isResizing: false,
-      resizeDirection: '',
+      resizeDirection: "",
       dragStartX: 0,
       dragStartY: 0,
       dragStartCropArea: null,
-      
+
       // 比例设置
-      selectedAspectRatio: 'free',
+      selectedAspectRatio: "free",
       aspectRatios: [
-        { name: '1:1', value: '1:1' },
-        { name: '4:3', value: '4:3' },
-        { name: '3:2', value: '3:2' },
-        { name: '16:9', value: '16:9' },
-        { name: '2:1', value: '2:1' }
+        { name: "1:1", value: "1:1" },
+        { name: "4:3", value: "4:3" },
+        { name: "3:2", value: "3:2" },
+        { name: "16:9", value: "16:9" },
+        { name: "2:1", value: "2:1" },
       ],
-      
+
       // 活动预设
       activePreset: null,
 
       // 本地状态（避免直接变更props）
-      localShowGuides: false
+      localShowGuides: false,
     };
   },
-  
+
   computed: {
     cropClasses() {
       return {
         [`variant-${this.variant}`]: true,
-        'disabled': this.disabled,
-        'loading': this.loading,
-        'has-error': this.hasError
+        disabled: this.disabled,
+        loading: this.loading,
+        "has-error": this.hasError,
       };
     },
-    
+
     // 裁剪框样式
     cropBoxStyle() {
       if (!this.cropArea) return {};
-      
+
       return {
-        left: this.cropArea.x + 'px',
-        top: this.cropArea.y + 'px',
-        width: this.cropArea.width + 'px',
-        height: this.cropArea.height + 'px'
+        left: this.cropArea.x + "px",
+        top: this.cropArea.y + "px",
+        width: this.cropArea.width + "px",
+        height: this.cropArea.height + "px",
       };
     },
-    
+
     // 是否有裁剪区域
     hasCropArea() {
-      return this.cropArea && this.cropArea.width > 0 && this.cropArea.height > 0;
+      return (
+        this.cropArea && this.cropArea.width > 0 && this.cropArea.height > 0
+      );
     },
-    
+
     // 当前宽高比
     currentAspectRatio() {
-      if (this.selectedAspectRatio === 'free') return null;
-      
-      const [w, h] = this.selectedAspectRatio.split(':').map(Number);
+      if (this.selectedAspectRatio === "free") return null;
+
+      const [w, h] = this.selectedAspectRatio.split(":").map(Number);
       return w / h;
-    }
+    },
   },
-  
+
   watch: {
     imageSrc() {
       this.resetCrop();
     },
-    
+
     initialCropArea: {
       immediate: true,
       handler(newArea) {
         if (newArea && this.imageLoaded) {
           this.cropArea = { ...newArea };
         }
-      }
+      },
     },
 
     // 监听showGuides prop变化，同步到本地数据
@@ -430,31 +442,33 @@ export default {
       immediate: true,
       handler(newValue) {
         this.localShowGuides = newValue;
-      }
-    }
+      },
+    },
   },
-  
+
   mounted() {
     this.updateContainerSize();
-    
+
     // 监听窗口大小变化
-    window.addEventListener('resize', this.handleWindowResize);
-    
+    window.addEventListener("resize", this.handleWindowResize);
+
     // 监听全局鼠标和触摸事件
-    document.addEventListener('mousemove', this.handleMouseMove);
-    document.addEventListener('mouseup', this.handleMouseUp);
-    document.addEventListener('touchmove', this.handleTouchMove, { passive: false });
-    document.addEventListener('touchend', this.handleTouchEnd);
+    document.addEventListener("mousemove", this.handleMouseMove);
+    document.addEventListener("mouseup", this.handleMouseUp);
+    document.addEventListener("touchmove", this.handleTouchMove, {
+      passive: false,
+    });
+    document.addEventListener("touchend", this.handleTouchEnd);
   },
-  
+
   beforeDestroy() {
     // 移除事件监听器
-    window.removeEventListener('resize', this.handleWindowResize);
+    window.removeEventListener("resize", this.handleWindowResize);
 
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    document.removeEventListener('touchmove', this.handleTouchMove);
-    document.removeEventListener('touchend', this.handleTouchEnd);
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
+    document.removeEventListener("touchmove", this.handleTouchMove);
+    document.removeEventListener("touchend", this.handleTouchEnd);
   },
 
   methods: {
@@ -463,7 +477,7 @@ export default {
      */
     handleShowGuidesChange() {
       // 通知父组件参考线显示状态变化
-      this.$emit('show-guides-change', this.localShowGuides);
+      this.$emit("show-guides-change", this.localShowGuides);
     },
 
     /**
@@ -489,9 +503,9 @@ export default {
         // 初始化裁剪区域
         this.initializeCropArea();
 
-        this.$emit('image-loaded', {
+        this.$emit("image-loaded", {
           width: this.imageWidth,
-          height: this.imageHeight
+          height: this.imageHeight,
         });
       }
     },
@@ -501,7 +515,7 @@ export default {
      */
     handleImageError() {
       this.imageLoaded = false;
-      this.$emit('image-error');
+      this.$emit("image-error");
     },
 
     /**
@@ -525,7 +539,7 @@ export default {
           x: (containerRect.width - cropWidth) / 2,
           y: (containerRect.height - cropHeight) / 2,
           width: cropWidth,
-          height: cropHeight
+          height: cropHeight,
         };
       }
 
@@ -538,7 +552,7 @@ export default {
     resetCrop() {
       this.cropArea = null;
       this.imageLoaded = false;
-      this.selectedAspectRatio = 'free';
+      this.selectedAspectRatio = "free";
       this.activePreset = null;
     },
 
@@ -579,7 +593,7 @@ export default {
         x: x,
         y: y,
         width: 0,
-        height: 0
+        height: 0,
       };
 
       this.isDragging = true;
@@ -604,7 +618,7 @@ export default {
         x: x,
         y: y,
         width: 0,
-        height: 0
+        height: 0,
       };
 
       this.isDragging = true;
@@ -654,8 +668,10 @@ export default {
       this.isResizing = true;
       this.resizeDirection = direction;
 
-      const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-      const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+      const clientX =
+        event.clientX || (event.touches && event.touches[0].clientX);
+      const clientY =
+        event.clientY || (event.touches && event.touches[0].clientY);
 
       this.dragStartX = clientX;
       this.dragStartY = clientY;
@@ -750,38 +766,38 @@ export default {
 
       // 根据调整方向更新裁剪区域
       switch (this.resizeDirection) {
-        case 'nw':
+        case "nw":
           newArea.x += deltaX;
           newArea.y += deltaY;
           newArea.width -= deltaX;
           newArea.height -= deltaY;
           break;
-        case 'ne':
+        case "ne":
           newArea.y += deltaY;
           newArea.width += deltaX;
           newArea.height -= deltaY;
           break;
-        case 'sw':
+        case "sw":
           newArea.x += deltaX;
           newArea.width -= deltaX;
           newArea.height += deltaY;
           break;
-        case 'se':
+        case "se":
           newArea.width += deltaX;
           newArea.height += deltaY;
           break;
-        case 'n':
+        case "n":
           newArea.y += deltaY;
           newArea.height -= deltaY;
           break;
-        case 's':
+        case "s":
           newArea.height += deltaY;
           break;
-        case 'w':
+        case "w":
           newArea.x += deltaX;
           newArea.width -= deltaX;
           break;
-        case 'e':
+        case "e":
           newArea.width += deltaX;
           break;
       }
@@ -806,10 +822,10 @@ export default {
     applyAspectRatioConstraint(area, direction) {
       const aspectRatio = this.currentAspectRatio;
 
-      if (direction.includes('w') || direction.includes('e')) {
+      if (direction.includes("w") || direction.includes("e")) {
         // 水平调整，根据宽度调整高度
         area.height = area.width / aspectRatio;
-      } else if (direction.includes('n') || direction.includes('s')) {
+      } else if (direction.includes("n") || direction.includes("s")) {
         // 垂直调整，根据高度调整宽度
         area.width = area.height * aspectRatio;
       } else {
@@ -859,7 +875,7 @@ export default {
     handleMouseUp() {
       this.isDragging = false;
       this.isResizing = false;
-      this.resizeDirection = '';
+      this.resizeDirection = "";
       this.dragStartCropArea = null;
     },
 
@@ -869,7 +885,7 @@ export default {
     handleTouchEnd() {
       this.isDragging = false;
       this.isResizing = false;
-      this.resizeDirection = '';
+      this.resizeDirection = "";
       this.dragStartCropArea = null;
     },
 
@@ -887,10 +903,10 @@ export default {
       if (this.disabled) return;
 
       this.initializeCropArea();
-      this.selectedAspectRatio = 'free';
+      this.selectedAspectRatio = "free";
       this.activePreset = null;
 
-      this.$emit('reset');
+      this.$emit("reset");
     },
 
     /**
@@ -915,10 +931,10 @@ export default {
         width: this.cropArea.width * scaleX,
         height: this.cropArea.height * scaleY,
         originalWidth: this.imageWidth,
-        originalHeight: this.imageHeight
+        originalHeight: this.imageHeight,
       };
 
-      this.$emit('apply', cropData);
+      this.$emit("apply", cropData);
     },
 
     /**
@@ -927,7 +943,7 @@ export default {
     handleCancel() {
       if (this.disabled) return;
 
-      this.$emit('cancel');
+      this.$emit("cancel");
     },
 
     /**
@@ -961,13 +977,13 @@ export default {
         x: imageOffsetX + (imageRect.width - displayWidth) / 2,
         y: imageOffsetY + (imageRect.height - displayHeight) / 2,
         width: displayWidth,
-        height: displayHeight
+        height: displayHeight,
       };
 
       this.constrainCropArea();
       this.emitCropChange();
 
-      this.$emit('preset-applied', preset);
+      this.$emit("preset-applied", preset);
     },
 
     /**
@@ -976,14 +992,14 @@ export default {
     emitCropChange() {
       if (!this.cropArea) return;
 
-      this.$emit('crop-change', {
+      this.$emit("crop-change", {
         x: this.cropArea.x,
         y: this.cropArea.y,
         width: this.cropArea.width,
-        height: this.cropArea.height
+        height: this.cropArea.height,
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -1390,8 +1406,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 错误指示器 */
@@ -1495,9 +1515,18 @@ export default {
 }
 
 /* 图标样式 */
-.icon-reset::before { content: '↺'; font-size: 14px; }
-.icon-crop::before { content: '✂'; font-size: 14px; }
-.icon-close::before { content: '✕'; font-size: 14px; }
+.icon-reset::before {
+  content: "↺";
+  font-size: 14px;
+}
+.icon-crop::before {
+  content: "✂";
+  font-size: 14px;
+}
+.icon-close::before {
+  content: "✕";
+  font-size: 14px;
+}
 
 /* 响应式样式 */
 @media (max-width: 768px) {

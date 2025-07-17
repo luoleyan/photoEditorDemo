@@ -1,8 +1,8 @@
-import BaseImageEditorAdapter from './BaseImageEditorAdapter.js';
-import PerformanceOptimizer from '@/utils/PerformanceOptimizer.js';
-import { memoryManager } from '@/utils/MemoryManager.js';
-import { mobileAdapter } from '@/utils/MobileAdapter.js';
-import { fabric } from 'fabric';
+import BaseImageEditorAdapter from "./BaseImageEditorAdapter.js";
+import PerformanceOptimizer from "@/utils/PerformanceOptimizer.js";
+import { memoryManager } from "@/utils/MemoryManager.js";
+import { mobileAdapter } from "@/utils/MobileAdapter.js";
+import { fabric } from "fabric";
 
 /**
  * Fabric.js适配器实现
@@ -11,7 +11,7 @@ import { fabric } from 'fabric';
 class FabricAdapter extends BaseImageEditorAdapter {
   constructor() {
     super();
-    this.adapterType = 'fabric';
+    this.adapterType = "fabric";
     this.canvas = null;
     this.currentImage = null;
     this.originalImageData = null;
@@ -19,7 +19,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
     this.performanceMetrics = {
       renderTime: 0,
       lastRenderTime: Date.now(),
-      operationCount: 0
+      operationCount: 0,
     };
 
     // 性能优化器
@@ -44,12 +44,12 @@ class FabricAdapter extends BaseImageEditorAdapter {
     return {
       width: 800,
       height: 600,
-      backgroundColor: '#ffffff',
+      backgroundColor: "#ffffff",
       selection: true,
       preserveObjectStacking: true,
       imageSmoothingEnabled: true,
       allowTouchScrolling: false,
-      enableRetinaScaling: true
+      enableRetinaScaling: true,
     };
   }
 
@@ -59,40 +59,46 @@ class FabricAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doInitialize() {
-    return this._safeExecute(async () => {
-      // 检查Fabric.js是否已加载
-      if (typeof fabric === 'undefined' || !fabric.Canvas) {
-        throw new Error('Fabric.js library is not loaded');
-      }
+    return this._safeExecute(
+      async () => {
+        // 检查Fabric.js是否已加载
+        if (typeof fabric === "undefined" || !fabric.Canvas) {
+          throw new Error("Fabric.js library is not loaded");
+        }
 
-      // 创建canvas元素
-      const canvasElement = document.createElement('canvas');
-      canvasElement.id = `fabric-canvas-${Date.now()}`;
-      // 添加willReadFrequently属性以优化getImageData性能
-      const context = canvasElement.getContext('2d', { willReadFrequently: true });
-      this.container.appendChild(canvasElement);
+        // 创建canvas元素
+        const canvasElement = document.createElement("canvas");
+        canvasElement.id = `fabric-canvas-${Date.now()}`;
+        // 添加willReadFrequently属性以优化getImageData性能
+        const context = canvasElement.getContext("2d", {
+          willReadFrequently: true,
+        });
+        this.container.appendChild(canvasElement);
 
-      // 初始化Fabric.js Canvas
-      this.canvas = new fabric.Canvas(canvasElement, {
-        width: this.options.width,
-        height: this.options.height,
-        backgroundColor: this.options.backgroundColor,
-        selection: this.options.selection,
-        preserveObjectStacking: this.options.preserveObjectStacking,
-        imageSmoothingEnabled: this.options.imageSmoothingEnabled,
-        allowTouchScrolling: this.options.allowTouchScrolling,
-        enableRetinaScaling: this.options.enableRetinaScaling
-      });
+        // 初始化Fabric.js Canvas
+        this.canvas = new fabric.Canvas(canvasElement, {
+          width: this.options.width,
+          height: this.options.height,
+          backgroundColor: this.options.backgroundColor,
+          selection: this.options.selection,
+          preserveObjectStacking: this.options.preserveObjectStacking,
+          imageSmoothingEnabled: this.options.imageSmoothingEnabled,
+          allowTouchScrolling: this.options.allowTouchScrolling,
+          enableRetinaScaling: this.options.enableRetinaScaling,
+        });
 
-      // 设置事件监听
-      this._setupEventListeners();
+        // 设置事件监听
+        this._setupEventListeners();
 
-      // 优化性能设置
-      this._optimizePerformance();
+        // 优化性能设置
+        this._optimizePerformance();
 
-      // 移动端优化
-      this._setupMobileOptimizations();
-    }, 'initialize', { containerId: this.container.id || 'unknown' });
+        // 移动端优化
+        this._setupMobileOptimizations();
+      },
+      "initialize",
+      { containerId: this.container.id || "unknown" }
+    );
   }
 
   /**
@@ -108,10 +114,12 @@ class FabricAdapter extends BaseImageEditorAdapter {
       if (this._memoryCleanupCallback) {
         memoryManager.removeCleanupCallback(this._memoryCleanupCallback);
         this._memoryCleanupCallback = null;
-        console.log('FabricAdapter: Memory cleanup callback removed successfully');
+        console.log(
+          "FabricAdapter: Memory cleanup callback removed successfully"
+        );
       }
     } catch (error) {
-      console.warn('FabricAdapter: Failed to remove cleanup callback:', error);
+      console.warn("FabricAdapter: Failed to remove cleanup callback:", error);
     }
 
     if (this.canvas) {
@@ -125,7 +133,10 @@ class FabricAdapter extends BaseImageEditorAdapter {
       // 清理所有相关的图像内存分配
       const allocatedObjects = memoryManager.getAllocatedObjects();
       for (const [id, allocation] of allocatedObjects) {
-        if (id.startsWith(`fabric-image-${this.adapterType}`) && allocation.object === this.currentImage) {
+        if (
+          id.startsWith(`fabric-image-${this.adapterType}`) &&
+          allocation.object === this.currentImage
+        ) {
           memoryManager.deallocate(id);
           break;
         }
@@ -144,83 +155,97 @@ class FabricAdapter extends BaseImageEditorAdapter {
    * @protected
    */
   async _doLoadImage(imageData) {
-    return this._safeExecute(async () => {
-      // 验证图像数据
-      this._validateImageData(imageData);
+    return this._safeExecute(
+      async () => {
+        // 验证图像数据
+        this._validateImageData(imageData);
 
-      // 使用性能优化器优化图像加载
-      const optimizedImage = await this.performanceOptimizer.optimizeImageLoad(imageData.src, {
-        maxWidth: this.canvas.getWidth() * 2, // 允许2倍画布大小
-        maxHeight: this.canvas.getHeight() * 2,
-        quality: 0.9
-      });
-
-      return new Promise((resolve, reject) => {
-        fabric.Image.fromURL(optimizedImage.src, (img) => {
-          if (!img) {
-            reject(new Error('Failed to load image'));
-            return;
-          }
-
-          // 清除现有内容
-          this.canvas.clear();
-
-          // 计算适合画布的尺寸
-          const canvasWidth = this.canvas.getWidth();
-          const canvasHeight = this.canvas.getHeight();
-          const imgWidth = img.width;
-          const imgHeight = img.height;
-
-          const scaleX = canvasWidth / imgWidth;
-          const scaleY = canvasHeight / imgHeight;
-          const scale = Math.min(scaleX, scaleY, 1); // 不放大，只缩小
-
-          // 设置图像属性
-          img.set({
-            left: (canvasWidth - imgWidth * scale) / 2,
-            top: (canvasHeight - imgHeight * scale) / 2,
-            scaleX: scale,
-            scaleY: scale,
-            selectable: true,
-            evented: true
+        // 使用性能优化器优化图像加载
+        const optimizedImage =
+          await this.performanceOptimizer.optimizeImageLoad(imageData.src, {
+            maxWidth: this.canvas.getWidth() * 2, // 允许2倍画布大小
+            maxHeight: this.canvas.getHeight() * 2,
+            quality: 0.9,
           });
 
-          // 添加到画布
-          this.canvas.add(img);
-          this.canvas.setActiveObject(img);
-          this.canvas.renderAll();
+        return new Promise((resolve, reject) => {
+          fabric.Image.fromURL(
+            optimizedImage.src,
+            (img) => {
+              if (!img) {
+                reject(new Error("Failed to load image"));
+                return;
+              }
 
-          // 保存引用和原始数据
-          this.currentImage = img;
-          this.originalImageData = {
-            src: optimizedImage.src,
-            width: imgWidth,
-            height: imgHeight,
-            scale: scale,
-            left: img.left,
-            top: img.top,
-            optimized: optimizedImage.compressionRatio ? true : false,
-            originalSize: optimizedImage.originalSize,
-            compressedSize: optimizedImage.size
-          };
+              // 清除现有内容
+              this.canvas.clear();
 
-          // 注册内存使用
-          const estimatedSize = imgWidth * imgHeight * 4; // RGBA
-          const imageId = `fabric-image-${this.adapterType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          memoryManager.allocate(imageId, img, estimatedSize);
+              // 计算适合画布的尺寸
+              const canvasWidth = this.canvas.getWidth();
+              const canvasHeight = this.canvas.getHeight();
+              const imgWidth = img.width;
+              const imgHeight = img.height;
 
-          // 更新性能指标
-          this._updatePerformanceMetrics();
+              const scaleX = canvasWidth / imgWidth;
+              const scaleY = canvasHeight / imgHeight;
+              const scale = Math.min(scaleX, scaleY, 1); // 不放大，只缩小
 
-          resolve();
-        }, {
-          crossOrigin: 'anonymous'
+              // 设置图像属性
+              img.set({
+                left: (canvasWidth - imgWidth * scale) / 2,
+                top: (canvasHeight - imgHeight * scale) / 2,
+                scaleX: scale,
+                scaleY: scale,
+                selectable: true,
+                evented: true,
+              });
+
+              // 添加到画布
+              this.canvas.add(img);
+              this.canvas.setActiveObject(img);
+              this.canvas.renderAll();
+
+              // 保存引用和原始数据
+              this.currentImage = img;
+              this.originalImageData = {
+                src: optimizedImage.src,
+                width: imgWidth,
+                height: imgHeight,
+                scale: scale,
+                left: img.left,
+                top: img.top,
+                optimized: optimizedImage.compressionRatio ? true : false,
+                originalSize: optimizedImage.originalSize,
+                compressedSize: optimizedImage.size,
+              };
+
+              // 注册内存使用
+              const estimatedSize = imgWidth * imgHeight * 4; // RGBA
+              const imageId = `fabric-image-${
+                this.adapterType
+              }-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+              memoryManager.allocate(imageId, img, estimatedSize);
+
+              // 更新性能指标
+              this._updatePerformanceMetrics();
+
+              resolve();
+            },
+            {
+              crossOrigin: "anonymous",
+            }
+          );
         });
-      });
-    }, 'loadImage', {
-      imageSource: imageData.src,
-      canvasSize: { width: this.canvas.getWidth(), height: this.canvas.getHeight() }
-    });
+      },
+      "loadImage",
+      {
+        imageSource: imageData.src,
+        canvasSize: {
+          width: this.canvas.getWidth(),
+          height: this.canvas.getHeight(),
+        },
+      }
+    );
   }
 
   /**
@@ -232,7 +257,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doResize(width, height) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     const scaleX = width / this.currentImage.width;
@@ -240,7 +265,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
 
     this.currentImage.set({
       scaleX: scaleX,
-      scaleY: scaleY
+      scaleY: scaleY,
     });
 
     this.canvas.renderAll();
@@ -258,7 +283,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doCrop(x, y, width, height) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 创建裁剪矩形
@@ -267,11 +292,11 @@ class FabricAdapter extends BaseImageEditorAdapter {
       top: y,
       width: width,
       height: height,
-      absolutePositioned: true
+      absolutePositioned: true,
     });
 
     this.currentImage.set({
-      clipPath: clipPath
+      clipPath: clipPath,
     });
 
     this.canvas.renderAll();
@@ -286,11 +311,11 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doRotate(angle) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.set({
-      angle: angle
+      angle: angle,
     });
 
     this.canvas.renderAll();
@@ -306,18 +331,18 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doFlip(horizontal, vertical) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     if (horizontal) {
       this.currentImage.set({
-        flipX: !this.currentImage.flipX
+        flipX: !this.currentImage.flipX,
       });
     }
 
     if (vertical) {
       this.currentImage.set({
-        flipY: !this.currentImage.flipY
+        flipY: !this.currentImage.flipY,
       });
     }
 
@@ -333,16 +358,16 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doSetBrightness(value) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 移除现有的亮度滤镜
-    this._removeFilterByType('Brightness');
+    this._removeFilterByType("Brightness");
 
     // 添加新的亮度滤镜
     if (value !== 0) {
       const brightnessFilter = new fabric.Image.filters.Brightness({
-        brightness: value
+        brightness: value,
       });
       this.currentImage.filters.push(brightnessFilter);
     }
@@ -360,16 +385,16 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doSetContrast(value) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 移除现有的对比度滤镜
-    this._removeFilterByType('Contrast');
+    this._removeFilterByType("Contrast");
 
     // 添加新的对比度滤镜
     if (value !== 0) {
       const contrastFilter = new fabric.Image.filters.Contrast({
-        contrast: value
+        contrast: value,
       });
       this.currentImage.filters.push(contrastFilter);
     }
@@ -388,7 +413,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doApplyFilter(filterType, options = {}) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     // 移除现有的同类型滤镜
@@ -397,23 +422,23 @@ class FabricAdapter extends BaseImageEditorAdapter {
     // 创建新滤镜
     let filter = null;
     switch (filterType.toLowerCase()) {
-      case 'grayscale':
+      case "grayscale":
         filter = new fabric.Image.filters.Grayscale();
         break;
-      case 'sepia':
+      case "sepia":
         filter = new fabric.Image.filters.Sepia();
         break;
-      case 'invert':
+      case "invert":
         filter = new fabric.Image.filters.Invert();
         break;
-      case 'blur':
+      case "blur":
         filter = new fabric.Image.filters.Blur({
-          blur: options.blur || 0.1
+          blur: options.blur || 0.1,
         });
         break;
-      case 'noise':
+      case "noise":
         filter = new fabric.Image.filters.Noise({
-          noise: options.noise || 100
+          noise: options.noise || 100,
         });
         break;
       default:
@@ -436,7 +461,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doRemoveFilter(filterType) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this._removeFilterByType(filterType);
@@ -454,12 +479,12 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doSetScale(scaleX, scaleY) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.set({
       scaleX: scaleX,
-      scaleY: scaleY
+      scaleY: scaleY,
     });
 
     this.canvas.renderAll();
@@ -475,12 +500,12 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   async _doSetPosition(x, y) {
     if (!this.currentImage) {
-      throw new Error('No image loaded');
+      throw new Error("No image loaded");
     }
 
     this.currentImage.set({
       left: x,
-      top: y
+      top: y,
     });
 
     this.canvas.renderAll();
@@ -516,7 +541,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
     const state = {
       canvasState: JSON.stringify(this.canvas.toJSON()),
       timestamp: Date.now(),
-      imageData: this.originalImageData ? { ...this.originalImageData } : null
+      imageData: this.originalImageData ? { ...this.originalImageData } : null,
     };
     return state;
   }
@@ -534,17 +559,22 @@ class FabricAdapter extends BaseImageEditorAdapter {
     }
 
     return new Promise((resolve, reject) => {
-      this.canvas.loadFromJSON(state.canvasState, () => {
-        this.canvas.renderAll();
-        
-        // 重新获取当前图像引用
-        const objects = this.canvas.getObjects();
-        this.currentImage = objects.find(obj => obj.type === 'image') || null;
-        
-        resolve();
-      }, (o, object) => {
-        // 对象加载完成回调
-      });
+      this.canvas.loadFromJSON(
+        state.canvasState,
+        () => {
+          this.canvas.renderAll();
+
+          // 重新获取当前图像引用
+          const objects = this.canvas.getObjects();
+          this.currentImage =
+            objects.find((obj) => obj.type === "image") || null;
+
+          resolve();
+        },
+        (o, object) => {
+          // 对象加载完成回调
+        }
+      );
     });
   }
 
@@ -569,11 +599,11 @@ class FabricAdapter extends BaseImageEditorAdapter {
    * @returns {Promise<string>}
    * @protected
    */
-  async _doToDataURL(type = 'image/png', quality = 0.9) {
+  async _doToDataURL(type = "image/png", quality = 0.9) {
     return this.canvas.toDataURL({
-      format: type.replace('image/', ''),
+      format: type.replace("image/", ""),
       quality: quality,
-      multiplier: 1
+      multiplier: 1,
     });
   }
 
@@ -584,7 +614,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
    * @returns {Promise<Blob>}
    * @protected
    */
-  async _doToBlob(type = 'image/png', quality = 0.9) {
+  async _doToBlob(type = "image/png", quality = 0.9) {
     return new Promise((resolve) => {
       this.canvas.toCanvasElement().toBlob(resolve, type, quality);
     });
@@ -599,10 +629,12 @@ class FabricAdapter extends BaseImageEditorAdapter {
     return {
       ...this.performanceMetrics,
       canvasObjects: this.canvas ? this.canvas.getObjects().length : 0,
-      canvasSize: this.canvas ? {
-        width: this.canvas.getWidth(),
-        height: this.canvas.getHeight()
-      } : null
+      canvasSize: this.canvas
+        ? {
+            width: this.canvas.getWidth(),
+            height: this.canvas.getHeight(),
+          }
+        : null,
     };
   }
 
@@ -616,22 +648,22 @@ class FabricAdapter extends BaseImageEditorAdapter {
     if (!this.canvas) return;
 
     // 对象修改事件
-    this.canvas.on('object:modified', (e) => {
-      this.emit('object-modified', { target: e.target });
+    this.canvas.on("object:modified", (e) => {
+      this.emit("object-modified", { target: e.target });
       this._updatePerformanceMetrics();
     });
 
     // 对象选择事件
-    this.canvas.on('selection:created', (e) => {
-      this.emit('selection-created', { target: e.target });
+    this.canvas.on("selection:created", (e) => {
+      this.emit("selection-created", { target: e.target });
     });
 
-    this.canvas.on('selection:cleared', () => {
-      this.emit('selection-cleared');
+    this.canvas.on("selection:cleared", () => {
+      this.emit("selection-cleared");
     });
 
     // 渲染事件
-    this.canvas.on('after:render', () => {
+    this.canvas.on("after:render", () => {
       this._updatePerformanceMetrics();
     });
   }
@@ -659,8 +691,8 @@ class FabricAdapter extends BaseImageEditorAdapter {
     }
 
     // 设置选择样式
-    this.canvas.selectionColor = 'rgba(100, 149, 237, 0.3)';
-    this.canvas.selectionBorderColor = 'rgba(100, 149, 237, 0.8)';
+    this.canvas.selectionColor = "rgba(100, 149, 237, 0.3)";
+    this.canvas.selectionBorderColor = "rgba(100, 149, 237, 0.8)";
     this.canvas.selectionLineWidth = this.isMobile ? 3 : 2; // 移动端加粗选择线
 
     // 禁用不需要的功能以提升性能
@@ -682,7 +714,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
   _removeFilterByType(filterType) {
     if (!this.currentImage || !this.currentImage.filters) return;
 
-    this.currentImage.filters = this.currentImage.filters.filter(filter => {
+    this.currentImage.filters = this.currentImage.filters.filter((filter) => {
       return filter.type !== filterType;
     });
   }
@@ -693,7 +725,8 @@ class FabricAdapter extends BaseImageEditorAdapter {
    */
   _updatePerformanceMetrics() {
     const now = Date.now();
-    this.performanceMetrics.renderTime = now - this.performanceMetrics.lastRenderTime;
+    this.performanceMetrics.renderTime =
+      now - this.performanceMetrics.lastRenderTime;
     this.performanceMetrics.lastRenderTime = now;
     this.performanceMetrics.operationCount++;
   }
@@ -709,37 +742,40 @@ class FabricAdapter extends BaseImageEditorAdapter {
     mobileAdapter.optimizeCanvas(this.canvas.getElement());
 
     // 添加触摸支持
-    this.touchHandler = mobileAdapter.addTouchSupport(this.canvas.getElement(), {
-      enablePinch: true,
-      enablePan: true,
-      enableTap: true,
-      enableDoubleTap: true,
-      minScale: 0.1,
-      maxScale: 3
-    });
+    this.touchHandler = mobileAdapter.addTouchSupport(
+      this.canvas.getElement(),
+      {
+        enablePinch: true,
+        enablePan: true,
+        enableTap: true,
+        enableDoubleTap: true,
+        minScale: 0.1,
+        maxScale: 3,
+      }
+    );
 
     // 监听触摸事件
     if (this.touchHandler) {
-      this.canvas.getElement().addEventListener('touch-pinch', (e) => {
+      this.canvas.getElement().addEventListener("touch-pinch", (e) => {
         this._handleTouchPinch(e.detail);
       });
 
-      this.canvas.getElement().addEventListener('touch-pan', (e) => {
+      this.canvas.getElement().addEventListener("touch-pan", (e) => {
         this._handleTouchPan(e.detail);
       });
 
-      this.canvas.getElement().addEventListener('touch-doubletap', (e) => {
+      this.canvas.getElement().addEventListener("touch-doubletap", (e) => {
         this._handleTouchDoubleTap(e.detail);
       });
     }
 
     // 移动端特定设置
-    this.canvas.hoverCursor = 'default';
-    this.canvas.moveCursor = 'default';
-    this.canvas.defaultCursor = 'default';
+    this.canvas.hoverCursor = "default";
+    this.canvas.moveCursor = "default";
+    this.canvas.defaultCursor = "default";
 
     // 禁用右键菜单
-    this.canvas.getElement().addEventListener('contextmenu', (e) => {
+    this.canvas.getElement().addEventListener("contextmenu", (e) => {
       e.preventDefault();
     });
   }
@@ -758,7 +794,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
 
     this.currentImage.set({
       scaleX: newScale,
-      scaleY: newScale
+      scaleY: newScale,
     });
 
     this.canvas.renderAll();
@@ -776,7 +812,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
     const { x, y } = detail.transform;
     this.currentImage.set({
       left: this.currentImage.left + x,
-      top: this.currentImage.top + y
+      top: this.currentImage.top + y,
     });
 
     this.canvas.renderAll();
@@ -797,7 +833,7 @@ class FabricAdapter extends BaseImageEditorAdapter {
       left: canvasCenter.left,
       top: canvasCenter.top,
       scaleX: 1,
-      scaleY: 1
+      scaleY: 1,
     });
 
     this.canvas.renderAll();
@@ -812,42 +848,62 @@ class FabricAdapter extends BaseImageEditorAdapter {
     try {
       // 检查适配器是否已被销毁
       if (!this.stateHistory || !this.canvas) {
-        console.log('FabricAdapter: Adapter already destroyed, skipping memory cleanup');
+        console.log(
+          "FabricAdapter: Adapter already destroyed, skipping memory cleanup"
+        );
         return;
       }
 
       // 清理性能优化器缓存
-      if (this.performanceOptimizer && typeof this.performanceOptimizer.cleanupMemory === 'function') {
+      if (
+        this.performanceOptimizer &&
+        typeof this.performanceOptimizer.cleanupMemory === "function"
+      ) {
         try {
           this.performanceOptimizer.cleanupMemory();
         } catch (error) {
-          console.warn('FabricAdapter: Failed to cleanup performance optimizer:', error);
+          console.warn(
+            "FabricAdapter: Failed to cleanup performance optimizer:",
+            error
+          );
         }
       }
 
       // 安全清理状态历史
-      if (this.stateHistory && typeof this.stateHistory.size === 'number' && this.stateHistory.size > 10) {
+      if (
+        this.stateHistory &&
+        typeof this.stateHistory.size === "number" &&
+        this.stateHistory.size > 10
+      ) {
         try {
           const entries = Array.from(this.stateHistory.entries());
           const toDelete = entries.slice(0, this.stateHistory.size - 5);
           toDelete.forEach(([key]) => {
-            if (this.stateHistory && typeof this.stateHistory.delete === 'function') {
+            if (
+              this.stateHistory &&
+              typeof this.stateHistory.delete === "function"
+            ) {
               this.stateHistory.delete(key);
             }
           });
-          console.log(`FabricAdapter: Cleaned up ${toDelete.length} old state entries`);
+          console.log(
+            `FabricAdapter: Cleaned up ${toDelete.length} old state entries`
+          );
         } catch (error) {
-          console.warn('FabricAdapter: Failed to cleanup state history:', error);
+          console.warn(
+            "FabricAdapter: Failed to cleanup state history:",
+            error
+          );
         }
       }
 
       // 安全清理Canvas缓存
-      if (this.canvas && typeof this.canvas.getObjects === 'function') {
+      if (this.canvas && typeof this.canvas.getObjects === "function") {
         try {
           // 清理未使用的对象
           const objects = this.canvas.getObjects();
           let removedCount = 0;
-          objects.forEach(obj => {
+          objects.forEach((obj) => {
             if (obj !== this.currentImage && obj.opacity === 0) {
               this.canvas.remove(obj);
               removedCount++;
@@ -855,21 +911,26 @@ class FabricAdapter extends BaseImageEditorAdapter {
           });
 
           // 强制重新渲染以清理缓存
-          if (typeof this.canvas.renderAll === 'function') {
+          if (typeof this.canvas.renderAll === "function") {
             this.canvas.renderAll();
           }
 
           if (removedCount > 0) {
-            console.log(`FabricAdapter: Removed ${removedCount} unused canvas objects`);
+            console.log(
+              `FabricAdapter: Removed ${removedCount} unused canvas objects`
+            );
           }
         } catch (error) {
-          console.warn('FabricAdapter: Failed to cleanup canvas cache:', error);
+          console.warn("FabricAdapter: Failed to cleanup canvas cache:", error);
         }
       }
 
-      console.log('FabricAdapter: Memory cleanup completed successfully');
+      console.log("FabricAdapter: Memory cleanup completed successfully");
     } catch (error) {
-      console.error('FabricAdapter: Critical error during memory cleanup:', error);
+      console.error(
+        "FabricAdapter: Critical error during memory cleanup:",
+        error
+      );
       // 即使出错也不抛出异常，避免影响其他清理操作
     }
   }
@@ -887,20 +948,20 @@ class FabricAdapter extends BaseImageEditorAdapter {
   async addText(content, x, y, options = {}) {
     return this._safeExecute(async () => {
       if (!this.canvas) {
-        throw new Error('Canvas not initialized');
+        throw new Error("Canvas not initialized");
       }
 
       // 创建文本对象
       const textObject = new fabric.Text(content, {
         left: x,
         top: y,
-        fontFamily: options.fontFamily || 'Arial',
+        fontFamily: options.fontFamily || "Arial",
         fontSize: options.fontSize || 24,
-        fill: options.fill || options.color || '#000000',
-        textAlign: options.textAlign || 'left',
-        fontWeight: options.fontWeight || 'normal',
-        fontStyle: options.fontStyle || 'normal',
-        textDecoration: options.textDecoration || 'none',
+        fill: options.fill || options.color || "#000000",
+        textAlign: options.textAlign || "left",
+        fontWeight: options.fontWeight || "normal",
+        fontStyle: options.fontStyle || "normal",
+        textDecoration: options.textDecoration || "none",
         angle: options.angle || options.rotation || 0,
         scaleX: options.scaleX || options.scale || 1,
         scaleY: options.scaleY || options.scale || 1,
@@ -909,12 +970,14 @@ class FabricAdapter extends BaseImageEditorAdapter {
         strokeWidth: options.strokeWidth || 0,
         selectable: true,
         moveable: true,
-        editable: true
+        editable: true,
       });
 
       // 生成唯一ID
-      const textId = `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      textObject.set('id', textId);
+      const textId = `text-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      textObject.set("id", textId);
 
       // 添加到画布
       this.canvas.add(textObject);
@@ -936,10 +999,12 @@ class FabricAdapter extends BaseImageEditorAdapter {
   async removeText(textId) {
     return this._safeExecute(async () => {
       if (!this.canvas) {
-        throw new Error('Canvas not initialized');
+        throw new Error("Canvas not initialized");
       }
 
-      const textObject = this.canvas.getObjects().find(obj => obj.id === textId);
+      const textObject = this.canvas
+        .getObjects()
+        .find((obj) => obj.id === textId);
       if (textObject) {
         this.canvas.remove(textObject);
         this.canvas.renderAll();
@@ -957,34 +1022,46 @@ class FabricAdapter extends BaseImageEditorAdapter {
   async updateText(textId, options = {}) {
     return this._safeExecute(async () => {
       if (!this.canvas) {
-        throw new Error('Canvas not initialized');
+        throw new Error("Canvas not initialized");
       }
 
-      const textObject = this.canvas.getObjects().find(obj => obj.id === textId);
+      const textObject = this.canvas
+        .getObjects()
+        .find((obj) => obj.id === textId);
       if (textObject) {
         // 更新文本属性
-        if (options.content !== undefined) textObject.set('text', options.content);
-        if (options.fontFamily !== undefined) textObject.set('fontFamily', options.fontFamily);
-        if (options.fontSize !== undefined) textObject.set('fontSize', options.fontSize);
+        if (options.content !== undefined)
+          textObject.set("text", options.content);
+        if (options.fontFamily !== undefined)
+          textObject.set("fontFamily", options.fontFamily);
+        if (options.fontSize !== undefined)
+          textObject.set("fontSize", options.fontSize);
         if (options.fill !== undefined || options.color !== undefined) {
-          textObject.set('fill', options.fill || options.color);
+          textObject.set("fill", options.fill || options.color);
         }
-        if (options.textAlign !== undefined) textObject.set('textAlign', options.textAlign);
-        if (options.fontWeight !== undefined) textObject.set('fontWeight', options.fontWeight);
-        if (options.fontStyle !== undefined) textObject.set('fontStyle', options.fontStyle);
-        if (options.textDecoration !== undefined) textObject.set('textDecoration', options.textDecoration);
+        if (options.textAlign !== undefined)
+          textObject.set("textAlign", options.textAlign);
+        if (options.fontWeight !== undefined)
+          textObject.set("fontWeight", options.fontWeight);
+        if (options.fontStyle !== undefined)
+          textObject.set("fontStyle", options.fontStyle);
+        if (options.textDecoration !== undefined)
+          textObject.set("textDecoration", options.textDecoration);
         if (options.angle !== undefined || options.rotation !== undefined) {
-          textObject.set('angle', options.angle || options.rotation);
+          textObject.set("angle", options.angle || options.rotation);
         }
         if (options.scaleX !== undefined || options.scale !== undefined) {
-          textObject.set('scaleX', options.scaleX || options.scale);
+          textObject.set("scaleX", options.scaleX || options.scale);
         }
         if (options.scaleY !== undefined || options.scale !== undefined) {
-          textObject.set('scaleY', options.scaleY || options.scale);
+          textObject.set("scaleY", options.scaleY || options.scale);
         }
-        if (options.shadow !== undefined) textObject.set('shadow', options.shadow);
-        if (options.stroke !== undefined) textObject.set('stroke', options.stroke);
-        if (options.strokeWidth !== undefined) textObject.set('strokeWidth', options.strokeWidth);
+        if (options.shadow !== undefined)
+          textObject.set("shadow", options.shadow);
+        if (options.stroke !== undefined)
+          textObject.set("stroke", options.stroke);
+        if (options.strokeWidth !== undefined)
+          textObject.set("strokeWidth", options.strokeWidth);
 
         textObject.setCoords();
         this.canvas.renderAll();

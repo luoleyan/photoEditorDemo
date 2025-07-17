@@ -6,10 +6,10 @@ import {
   serializeState,
   deserializeState,
   compareStates,
-  getStateDiff
-} from './ImageEditorState.js';
-import { errorHandler } from '@/utils/ErrorHandler.js';
-import { memoryManager } from '@/utils/MemoryManager.js';
+  getStateDiff,
+} from "./ImageEditorState.js";
+import { errorHandler } from "@/utils/ErrorHandler.js";
+import { memoryManager } from "@/utils/MemoryManager.js";
 
 /**
  * 状态管理器
@@ -24,9 +24,9 @@ class StateManager {
       maxStates: options.maxStates || 100,
       autoSave: options.autoSave || false,
       autoSaveInterval: options.autoSaveInterval || 30000, // 30秒
-      enableCompression: options.enableCompression || false
+      enableCompression: options.enableCompression || false,
     };
-    
+
     // 初始化自动保存
     if (this.options.autoSave) {
       this._startAutoSave();
@@ -40,19 +40,19 @@ class StateManager {
    * @param {string} description - 状态描述
    * @returns {string} 状态ID
    */
-  createState(libraryType, imageData = null, description = 'Initial state') {
+  createState(libraryType, imageData = null, description = "Initial state") {
     const state = createDefaultImageEditorState(libraryType, imageData);
     state.metadata.description = description;
-    
+
     this.states.set(state.id, state);
     this.currentStateId = state.id;
-    
+
     // 限制状态数量
     this._limitStatesCount();
-    
+
     // 触发状态变更回调
-    this._notifyStateChange('created', state);
-    
+    this._notifyStateChange("created", state);
+
     return state.id;
   }
 
@@ -63,40 +63,40 @@ class StateManager {
    * @param {string} description - 操作描述
    * @returns {string} 新状态ID
    */
-  updateState(updates, actionType = 'update', description = 'State updated') {
+  updateState(updates, actionType = "update", description = "State updated") {
     if (!this.currentStateId) {
-      throw new Error('No current state to update');
+      throw new Error("No current state to update");
     }
-    
+
     const currentState = this.getState(this.currentStateId);
     if (!currentState) {
       throw new Error(`Current state not found: ${this.currentStateId}`);
     }
-    
+
     // 创建新状态
     const newState = mergeStateUpdates(currentState, updates);
     newState.metadata.lastOperation = {
       type: actionType,
       description: description,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     // 验证新状态
     if (!validateImageEditorState(newState)) {
-      throw new Error('Invalid state update');
+      throw new Error("Invalid state update");
     }
-    
+
     // 保存新状态
     this.states.set(newState.id, newState);
     const previousStateId = this.currentStateId;
     this.currentStateId = newState.id;
-    
+
     // 限制状态数量
     this._limitStatesCount();
-    
+
     // 触发状态变更回调
-    this._notifyStateChange('updated', newState, previousStateId);
-    
+    this._notifyStateChange("updated", newState, previousStateId);
+
     return newState.id;
   }
 
@@ -128,13 +128,13 @@ class StateManager {
       console.warn(`State not found: ${stateId}`);
       return false;
     }
-    
+
     const previousStateId = this.currentStateId;
     this.currentStateId = stateId;
-    
+
     const currentState = this.getState(stateId);
-    this._notifyStateChange('switched', currentState, previousStateId);
-    
+    this._notifyStateChange("switched", currentState, previousStateId);
+
     return true;
   }
 
@@ -147,16 +147,16 @@ class StateManager {
     if (!this.states.has(stateId)) {
       return false;
     }
-    
+
     // 不能删除当前状态
     if (stateId === this.currentStateId) {
-      console.warn('Cannot delete current state');
+      console.warn("Cannot delete current state");
       return false;
     }
-    
+
     this.states.delete(stateId);
-    this._notifyStateChange('deleted', null, stateId);
-    
+    this._notifyStateChange("deleted", null, stateId);
+
     return true;
   }
 
@@ -182,7 +182,7 @@ class StateManager {
   clearAllStates() {
     this.states.clear();
     this.currentStateId = null;
-    this._notifyStateChange('cleared');
+    this._notifyStateChange("cleared");
   }
 
   /**
@@ -195,7 +195,7 @@ class StateManager {
     if (!state) {
       throw new Error(`State not found: ${stateId}`);
     }
-    
+
     return serializeState(state);
   }
 
@@ -206,17 +206,17 @@ class StateManager {
    */
   deserializeState(serializedState) {
     const state = deserializeState(serializedState);
-    
+
     // 生成新的ID以避免冲突
     const originalId = state.id;
     state.id = this._generateUniqueId();
     state.metadata.deserializedFrom = originalId;
     state.metadata.deserializedAt = Date.now();
-    
+
     this.states.set(state.id, state);
-    
-    this._notifyStateChange('deserialized', state);
-    
+
+    this._notifyStateChange("deserialized", state);
+
     return state.id;
   }
 
@@ -226,16 +226,16 @@ class StateManager {
    */
   exportAllStates() {
     const exportData = {
-      version: '1.0.0',
+      version: "1.0.0",
       timestamp: Date.now(),
       currentStateId: this.currentStateId,
-      states: {}
+      states: {},
     };
-    
+
     for (const [id, state] of this.states) {
       exportData.states[id] = state;
     }
-    
+
     return JSON.stringify(exportData, null, 2);
   }
 
@@ -247,14 +247,14 @@ class StateManager {
   importStates(importData) {
     try {
       const data = JSON.parse(importData);
-      
-      if (!data.states || typeof data.states !== 'object') {
-        throw new Error('Invalid import data format');
+
+      if (!data.states || typeof data.states !== "object") {
+        throw new Error("Invalid import data format");
       }
-      
+
       const importedStateIds = [];
       const errors = [];
-      
+
       // 导入状态
       for (const [originalId, state] of Object.entries(data.states)) {
         try {
@@ -262,37 +262,38 @@ class StateManager {
             errors.push(`Invalid state: ${originalId}`);
             continue;
           }
-          
+
           // 生成新ID
           const newId = this._generateUniqueId();
           state.id = newId;
           state.metadata.importedFrom = originalId;
           state.metadata.importedAt = Date.now();
-          
+
           this.states.set(newId, state);
           importedStateIds.push(newId);
-          
         } catch (error) {
           errors.push(`Failed to import state ${originalId}: ${error.message}`);
         }
       }
-      
+
       // 限制状态数量
       this._limitStatesCount();
-      
-      this._notifyStateChange('imported', null, null, { importedStateIds, errors });
-      
+
+      this._notifyStateChange("imported", null, null, {
+        importedStateIds,
+        errors,
+      });
+
       return {
         success: true,
         importedCount: importedStateIds.length,
         importedStateIds,
-        errors
+        errors,
       };
-      
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -306,14 +307,14 @@ class StateManager {
   compareStates(stateId1, stateId2) {
     const state1 = this.getState(stateId1);
     const state2 = this.getState(stateId2);
-    
+
     if (!state1 || !state2) {
-      throw new Error('One or both states not found');
+      throw new Error("One or both states not found");
     }
-    
+
     return {
       areEqual: compareStates(state1, state2),
-      differences: getStateDiff(state1, state2)
+      differences: getStateDiff(state1, state2),
     };
   }
 
@@ -322,7 +323,7 @@ class StateManager {
    * @param {Function} callback - 回调函数
    */
   onStateChange(callback) {
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       this.stateChangeCallbacks.push(callback);
     }
   }
@@ -344,18 +345,26 @@ class StateManager {
    */
   getStatistics() {
     const states = Array.from(this.states.values());
-    
+
     return {
       totalStates: states.length,
       currentStateId: this.currentStateId,
-      libraryTypes: [...new Set(states.map(s => s.libraryType))],
-      oldestState: states.reduce((oldest, state) => 
-        !oldest || state.timestamp < oldest.timestamp ? state : oldest, null),
-      newestState: states.reduce((newest, state) => 
-        !newest || state.timestamp > newest.timestamp ? state : newest, null),
-      totalOperations: states.reduce((total, state) => 
-        total + (state.metadata.operationCount || 0), 0),
-      memoryUsage: this._calculateMemoryUsage()
+      libraryTypes: [...new Set(states.map((s) => s.libraryType))],
+      oldestState: states.reduce(
+        (oldest, state) =>
+          !oldest || state.timestamp < oldest.timestamp ? state : oldest,
+        null
+      ),
+      newestState: states.reduce(
+        (newest, state) =>
+          !newest || state.timestamp > newest.timestamp ? state : newest,
+        null
+      ),
+      totalOperations: states.reduce(
+        (total, state) => total + (state.metadata.operationCount || 0),
+        0
+      ),
+      memoryUsage: this._calculateMemoryUsage(),
     };
   }
 
@@ -376,14 +385,14 @@ class StateManager {
       previousStateId,
       currentStateId: this.currentStateId,
       timestamp: Date.now(),
-      ...extra
+      ...extra,
     };
-    
-    this.stateChangeCallbacks.forEach(callback => {
+
+    this.stateChangeCallbacks.forEach((callback) => {
       try {
         callback(eventData);
       } catch (error) {
-        console.error('Error in state change callback:', error);
+        console.error("Error in state change callback:", error);
       }
     });
   }
@@ -396,14 +405,18 @@ class StateManager {
     if (this.states.size <= this.options.maxStates) {
       return;
     }
-    
+
     // 获取所有状态并按时间戳排序
-    const sortedStates = Array.from(this.states.entries())
-      .sort(([, a], [, b]) => a.timestamp - b.timestamp);
-    
+    const sortedStates = Array.from(this.states.entries()).sort(
+      ([, a], [, b]) => a.timestamp - b.timestamp
+    );
+
     // 删除最旧的状态，但保留当前状态
-    const toDelete = sortedStates.slice(0, this.states.size - this.options.maxStates);
-    
+    const toDelete = sortedStates.slice(
+      0,
+      this.states.size - this.options.maxStates
+    );
+
     for (const [id] of toDelete) {
       if (id !== this.currentStateId) {
         this.states.delete(id);
@@ -427,7 +440,7 @@ class StateManager {
    */
   _calculateMemoryUsage() {
     let totalSize = 0;
-    
+
     for (const state of this.states.values()) {
       try {
         totalSize += JSON.stringify(state).length * 2; // 粗略估算
@@ -435,7 +448,7 @@ class StateManager {
         // 忽略序列化错误
       }
     }
-    
+
     return totalSize;
   }
 
@@ -447,17 +460,20 @@ class StateManager {
     if (this.autoSaveTimer) {
       clearInterval(this.autoSaveTimer);
     }
-    
+
     this.autoSaveTimer = setInterval(() => {
       try {
         const currentState = this.getCurrentState();
         if (currentState) {
           const serialized = this.serializeState(currentState.id);
-          localStorage.setItem('imageEditor_autoSave', serialized);
-          localStorage.setItem('imageEditor_autoSave_timestamp', Date.now().toString());
+          localStorage.setItem("imageEditor_autoSave", serialized);
+          localStorage.setItem(
+            "imageEditor_autoSave_timestamp",
+            Date.now().toString()
+          );
         }
       } catch (error) {
-        console.error('Auto save failed:', error);
+        console.error("Auto save failed:", error);
       }
     }, this.options.autoSaveInterval);
   }
@@ -492,42 +508,53 @@ class StateManager {
    * @returns {Promise<string>} 新状态ID
    */
   async migrateState(stateId, targetLibraryType, migrationOptions = {}) {
-    return errorHandler.safeExecute(async () => {
-      const sourceState = this.getState(stateId);
-      if (!sourceState) {
-        throw new Error(`Source state not found: ${stateId}`);
-      }
-
-      // 检查是否需要迁移
-      if (sourceState.libraryType === targetLibraryType) {
-        return stateId; // 无需迁移
-      }
-
-      // 创建迁移上下文
-      const migrationContext = {
-        sourceLibraryType: sourceState.libraryType,
-        targetLibraryType,
-        options: {
-          preserveObjects: migrationOptions.preserveObjects !== false,
-          preserveFilters: migrationOptions.preserveFilters !== false,
-          preserveAdjustments: migrationOptions.preserveAdjustments !== false,
-          preserveTransforms: migrationOptions.preserveTransforms !== false,
-          fallbackOnError: migrationOptions.fallbackOnError !== false,
-          ...migrationOptions
+    return errorHandler.safeExecute(
+      async () => {
+        const sourceState = this.getState(stateId);
+        if (!sourceState) {
+          throw new Error(`Source state not found: ${stateId}`);
         }
-      };
 
-      // 执行状态迁移
-      const migratedState = await this._performStateMigration(sourceState, migrationContext);
+        // 检查是否需要迁移
+        if (sourceState.libraryType === targetLibraryType) {
+          return stateId; // 无需迁移
+        }
 
-      // 保存迁移后的状态
-      this.states.set(migratedState.id, migratedState);
+        // 创建迁移上下文
+        const migrationContext = {
+          sourceLibraryType: sourceState.libraryType,
+          targetLibraryType,
+          options: {
+            preserveObjects: migrationOptions.preserveObjects !== false,
+            preserveFilters: migrationOptions.preserveFilters !== false,
+            preserveAdjustments: migrationOptions.preserveAdjustments !== false,
+            preserveTransforms: migrationOptions.preserveTransforms !== false,
+            fallbackOnError: migrationOptions.fallbackOnError !== false,
+            ...migrationOptions,
+          },
+        };
 
-      // 记录迁移历史
-      this._recordMigration(sourceState.id, migratedState.id, migrationContext);
+        // 执行状态迁移
+        const migratedState = await this._performStateMigration(
+          sourceState,
+          migrationContext
+        );
 
-      return migratedState.id;
-    }, 'migrateState', { stateId, targetLibraryType });
+        // 保存迁移后的状态
+        this.states.set(migratedState.id, migratedState);
+
+        // 记录迁移历史
+        this._recordMigration(
+          sourceState.id,
+          migratedState.id,
+          migrationContext
+        );
+
+        return migratedState.id;
+      },
+      "migrateState",
+      { stateId, targetLibraryType }
+    );
   }
 
   /**
@@ -538,28 +565,36 @@ class StateManager {
    * @returns {Promise<Array<string>>} 新状态ID数组
    */
   async batchMigrateStates(stateIds, targetLibraryType, migrationOptions = {}) {
-    return errorHandler.safeExecute(async () => {
-      const results = [];
-      const errors = [];
+    return errorHandler.safeExecute(
+      async () => {
+        const results = [];
+        const errors = [];
 
-      for (const stateId of stateIds) {
-        try {
-          const newStateId = await this.migrateState(stateId, targetLibraryType, migrationOptions);
-          results.push(newStateId);
-        } catch (error) {
-          errors.push({ stateId, error });
-          if (!migrationOptions.continueOnError) {
-            throw error;
+        for (const stateId of stateIds) {
+          try {
+            const newStateId = await this.migrateState(
+              stateId,
+              targetLibraryType,
+              migrationOptions
+            );
+            results.push(newStateId);
+          } catch (error) {
+            errors.push({ stateId, error });
+            if (!migrationOptions.continueOnError) {
+              throw error;
+            }
           }
         }
-      }
 
-      if (errors.length > 0 && !migrationOptions.continueOnError) {
-        throw new Error(`Migration failed for ${errors.length} states`);
-      }
+        if (errors.length > 0 && !migrationOptions.continueOnError) {
+          throw new Error(`Migration failed for ${errors.length} states`);
+        }
 
-      return results;
-    }, 'batchMigrateStates', { stateIds, targetLibraryType });
+        return results;
+      },
+      "batchMigrateStates",
+      { stateIds, targetLibraryType }
+    );
   }
 
   /**
@@ -569,37 +604,49 @@ class StateManager {
    * @returns {Object} 兼容性报告
    */
   checkStateCompatibility(stateId, targetLibraryType) {
-    return errorHandler.safeExecute(() => {
-      const state = this.getState(stateId);
-      if (!state) {
-        throw new Error(`State not found: ${stateId}`);
-      }
+    return errorHandler.safeExecute(
+      () => {
+        const state = this.getState(stateId);
+        if (!state) {
+          throw new Error(`State not found: ${stateId}`);
+        }
 
-      const compatibility = {
-        compatible: true,
-        warnings: [],
-        unsupportedFeatures: [],
-        dataLoss: [],
-        recommendations: []
-      };
+        const compatibility = {
+          compatible: true,
+          warnings: [],
+          unsupportedFeatures: [],
+          dataLoss: [],
+          recommendations: [],
+        };
 
-      // 检查基本兼容性
-      this._checkBasicCompatibility(state, targetLibraryType, compatibility);
+        // 检查基本兼容性
+        this._checkBasicCompatibility(state, targetLibraryType, compatibility);
 
-      // 检查对象兼容性
-      this._checkObjectCompatibility(state, targetLibraryType, compatibility);
+        // 检查对象兼容性
+        this._checkObjectCompatibility(state, targetLibraryType, compatibility);
 
-      // 检查滤镜兼容性
-      this._checkFilterCompatibility(state, targetLibraryType, compatibility);
+        // 检查滤镜兼容性
+        this._checkFilterCompatibility(state, targetLibraryType, compatibility);
 
-      // 检查调整兼容性
-      this._checkAdjustmentCompatibility(state, targetLibraryType, compatibility);
+        // 检查调整兼容性
+        this._checkAdjustmentCompatibility(
+          state,
+          targetLibraryType,
+          compatibility
+        );
 
-      // 生成建议
-      this._generateMigrationRecommendations(state, targetLibraryType, compatibility);
+        // 生成建议
+        this._generateMigrationRecommendations(
+          state,
+          targetLibraryType,
+          compatibility
+        );
 
-      return compatibility;
-    }, 'checkStateCompatibility', { stateId, targetLibraryType });
+        return compatibility;
+      },
+      "checkStateCompatibility",
+      { stateId, targetLibraryType }
+    );
   }
 
   /**
@@ -609,11 +656,11 @@ class StateManager {
    */
   getSupportedMigrationPaths(sourceLibraryType) {
     const migrationMatrix = {
-      'fabric': ['konva', 'tui', 'jimp'],
-      'konva': ['fabric', 'tui', 'jimp'],
-      'tui': ['fabric', 'konva', 'jimp'],
-      'cropper': ['fabric', 'konva', 'jimp'],
-      'jimp': ['fabric', 'konva', 'tui']
+      fabric: ["konva", "tui", "jimp"],
+      konva: ["fabric", "tui", "jimp"],
+      tui: ["fabric", "konva", "jimp"],
+      cropper: ["fabric", "konva", "jimp"],
+      jimp: ["fabric", "konva", "tui"],
     };
 
     return migrationMatrix[sourceLibraryType] || [];
@@ -625,25 +672,29 @@ class StateManager {
    * @returns {Object} 状态快照
    */
   createMigrationSnapshot(stateId) {
-    return errorHandler.safeExecute(() => {
-      const state = this.getState(stateId);
-      if (!state) {
-        throw new Error(`State not found: ${stateId}`);
-      }
+    return errorHandler.safeExecute(
+      () => {
+        const state = this.getState(stateId);
+        if (!state) {
+          throw new Error(`State not found: ${stateId}`);
+        }
 
-      // 创建深度克隆的快照
-      const snapshot = cloneImageEditorState(state);
+        // 创建深度克隆的快照
+        const snapshot = cloneImageEditorState(state);
 
-      // 添加快照元数据
-      snapshot.snapshotMetadata = {
-        originalStateId: stateId,
-        snapshotTime: Date.now(),
-        purpose: 'migration',
-        sourceLibraryType: state.libraryType
-      };
+        // 添加快照元数据
+        snapshot.snapshotMetadata = {
+          originalStateId: stateId,
+          snapshotTime: Date.now(),
+          purpose: "migration",
+          sourceLibraryType: state.libraryType,
+        };
 
-      return snapshot;
-    }, 'createMigrationSnapshot', { stateId });
+        return snapshot;
+      },
+      "createMigrationSnapshot",
+      { stateId }
+    );
   }
 
   // ========== 私有迁移辅助方法 ==========
@@ -659,44 +710,67 @@ class StateManager {
     const { targetLibraryType, options } = migrationContext;
 
     // 创建目标状态
-    const targetState = createDefaultImageEditorState(targetLibraryType, sourceState.imageData);
+    const targetState = createDefaultImageEditorState(
+      targetLibraryType,
+      sourceState.imageData
+    );
 
     // 复制基本信息
-    targetState.imageData = sourceState.imageData ? { ...sourceState.imageData } : null;
+    targetState.imageData = sourceState.imageData
+      ? { ...sourceState.imageData }
+      : null;
     targetState.canvas = { ...sourceState.canvas };
 
     // 迁移变换信息
     if (options.preserveTransforms) {
-      targetState.transform = this._migrateTransforms(sourceState.transform, migrationContext);
+      targetState.transform = this._migrateTransforms(
+        sourceState.transform,
+        migrationContext
+      );
     }
 
     // 迁移调整参数
     if (options.preserveAdjustments) {
-      targetState.adjustments = this._migrateAdjustments(sourceState.adjustments, migrationContext);
+      targetState.adjustments = this._migrateAdjustments(
+        sourceState.adjustments,
+        migrationContext
+      );
     }
 
     // 迁移滤镜
     if (options.preserveFilters) {
-      targetState.filters = this._migrateFilters(sourceState.filters, migrationContext);
+      targetState.filters = this._migrateFilters(
+        sourceState.filters,
+        migrationContext
+      );
     }
 
     // 迁移对象
     if (options.preserveObjects) {
-      targetState.objects = await this._migrateObjects(sourceState.objects, migrationContext);
+      targetState.objects = await this._migrateObjects(
+        sourceState.objects,
+        migrationContext
+      );
     }
 
     // 迁移图层
-    targetState.layers = this._migrateLayers(sourceState.layers, migrationContext);
+    targetState.layers = this._migrateLayers(
+      sourceState.layers,
+      migrationContext
+    );
 
     // 迁移选择状态
-    targetState.selection = this._migrateSelection(sourceState.selection, migrationContext);
+    targetState.selection = this._migrateSelection(
+      sourceState.selection,
+      migrationContext
+    );
 
     // 设置元数据
     targetState.metadata = {
       ...targetState.metadata,
       migratedFrom: sourceState.libraryType,
       migrationTime: Date.now(),
-      originalStateId: sourceState.id
+      originalStateId: sourceState.id,
     };
 
     return targetState;
@@ -717,32 +791,32 @@ class StateManager {
 
     // 根据目标适配器调整特定格式
     switch (targetLibraryType) {
-      case 'fabric':
+      case "fabric":
         // Fabric使用left/top而不是x/y
         if (transforms.position) {
           migratedTransforms.position = {
             left: transforms.position.x || 0,
-            top: transforms.position.y || 0
+            top: transforms.position.y || 0,
           };
         }
         break;
 
-      case 'konva':
+      case "konva":
         // Konva使用x/y
         if (transforms.position && transforms.position.left !== undefined) {
           migratedTransforms.position = {
             x: transforms.position.left || 0,
-            y: transforms.position.top || 0
+            y: transforms.position.top || 0,
           };
         }
         break;
 
-      case 'tui':
+      case "tui":
         // TUI有特定的变换格式
         migratedTransforms.tuiSpecific = {
           angle: transforms.rotation || 0,
           flipX: transforms.flipX || false,
-          flipY: transforms.flipY || false
+          flipY: transforms.flipY || false,
         };
         break;
     }
@@ -763,17 +837,17 @@ class StateManager {
 
     // 根据目标适配器的支持情况调整参数
     const supportMatrix = {
-      'fabric': ['brightness', 'contrast', 'saturation'],
-      'konva': ['brightness', 'contrast', 'saturation', 'hue'],
-      'tui': ['brightness', 'contrast'],
-      'jimp': ['brightness', 'contrast', 'saturation', 'hue', 'gamma'],
-      'cropper': ['brightness', 'contrast']
+      fabric: ["brightness", "contrast", "saturation"],
+      konva: ["brightness", "contrast", "saturation", "hue"],
+      tui: ["brightness", "contrast"],
+      jimp: ["brightness", "contrast", "saturation", "hue", "gamma"],
+      cropper: ["brightness", "contrast"],
     };
 
     const supportedAdjustments = supportMatrix[targetLibraryType] || [];
 
     // 过滤不支持的调整
-    Object.keys(migratedAdjustments).forEach(key => {
+    Object.keys(migratedAdjustments).forEach((key) => {
       if (!supportedAdjustments.includes(key)) {
         delete migratedAdjustments[key];
       }
@@ -794,23 +868,27 @@ class StateManager {
 
     // 滤镜支持矩阵
     const filterSupportMatrix = {
-      'fabric': ['grayscale', 'sepia', 'blur', 'brightness', 'contrast'],
-      'konva': ['grayscale', 'blur', 'brightness', 'contrast', 'hue'],
-      'tui': ['grayscale', 'sepia', 'blur'],
-      'jimp': ['grayscale', 'sepia', 'blur', 'invert', 'posterize'],
-      'cropper': ['grayscale', 'sepia', 'blur', 'invert']
+      fabric: ["grayscale", "sepia", "blur", "brightness", "contrast"],
+      konva: ["grayscale", "blur", "brightness", "contrast", "hue"],
+      tui: ["grayscale", "sepia", "blur"],
+      jimp: ["grayscale", "sepia", "blur", "invert", "posterize"],
+      cropper: ["grayscale", "sepia", "blur", "invert"],
     };
 
     const supportedFilters = filterSupportMatrix[targetLibraryType] || [];
 
-    return filters.filter(filter => {
-      if (supportedFilters.includes(filter.type)) {
-        return true;
-      } else {
-        console.warn(`Filter ${filter.type} not supported in ${targetLibraryType}, skipping`);
-        return false;
-      }
-    }).map(filter => this._convertFilterFormat(filter, targetLibraryType));
+    return filters
+      .filter((filter) => {
+        if (supportedFilters.includes(filter.type)) {
+          return true;
+        } else {
+          console.warn(
+            `Filter ${filter.type} not supported in ${targetLibraryType}, skipping`
+          );
+          return false;
+        }
+      })
+      .map((filter) => this._convertFilterFormat(filter, targetLibraryType));
   }
 
   /**
@@ -825,23 +903,23 @@ class StateManager {
 
     // 根据目标适配器调整滤镜格式
     switch (targetLibraryType) {
-      case 'fabric':
+      case "fabric":
         // Fabric滤镜格式
-        if (filter.type === 'blur') {
+        if (filter.type === "blur") {
           convertedFilter.blur = filter.value || filter.radius || 5;
         }
         break;
 
-      case 'konva':
+      case "konva":
         // Konva滤镜格式
-        if (filter.type === 'blur') {
+        if (filter.type === "blur") {
           convertedFilter.blurRadius = filter.value || filter.radius || 5;
         }
         break;
 
-      case 'jimp':
+      case "jimp":
         // Jimp滤镜格式
-        if (filter.type === 'blur') {
+        if (filter.type === "blur") {
           convertedFilter.radius = filter.value || filter.radius || 5;
         }
         break;
@@ -889,18 +967,18 @@ class StateManager {
     const migratedObj = {
       ...obj,
       id: obj.id || this._generateObjectId(),
-      libraryType: targetLibraryType
+      libraryType: targetLibraryType,
     };
 
     // 根据对象类型和目标适配器调整格式
     switch (obj.type) {
-      case 'text':
+      case "text":
         return this._migrateTextObject(migratedObj, targetLibraryType);
-      case 'shape':
+      case "shape":
         return this._migrateShapeObject(migratedObj, targetLibraryType);
-      case 'image':
+      case "image":
         return this._migrateImageObject(migratedObj, targetLibraryType);
-      case 'path':
+      case "path":
         return this._migratePathObject(migratedObj, targetLibraryType);
       default:
         console.warn(`Unknown object type: ${obj.type}`);
@@ -919,30 +997,30 @@ class StateManager {
     const migrated = { ...textObj };
 
     switch (targetLibraryType) {
-      case 'fabric':
+      case "fabric":
         // Fabric文本格式
         migrated.left = textObj.x || textObj.left || 0;
         migrated.top = textObj.y || textObj.top || 0;
-        migrated.fill = textObj.color || textObj.fill || '#000000';
+        migrated.fill = textObj.color || textObj.fill || "#000000";
         break;
 
-      case 'konva':
+      case "konva":
         // Konva文本格式
         migrated.x = textObj.left || textObj.x || 0;
         migrated.y = textObj.top || textObj.y || 0;
-        migrated.fill = textObj.color || textObj.fill || '#000000';
+        migrated.fill = textObj.color || textObj.fill || "#000000";
         break;
 
-      case 'tui':
+      case "tui":
         // TUI文本格式
         migrated.position = {
           x: textObj.left || textObj.x || 0,
-          y: textObj.top || textObj.y || 0
+          y: textObj.top || textObj.y || 0,
         };
         migrated.styles = {
-          fill: textObj.color || textObj.fill || '#000000',
+          fill: textObj.color || textObj.fill || "#000000",
           fontSize: textObj.fontSize || 16,
-          fontFamily: textObj.fontFamily || 'Arial'
+          fontFamily: textObj.fontFamily || "Arial",
         };
         break;
     }
@@ -962,12 +1040,12 @@ class StateManager {
 
     // 基本位置转换
     switch (targetLibraryType) {
-      case 'fabric':
+      case "fabric":
         migrated.left = shapeObj.x || shapeObj.left || 0;
         migrated.top = shapeObj.y || shapeObj.top || 0;
         break;
 
-      case 'konva':
+      case "konva":
         migrated.x = shapeObj.left || shapeObj.x || 0;
         migrated.y = shapeObj.top || shapeObj.y || 0;
         break;
@@ -1000,14 +1078,14 @@ class StateManager {
 
     // 路径数据格式转换
     switch (targetLibraryType) {
-      case 'fabric':
+      case "fabric":
         // Fabric使用SVG路径格式
         if (pathObj.points) {
           migrated.path = this._convertPointsToSVGPath(pathObj.points);
         }
         break;
 
-      case 'konva':
+      case "konva":
         // Konva可以使用点数组
         if (pathObj.path) {
           migrated.points = this._convertSVGPathToPoints(pathObj.path);
@@ -1026,9 +1104,9 @@ class StateManager {
    * @private
    */
   _migrateLayers(layers, migrationContext) {
-    return layers.map(layer => ({
+    return layers.map((layer) => ({
       ...layer,
-      libraryType: migrationContext.targetLibraryType
+      libraryType: migrationContext.targetLibraryType,
     }));
   }
 
@@ -1060,7 +1138,7 @@ class StateManager {
    * @private
    */
   _convertPointsToSVGPath(points) {
-    if (!points || points.length === 0) return '';
+    if (!points || points.length === 0) return "";
 
     let path = `M ${points[0].x} ${points[0].y}`;
     for (let i = 1; i < points.length; i++) {
@@ -1080,8 +1158,12 @@ class StateManager {
     const points = [];
     const commands = svgPath.match(/[ML]\s*[\d\.\-\s,]+/g) || [];
 
-    commands.forEach(command => {
-      const coords = command.slice(1).trim().split(/[\s,]+/).map(Number);
+    commands.forEach((command) => {
+      const coords = command
+        .slice(1)
+        .trim()
+        .split(/[\s,]+/)
+        .map(Number);
       for (let i = 0; i < coords.length; i += 2) {
         if (coords[i] !== undefined && coords[i + 1] !== undefined) {
           points.push({ x: coords[i], y: coords[i + 1] });
@@ -1105,34 +1187,41 @@ class StateManager {
     // 检查图像数据兼容性
     if (state.imageData) {
       const supportedFormats = {
-        'fabric': ['jpg', 'jpeg', 'png', 'gif', 'svg'],
-        'konva': ['jpg', 'jpeg', 'png', 'gif'],
-        'tui': ['jpg', 'jpeg', 'png'],
-        'jimp': ['jpg', 'jpeg', 'png', 'bmp', 'tiff'],
-        'cropper': ['jpg', 'jpeg', 'png', 'gif']
+        fabric: ["jpg", "jpeg", "png", "gif", "svg"],
+        konva: ["jpg", "jpeg", "png", "gif"],
+        tui: ["jpg", "jpeg", "png"],
+        jimp: ["jpg", "jpeg", "png", "bmp", "tiff"],
+        cropper: ["jpg", "jpeg", "png", "gif"],
       };
 
       const targetFormats = supportedFormats[targetLibraryType] || [];
       const currentFormat = state.imageData.fileType?.toLowerCase();
 
       if (currentFormat && !targetFormats.includes(currentFormat)) {
-        compatibility.warnings.push(`Image format ${currentFormat} may not be fully supported in ${targetLibraryType}`);
+        compatibility.warnings.push(
+          `Image format ${currentFormat} may not be fully supported in ${targetLibraryType}`
+        );
       }
     }
 
     // 检查画布尺寸限制
     const sizeLimits = {
-      'fabric': { maxWidth: 16384, maxHeight: 16384 },
-      'konva': { maxWidth: 32767, maxHeight: 32767 },
-      'tui': { maxWidth: 8192, maxHeight: 8192 },
-      'jimp': { maxWidth: 65535, maxHeight: 65535 },
-      'cropper': { maxWidth: 16384, maxHeight: 16384 }
+      fabric: { maxWidth: 16384, maxHeight: 16384 },
+      konva: { maxWidth: 32767, maxHeight: 32767 },
+      tui: { maxWidth: 8192, maxHeight: 8192 },
+      jimp: { maxWidth: 65535, maxHeight: 65535 },
+      cropper: { maxWidth: 16384, maxHeight: 16384 },
     };
 
     const limits = sizeLimits[targetLibraryType];
     if (limits && state.canvas) {
-      if (state.canvas.width > limits.maxWidth || state.canvas.height > limits.maxHeight) {
-        compatibility.warnings.push(`Canvas size (${state.canvas.width}x${state.canvas.height}) exceeds ${targetLibraryType} limits`);
+      if (
+        state.canvas.width > limits.maxWidth ||
+        state.canvas.height > limits.maxHeight
+      ) {
+        compatibility.warnings.push(
+          `Canvas size (${state.canvas.width}x${state.canvas.height}) exceeds ${targetLibraryType} limits`
+        );
       }
     }
   }
@@ -1148,19 +1237,21 @@ class StateManager {
     if (!state.objects || state.objects.length === 0) return;
 
     const objectSupport = {
-      'fabric': ['text', 'shape', 'image', 'path', 'group'],
-      'konva': ['text', 'shape', 'image', 'path', 'group'],
-      'tui': ['text', 'shape', 'image'],
-      'jimp': ['text', 'image'],
-      'cropper': ['image']
+      fabric: ["text", "shape", "image", "path", "group"],
+      konva: ["text", "shape", "image", "path", "group"],
+      tui: ["text", "shape", "image"],
+      jimp: ["text", "image"],
+      cropper: ["image"],
     };
 
     const supportedTypes = objectSupport[targetLibraryType] || [];
 
-    state.objects.forEach(obj => {
+    state.objects.forEach((obj) => {
       if (!supportedTypes.includes(obj.type)) {
         compatibility.unsupportedFeatures.push(`Object type: ${obj.type}`);
-        compatibility.dataLoss.push(`Object "${obj.id}" of type "${obj.type}" will be lost`);
+        compatibility.dataLoss.push(
+          `Object "${obj.id}" of type "${obj.type}" will be lost`
+        );
       }
     });
   }
@@ -1176,16 +1267,16 @@ class StateManager {
     if (!state.filters || state.filters.length === 0) return;
 
     const filterSupport = {
-      'fabric': ['grayscale', 'sepia', 'blur', 'brightness', 'contrast'],
-      'konva': ['grayscale', 'blur', 'brightness', 'contrast', 'hue'],
-      'tui': ['grayscale', 'sepia', 'blur'],
-      'jimp': ['grayscale', 'sepia', 'blur', 'invert', 'posterize'],
-      'cropper': ['grayscale', 'sepia', 'blur', 'invert']
+      fabric: ["grayscale", "sepia", "blur", "brightness", "contrast"],
+      konva: ["grayscale", "blur", "brightness", "contrast", "hue"],
+      tui: ["grayscale", "sepia", "blur"],
+      jimp: ["grayscale", "sepia", "blur", "invert", "posterize"],
+      cropper: ["grayscale", "sepia", "blur", "invert"],
     };
 
     const supportedFilters = filterSupport[targetLibraryType] || [];
 
-    state.filters.forEach(filter => {
+    state.filters.forEach((filter) => {
       if (!supportedFilters.includes(filter.type)) {
         compatibility.unsupportedFeatures.push(`Filter: ${filter.type}`);
         compatibility.dataLoss.push(`Filter "${filter.type}" will be lost`);
@@ -1204,19 +1295,24 @@ class StateManager {
     if (!state.adjustments) return;
 
     const adjustmentSupport = {
-      'fabric': ['brightness', 'contrast', 'saturation'],
-      'konva': ['brightness', 'contrast', 'saturation', 'hue'],
-      'tui': ['brightness', 'contrast'],
-      'jimp': ['brightness', 'contrast', 'saturation', 'hue', 'gamma'],
-      'cropper': ['brightness', 'contrast']
+      fabric: ["brightness", "contrast", "saturation"],
+      konva: ["brightness", "contrast", "saturation", "hue"],
+      tui: ["brightness", "contrast"],
+      jimp: ["brightness", "contrast", "saturation", "hue", "gamma"],
+      cropper: ["brightness", "contrast"],
     };
 
     const supportedAdjustments = adjustmentSupport[targetLibraryType] || [];
 
-    Object.keys(state.adjustments).forEach(adjustment => {
-      if (state.adjustments[adjustment] !== 0 && !supportedAdjustments.includes(adjustment)) {
+    Object.keys(state.adjustments).forEach((adjustment) => {
+      if (
+        state.adjustments[adjustment] !== 0 &&
+        !supportedAdjustments.includes(adjustment)
+      ) {
         compatibility.unsupportedFeatures.push(`Adjustment: ${adjustment}`);
-        compatibility.dataLoss.push(`Adjustment "${adjustment}" will be reset to default`);
+        compatibility.dataLoss.push(
+          `Adjustment "${adjustment}" will be reset to default`
+        );
       }
     });
   }
@@ -1231,33 +1327,49 @@ class StateManager {
   _generateMigrationRecommendations(state, targetLibraryType, compatibility) {
     // 基于兼容性问题生成建议
     if (compatibility.unsupportedFeatures.length > 0) {
-      compatibility.recommendations.push('Consider using a different target adapter that supports more features');
+      compatibility.recommendations.push(
+        "Consider using a different target adapter that supports more features"
+      );
     }
 
     if (compatibility.dataLoss.length > 0) {
-      compatibility.recommendations.push('Create a backup of the current state before migration');
-      compatibility.recommendations.push('Review the data loss list and consider manual recreation of lost elements');
+      compatibility.recommendations.push(
+        "Create a backup of the current state before migration"
+      );
+      compatibility.recommendations.push(
+        "Review the data loss list and consider manual recreation of lost elements"
+      );
     }
 
     if (compatibility.warnings.length > 0) {
-      compatibility.recommendations.push('Test the migrated state thoroughly before proceeding');
+      compatibility.recommendations.push(
+        "Test the migrated state thoroughly before proceeding"
+      );
     }
 
     // 特定适配器建议
     switch (targetLibraryType) {
-      case 'jimp':
-        compatibility.recommendations.push('Jimp is best for server-side image processing');
+      case "jimp":
+        compatibility.recommendations.push(
+          "Jimp is best for server-side image processing"
+        );
         break;
-      case 'cropper':
-        compatibility.recommendations.push('Cropper is specialized for image cropping operations');
+      case "cropper":
+        compatibility.recommendations.push(
+          "Cropper is specialized for image cropping operations"
+        );
         break;
-      case 'tui':
-        compatibility.recommendations.push('TUI provides a complete UI but has limited programmatic control');
+      case "tui":
+        compatibility.recommendations.push(
+          "TUI provides a complete UI but has limited programmatic control"
+        );
         break;
     }
 
     // 设置总体兼容性状态
-    compatibility.compatible = compatibility.unsupportedFeatures.length === 0 && compatibility.dataLoss.length === 0;
+    compatibility.compatible =
+      compatibility.unsupportedFeatures.length === 0 &&
+      compatibility.dataLoss.length === 0;
   }
 
   /**
@@ -1274,11 +1386,11 @@ class StateManager {
       sourceLibraryType: migrationContext.sourceLibraryType,
       targetLibraryType: migrationContext.targetLibraryType,
       migrationTime: Date.now(),
-      options: migrationContext.options
+      options: migrationContext.options,
     };
 
     // 可以将迁移记录保存到数据库或本地存储
-    console.log('Migration completed:', migrationRecord);
+    console.log("Migration completed:", migrationRecord);
   }
 }
 

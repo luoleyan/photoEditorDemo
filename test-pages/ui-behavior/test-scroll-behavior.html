@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +12,21 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .test-container {
             border: 1px solid #ddd;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
         }
+
         .controls {
             margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
         button {
             padding: 10px 15px;
             background: #007bff;
@@ -32,15 +36,19 @@
             cursor: pointer;
             min-width: 120px;
         }
+
         button:hover {
             background: #0056b3;
         }
+
         button.success {
             background: #28a745;
         }
+
         button.error {
             background: #dc3545;
         }
+
         .log {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -53,41 +61,51 @@
             overflow-y: auto;
             font-size: 12px;
         }
+
         .error {
             color: #dc3545;
         }
+
         .success {
             color: #28a745;
         }
+
         .warning {
             color: #ffc107;
         }
+
         .info {
             color: #17a2b8;
         }
+
         .test-results {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
+
         .test-result {
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 5px;
         }
+
         .test-result.success {
             border-color: #28a745;
             background-color: #d4edda;
         }
+
         .test-result.error {
             border-color: #dc3545;
             background-color: #f8d7da;
         }
+
         .test-result.pending {
             border-color: #ffc107;
             background-color: #fff3cd;
         }
+
         .scroll-position {
             position: fixed;
             top: 10px;
@@ -102,6 +120,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="scroll-position" id="scrollPosition">
         滚动位置: <span id="scrollValue">0</span>px
@@ -109,7 +128,7 @@
 
     <h1>滚动行为测试</h1>
     <p>这个测试页面用于验证高级功能组件演示的滚动行为修复效果。</p>
-    
+
     <div class="test-container">
         <h3>测试说明</h3>
         <p>本测试将验证以下修复：</p>
@@ -119,7 +138,7 @@
             <li><strong>操作后滚动保持</strong>: 执行操作后不会自动滚动</li>
             <li><strong>组件内滚动隔离</strong>: 组件内滚动不影响页面滚动</li>
         </ul>
-        
+
         <div class="controls">
             <button id="openProject">打开项目 (localhost:8081)</button>
             <button id="openAdvancedDemo">打开高级功能演示</button>
@@ -129,7 +148,7 @@
             <button id="scrollToTop">滚动到顶部</button>
             <button id="clearLog">清除日志</button>
         </div>
-        
+
         <div class="test-results" id="testResults">
             <div class="test-result pending" id="result-initial">
                 <h4>初始加载位置</h4>
@@ -148,12 +167,13 @@
                 <div class="status">等待测试</div>
             </div>
         </div>
-        
+
         <div class="log" id="log">等待测试开始...</div>
     </div>
 
     <!-- 添加一些内容使页面可以滚动 -->
-    <div style="height: 2000px; background: linear-gradient(to bottom, #f0f0f0, #e0e0e0); margin: 20px 0; padding: 20px; border-radius: 5px;">
+    <div
+        style="height: 2000px; background: linear-gradient(to bottom, #f0f0f0, #e0e0e0); margin: 20px 0; padding: 20px; border-radius: 5px;">
         <h3>测试内容区域</h3>
         <p>这个区域用于测试页面滚动行为。</p>
         <div style="height: 200px; background: #fff; margin: 20px 0; padding: 20px; border-radius: 5px;">
@@ -186,44 +206,44 @@
             operations: document.getElementById('result-operations'),
             isolation: document.getElementById('result-isolation')
         };
-        
+
         // 实时显示滚动位置
         function updateScrollPosition() {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             document.getElementById('scrollValue').textContent = Math.round(scrollTop);
         }
-        
+
         window.addEventListener('scroll', updateScrollPosition);
         updateScrollPosition();
-        
+
         function addLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
             log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
             log.scrollTop = log.scrollHeight;
         }
-        
+
         function clearLog() {
             log.innerHTML = '';
         }
-        
+
         function updateTestResult(testName, status, message) {
             const result = testResults[testName];
             if (!result) return;
-            
+
             result.className = `test-result ${status}`;
             const statusDiv = result.querySelector('.status');
             statusDiv.textContent = message;
         }
-        
+
         // 测试滚动行为
         async function testScrollBehavior() {
             addLog('开始测试滚动行为...', 'info');
-            
+
             // 测试1: 初始加载位置
             updateTestResult('initial', 'pending', '测试中...');
             const initialScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             if (initialScrollTop === 0) {
                 updateTestResult('initial', 'success', '页面在顶部');
                 addLog('✓ 初始加载位置测试通过：页面在顶部', 'success');
@@ -231,17 +251,17 @@
                 updateTestResult('initial', 'error', `页面不在顶部: ${initialScrollTop}px`);
                 addLog(`✗ 初始加载位置测试失败：页面滚动位置 ${initialScrollTop}px`, 'error');
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             // 测试2: 组件内滚动
             updateTestResult('component', 'pending', '测试中...');
             addLog('模拟组件内滚动操作...', 'info');
-            
+
             // 模拟组件内滚动不影响页面
             await new Promise(resolve => setTimeout(resolve, 300));
             const afterComponentScroll = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             if (Math.abs(afterComponentScroll - initialScrollTop) < 10) {
                 updateTestResult('component', 'success', '组件内滚动正常');
                 addLog('✓ 组件内滚动测试通过：页面位置未改变', 'success');
@@ -249,16 +269,16 @@
                 updateTestResult('component', 'error', '组件内滚动影响页面');
                 addLog('✗ 组件内滚动测试失败：页面位置发生改变', 'error');
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             // 测试3: 操作后滚动
             updateTestResult('operations', 'pending', '测试中...');
             addLog('模拟用户操作...', 'info');
-            
+
             await new Promise(resolve => setTimeout(resolve, 300));
             const afterOperations = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             if (Math.abs(afterOperations - initialScrollTop) < 10) {
                 updateTestResult('operations', 'success', '操作后位置保持');
                 addLog('✓ 操作后滚动测试通过：页面位置保持不变', 'success');
@@ -266,20 +286,20 @@
                 updateTestResult('operations', 'error', '操作后位置改变');
                 addLog('✗ 操作后滚动测试失败：页面位置发生改变', 'error');
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             // 测试4: 滚动隔离
             updateTestResult('isolation', 'success', '滚动隔离正常');
             addLog('✓ 滚动隔离测试通过：组件滚动与页面滚动独立', 'success');
-            
+
             addLog('滚动行为测试完成', 'info');
         }
-        
+
         // 模拟操作
         async function simulateOperations() {
             addLog('开始模拟用户操作...', 'info');
-            
+
             const operations = [
                 '切换适配器',
                 '加载图像',
@@ -288,48 +308,49 @@
                 '撤销操作',
                 '重做操作'
             ];
-            
+
             for (const operation of operations) {
                 addLog(`执行操作: ${operation}`, 'info');
                 await new Promise(resolve => setTimeout(resolve, 200));
-                
+
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 addLog(`操作后滚动位置: ${scrollTop}px`, 'info');
             }
-            
+
             addLog('用户操作模拟完成', 'success');
         }
-        
+
         // 事件监听
         document.getElementById('openProject').addEventListener('click', () => {
             window.open('http://localhost:8081/', '_blank');
             addLog('已打开项目主页');
         });
-        
+
         document.getElementById('openAdvancedDemo').addEventListener('click', () => {
             window.open('http://localhost:8081/advanced-components', '_blank');
             addLog('已打开高级功能演示页面');
         });
-        
+
         document.getElementById('testScrollBehavior').addEventListener('click', testScrollBehavior);
         document.getElementById('simulateOperations').addEventListener('click', simulateOperations);
-        
+
         document.getElementById('scrollToBottom').addEventListener('click', () => {
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             addLog('滚动到页面底部');
         });
-        
+
         document.getElementById('scrollToTop').addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             addLog('滚动到页面顶部');
         });
-        
+
         document.getElementById('clearLog').addEventListener('click', clearLog);
-        
+
         // 初始化
         addLog('滚动行为测试页面已加载');
         addLog('当前滚动位置: ' + (window.pageYOffset || document.documentElement.scrollTop) + 'px');
         addLog('点击"测试滚动行为"开始测试');
     </script>
 </body>
+
 </html>

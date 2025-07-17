@@ -93,14 +93,19 @@
         </div>
       </div>
 
-      <div class="library-card special-card" @click="$router.push('/unified-editor')">
+      <div
+        class="library-card special-card"
+        @click="$router.push('/unified-editor')"
+      >
         <div class="card-header">
           <h3>统一图像编辑器</h3>
           <span class="rating">⭐⭐⭐⭐⭐</span>
         </div>
         <div class="card-content">
           <p><strong>特点：</strong> 整合多个库优势，统一API，智能库选择</p>
-          <p><strong>适用场景：</strong> 需要全面图像编辑功能且追求最佳性能的应用</p>
+          <p>
+            <strong>适用场景：</strong> 需要全面图像编辑功能且追求最佳性能的应用
+          </p>
           <div class="features">
             <span class="feature-tag highlight">新功能</span>
             <span class="feature-tag">多库整合</span>
@@ -110,7 +115,10 @@
         </div>
       </div>
 
-      <div class="library-card special-card" @click="$router.push('/ui-components')">
+      <div
+        class="library-card special-card"
+        @click="$router.push('/ui-components')"
+      >
         <div class="card-header">
           <h3>UI组件库演示</h3>
           <span class="rating">⭐⭐⭐⭐⭐</span>
@@ -127,7 +135,10 @@
         </div>
       </div>
 
-      <div class="library-card special-card" @click="$router.push('/advanced-ui')">
+      <div
+        class="library-card special-card"
+        @click="$router.push('/advanced-ui')"
+      >
         <div class="card-header">
           <h3>高级UI组件演示</h3>
           <span class="rating">⭐⭐⭐⭐⭐</span>
@@ -144,7 +155,10 @@
         </div>
       </div>
 
-      <div class="library-card special-card" @click="$router.push('/advanced-components')">
+      <div
+        class="library-card special-card"
+        @click="$router.push('/advanced-components')"
+      >
         <div class="card-header">
           <h3>高级功能组件演示</h3>
           <span class="rating">⭐⭐⭐⭐⭐</span>
@@ -161,7 +175,10 @@
         </div>
       </div>
 
-      <div class="library-card special-card" @click="$router.push('/mid-priority-components')">
+      <div
+        class="library-card special-card"
+        @click="$router.push('/mid-priority-components')"
+      >
         <div class="card-header">
           <h3>中优先级功能组件演示</h3>
           <span class="rating">⭐⭐⭐⭐⭐</span>
@@ -178,7 +195,10 @@
         </div>
       </div>
 
-      <div class="library-card special-card" @click="$router.push('/low-priority-components')">
+      <div
+        class="library-card special-card"
+        @click="$router.push('/low-priority-components')"
+      >
         <div class="card-header">
           <h3>低优先级功能组件演示</h3>
           <span class="rating">⭐⭐⭐⭐⭐</span>
@@ -254,8 +274,8 @@
 
 <script>
 export default {
-  name: 'HomeView'
-}
+  name: "HomeView",
+};
 </script>
 
 <style scoped>
@@ -298,7 +318,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2px solid transparent;
@@ -306,7 +326,7 @@ export default {
 
 .library-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   border-color: #667eea;
 }
 
@@ -353,7 +373,7 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .info-section h2 {
@@ -374,7 +394,8 @@ table {
   margin-top: 1rem;
 }
 
-th, td {
+th,
+td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid #e1e8ed;
@@ -417,7 +438,8 @@ tr:hover {
     font-size: 0.9rem;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.5rem;
   }
 }
@@ -463,7 +485,7 @@ tr:hover {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 2px solid transparent;
@@ -471,7 +493,7 @@ tr:hover {
 
 .library-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   border-color: #667eea;
 }
 
@@ -520,9 +542,15 @@ tr:hover {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .special-card {
@@ -538,7 +566,7 @@ tr:hover {
   background: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .info-section h2 {
@@ -559,7 +587,8 @@ table {
   margin-top: 1rem;
 }
 
-th, td {
+th,
+td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid #e1e8ed;
@@ -602,7 +631,8 @@ tr:hover {
     font-size: 0.9rem;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.5rem;
   }
 }

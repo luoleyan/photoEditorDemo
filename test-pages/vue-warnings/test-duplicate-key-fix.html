@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +12,21 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         .test-container {
             border: 1px solid #ddd;
             padding: 20px;
             margin: 20px 0;
             border-radius: 5px;
         }
+
         .controls {
             margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
         button {
             padding: 10px 15px;
             background: #007bff;
@@ -32,19 +36,24 @@
             cursor: pointer;
             min-width: 120px;
         }
+
         button:hover {
             background: #0056b3;
         }
+
         button.success {
             background: #28a745;
         }
+
         button.error {
             background: #dc3545;
         }
+
         button.warning {
             background: #ffc107;
             color: #212529;
         }
+
         .log {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -57,41 +66,51 @@
             overflow-y: auto;
             font-size: 12px;
         }
+
         .error {
             color: #dc3545;
         }
+
         .success {
             color: #28a745;
         }
+
         .warning {
             color: #ffc107;
         }
+
         .info {
             color: #17a2b8;
         }
+
         .test-results {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
+
         .test-result {
             border: 1px solid #ddd;
             padding: 15px;
             border-radius: 5px;
         }
+
         .test-result.success {
             border-color: #28a745;
             background-color: #d4edda;
         }
+
         .test-result.error {
             border-color: #dc3545;
             background-color: #f8d7da;
         }
+
         .test-result.pending {
             border-color: #ffc107;
             background-color: #fff3cd;
         }
+
         .console-monitor {
             position: fixed;
             top: 10px;
@@ -107,20 +126,25 @@
             overflow-y: auto;
             z-index: 1000;
         }
+
         .console-monitor .console-item {
             margin: 2px 0;
             padding: 2px 0;
             border-bottom: 1px solid #333;
         }
+
         .console-monitor .console-error {
             color: #ff6b6b;
         }
+
         .console-monitor .console-warn {
             color: #feca57;
         }
+
         .console-monitor .console-info {
             color: #48dbfb;
         }
+
         .duplicate-key-counter {
             position: fixed;
             top: 10px;
@@ -134,11 +158,13 @@
             font-weight: bold;
             z-index: 1000;
         }
+
         .duplicate-key-counter.zero {
             background: rgba(40, 167, 69, 0.9);
         }
     </style>
 </head>
+
 <body>
     <div class="duplicate-key-counter" id="duplicateKeyCounter">
         重复Key警告: <span id="duplicateKeyCount">0</span>
@@ -151,7 +177,7 @@
 
     <h1>Vue.js重复Key修复测试</h1>
     <p>这个测试页面用于验证HistoryPanel组件的重复key警告和错误参数传递修复效果。</p>
-    
+
     <div class="test-container">
         <h3>测试说明</h3>
         <p>本测试将验证以下修复：</p>
@@ -161,7 +187,7 @@
             <li><strong>滤镜选择测试</strong>: 多次选择同一滤镜不产生重复key</li>
             <li><strong>边界情况处理</strong>: 处理异常参数和事件对象传递</li>
         </ul>
-        
+
         <div class="controls">
             <button id="openProject">打开项目 (localhost:8081)</button>
             <button id="openAdvancedDemo">打开高级功能演示</button>
@@ -172,7 +198,7 @@
             <button id="clearConsole">清除控制台</button>
             <button id="clearLog">清除日志</button>
         </div>
-        
+
         <div class="test-results" id="testResults">
             <div class="test-result pending" id="result-duplicate-keys">
                 <h4>重复Key检查</h4>
@@ -191,7 +217,7 @@
                 <div class="status">等待测试</div>
             </div>
         </div>
-        
+
         <div class="log" id="log">等待测试开始...</div>
     </div>
 
@@ -206,64 +232,64 @@
             'parameter-validation': document.getElementById('result-parameter-validation'),
             'user-actions': document.getElementById('result-user-actions')
         };
-        
+
         let consoleMessages = [];
         let duplicateKeyWarnings = 0;
         let pointerEventErrors = 0;
-        
+
         // 监控控制台消息
         const originalConsoleError = console.error;
         const originalConsoleWarn = console.warn;
         const originalConsoleLog = console.log;
-        
-        console.error = function(...args) {
+
+        console.error = function (...args) {
             const message = args.join(' ');
             consoleMessages.push({ type: 'error', message, timestamp: Date.now() });
-            
+
             // 检查重复key警告
             if (message.includes('Duplicate keys detected')) {
                 duplicateKeyWarnings++;
                 updateDuplicateKeyCounter();
                 addLog(`检测到重复Key警告: ${message}`, 'error');
             }
-            
+
             // 检查PointerEvent错误
             if (message.includes('PointerEvent') || message.includes('item.id is not a primitive value')) {
                 pointerEventErrors++;
                 addLog(`检测到PointerEvent错误: ${message}`, 'error');
             }
-            
+
             updateConsoleMonitor();
             originalConsoleError.apply(console, args);
         };
-        
-        console.warn = function(...args) {
+
+        console.warn = function (...args) {
             const message = args.join(' ');
             consoleMessages.push({ type: 'warn', message, timestamp: Date.now() });
-            
+
             // 检查重复key警告
             if (message.includes('Duplicate keys detected')) {
                 duplicateKeyWarnings++;
                 updateDuplicateKeyCounter();
                 addLog(`检测到重复Key警告: ${message}`, 'warning');
             }
-            
+
             // 检查参数验证警告
             if (message.includes('addHistoryItem: 检测到非字符串id参数')) {
                 addLog(`检测到参数验证警告: ${message}`, 'warning');
             }
-            
+
             updateConsoleMonitor();
             originalConsoleWarn.apply(console, args);
         };
-        
-        console.log = function(...args) {
+
+        console.log = function (...args) {
             const message = args.join(' ');
             consoleMessages.push({ type: 'info', message, timestamp: Date.now() });
             updateConsoleMonitor();
             originalConsoleLog.apply(console, args);
         };
-        
+
         function updateDuplicateKeyCounter() {
             duplicateKeyCount.textContent = duplicateKeyWarnings;
             if (duplicateKeyWarnings === 0) {
@@ -272,7 +298,7 @@
                 duplicateKeyCounter.className = 'duplicate-key-counter';
             }
         }
-        
+
         function updateConsoleMonitor() {
             const recent = consoleMessages.slice(-15); // 显示最近15条消息
             consoleContent.innerHTML = recent.map(msg => {
@@ -280,18 +306,18 @@
                 return `<div class="console-item console-${msg.type}">[${time}] ${msg.message.substring(0, 150)}${msg.message.length > 150 ? '...' : ''}</div>`;
             }).join('');
         }
-        
+
         function addLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString();
             const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
             log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
             log.scrollTop = log.scrollHeight;
         }
-        
+
         function clearLog() {
             log.innerHTML = '';
         }
-        
+
         function clearConsole() {
             consoleMessages = [];
             duplicateKeyWarnings = 0;
@@ -300,31 +326,31 @@
             updateConsoleMonitor();
             addLog('控制台监控已清除');
         }
-        
+
         function updateTestResult(testName, status, message) {
             const result = testResults[testName];
             if (!result) return;
-            
+
             result.className = `test-result ${status}`;
             const statusDiv = result.querySelector('.status');
             statusDiv.textContent = message;
         }
-        
+
         // 测试重复Key
         async function testDuplicateKeys() {
             addLog('开始测试重复Key警告...', 'info');
             updateTestResult('duplicate-keys', 'pending', '测试中...');
-            
+
             const initialWarnings = duplicateKeyWarnings;
-            
+
             try {
                 addLog('监控重复Key警告...', 'info');
-                
+
                 // 等待一段时间收集警告
                 await new Promise(resolve => setTimeout(resolve, 3000));
-                
+
                 const newWarnings = duplicateKeyWarnings - initialWarnings;
-                
+
                 if (newWarnings === 0) {
                     updateTestResult('duplicate-keys', 'success', '无重复Key警告');
                     addLog('✓ 重复Key测试通过：未检测到重复Key警告', 'success');
@@ -332,55 +358,55 @@
                     updateTestResult('duplicate-keys', 'error', `检测到${newWarnings}个重复Key警告`);
                     addLog(`✗ 重复Key测试失败：检测到${newWarnings}个重复Key警告`, 'error');
                 }
-                
+
             } catch (error) {
                 updateTestResult('duplicate-keys', 'error', `测试失败: ${error.message}`);
                 addLog(`重复Key测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 测试滤镜选择
         async function testFilterSelection() {
             addLog('开始测试滤镜选择...', 'info');
             updateTestResult('filter-selection', 'pending', '测试中...');
-            
+
             try {
                 addLog('模拟多次选择同一滤镜...', 'info');
-                
+
                 const filters = ['grayscale', 'sepia', 'blur', 'brightness'];
-                
+
                 for (const filter of filters) {
                     // 模拟多次选择同一滤镜
                     for (let i = 0; i < 3; i++) {
-                        addLog(`模拟选择滤镜: ${filter} (第${i+1}次)`, 'info');
+                        addLog(`模拟选择滤镜: ${filter} (第${i + 1}次)`, 'info');
                         await new Promise(resolve => setTimeout(resolve, 200));
                     }
                 }
-                
+
                 updateTestResult('filter-selection', 'success', '滤镜选择测试通过');
                 addLog('✓ 滤镜选择测试通过：多次选择同一滤镜未产生重复Key', 'success');
-                
+
             } catch (error) {
                 updateTestResult('filter-selection', 'error', `测试失败: ${error.message}`);
                 addLog(`滤镜选择测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 测试参数验证
         async function testParameterValidation() {
             addLog('开始测试参数验证...', 'info');
             updateTestResult('parameter-validation', 'pending', '测试中...');
-            
+
             const initialErrors = pointerEventErrors;
-            
+
             try {
                 addLog('测试参数验证机制...', 'info');
-                
+
                 // 等待一段时间收集错误
                 await new Promise(resolve => setTimeout(resolve, 2000));
-                
+
                 const newErrors = pointerEventErrors - initialErrors;
-                
+
                 if (newErrors === 0) {
                     updateTestResult('parameter-validation', 'success', '参数验证正常');
                     addLog('✓ 参数验证测试通过：未检测到PointerEvent错误', 'success');
@@ -388,18 +414,18 @@
                     updateTestResult('parameter-validation', 'warning', `检测到${newErrors}个参数错误`);
                     addLog(`⚠ 参数验证测试：检测到${newErrors}个参数错误，但已被正确处理`, 'warning');
                 }
-                
+
             } catch (error) {
                 updateTestResult('parameter-validation', 'error', `测试失败: ${error.message}`);
                 addLog(`参数验证测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 模拟用户操作
         async function simulateUserActions() {
             addLog('开始模拟用户操作...', 'info');
             updateTestResult('user-actions', 'pending', '测试中...');
-            
+
             try {
                 const actions = [
                     '添加历史项',
@@ -409,39 +435,39 @@
                     '重复选择滤镜',
                     '参数变化'
                 ];
-                
+
                 for (const action of actions) {
                     addLog(`模拟操作: ${action}`, 'info');
                     await new Promise(resolve => setTimeout(resolve, 300));
                 }
-                
+
                 updateTestResult('user-actions', 'success', '用户操作模拟完成');
                 addLog('✓ 用户操作模拟测试通过：所有操作正常执行', 'success');
-                
+
             } catch (error) {
                 updateTestResult('user-actions', 'error', `测试失败: ${error.message}`);
                 addLog(`用户操作模拟测试失败: ${error.message}`, 'error');
             }
         }
-        
+
         // 事件监听
         document.getElementById('openProject').addEventListener('click', () => {
             window.open('http://localhost:8081/', '_blank');
             addLog('已打开项目主页');
         });
-        
+
         document.getElementById('openAdvancedDemo').addEventListener('click', () => {
             window.open('http://localhost:8081/advanced-components', '_blank');
             addLog('已打开高级功能演示页面，请在新窗口中进行交互测试');
         });
-        
+
         document.getElementById('testDuplicateKeys').addEventListener('click', testDuplicateKeys);
         document.getElementById('testFilterSelection').addEventListener('click', testFilterSelection);
         document.getElementById('testParameterValidation').addEventListener('click', testParameterValidation);
         document.getElementById('simulateUserActions').addEventListener('click', simulateUserActions);
         document.getElementById('clearConsole').addEventListener('click', clearConsole);
         document.getElementById('clearLog').addEventListener('click', clearLog);
-        
+
         // 初始化
         updateDuplicateKeyCounter();
         addLog('Vue.js重复Key修复测试页面已加载');
@@ -449,4 +475,5 @@
         addLog('点击"打开高级功能演示"进行实际测试');
     </script>
 </body>
+
 </html>

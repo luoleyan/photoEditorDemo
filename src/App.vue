@@ -14,7 +14,7 @@
       </div>
     </nav>
     <main class="main-content">
-      <router-view/>
+      <router-view />
     </main>
   </div>
 </template>
@@ -27,7 +27,7 @@
 }
 
 #app {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
@@ -39,7 +39,7 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 1rem 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .nav-brand h1 {
@@ -66,13 +66,13 @@
 }
 
 .nav-links a:hover {
-  background-color: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .nav-links a.router-link-exact-active {
-  background-color: rgba(255,255,255,0.2);
-  border-color: rgba(255,255,255,0.5);
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .main-content {
